@@ -1,0 +1,154 @@
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(160deg, #f8f5ed 0%, #ece8df 100%);
+  color: #1f1f1f;
+}
+
+main {
+  width: min(640px, 100%);
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 1.9rem;
+}
+
+p {
+  line-height: 1.5;
+}
+
+a {
+  color: #8d5b10;
+}
+
+form {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.5rem;
+}
+
+ul {
+  padding-left: 1.2rem;
+}
+
+label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 600;
+}
+
+input,
+select {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #c8c3b6;
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.7rem 0.95rem;
+  font: inherit;
+  font-weight: 700;
+  background: #8d5b10;
+  color: #fff;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.feedback {
+  margin: 0.5rem 0 0;
+  font-weight: 600;
+}
+
+.feedback.ok {
+  color: #0b6b2c;
+}
+
+.feedback.error {
+  color: #9a1e1e;
+}
+
+.activity-list {
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.activity-item {
+  border-radius: 10px;
+  padding: 0.9rem;
+  border: 1px solid #c8c3b6;
+  background: #fffaf1;
+}
+
+.activity-item h2 {
+  margin-top: 0;
+  margin-bottom: 0.45rem;
+}
+
+.activity-item-quest {
+  border-color: #8a7a45;
+  background: linear-gradient(180deg, #fffdf4 0%, #f7f1df 100%);
+}
+
+.activity-item-adventure {
+  border-color: #8d5b10;
+  background: linear-gradient(180deg, #fff6e7 0%, #f6e3c3 100%);
+}
+
+.activity-item-arena {
+  border-color: #8a3b2a;
+  background: linear-gradient(180deg, #fff1ee 0%, #f4ddd7 100%);
+}
+
+.activity-page-panel {
+  border: 1px solid #c8c3b6;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.activity-theme-quest {
+  background: linear-gradient(170deg, #fffef8 0%, #f2ecd8 100%);
+}
+
+.activity-theme-adventure {
+  background: linear-gradient(170deg, #fff4e6 0%, #edd3a9 100%);
+}
+
+.activity-theme-arena {
+  background: linear-gradient(170deg, #fff0ed 0%, #efcbc2 100%);
+}
+
+@media (max-width: 640px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
