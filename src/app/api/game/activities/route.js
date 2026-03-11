@@ -106,13 +106,20 @@ export async function POST(request) {
   }
 
   const result = await prisma.$transaction(async (tx) => {
+    const now = new Date();
+
     const updatedCharacter = await tx.character.update({
       where: { id: activeCharacter.id },
-      data: buildCharacterResourceUpdateInput(calculation.after),
+      data: {
+        ...buildCharacterResourceUpdateInput(calculation.after),
+        energyRegenAt: now,
+      },
       select: {
         id: true,
         hp: true,
         energy: true,
+        maxEnergy: true,
+        energyRegenAt: true,
         gold: true,
         xp: true,
         level: true,

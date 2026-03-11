@@ -1,9 +1,15 @@
 import { prisma } from "@/lib/prisma";
+import {
+  DEFAULT_MAX_ENERGY,
+  resolveCharacterEnergyRegeneration,
+} from "@/lib/energy-regeneration";
 
 export const CHARACTER_RESOURCE_SELECT = {
   id: true,
   hp: true,
   energy: true,
+  maxEnergy: true,
+  energyRegenAt: true,
   gold: true,
   xp: true,
   level: true,
@@ -23,6 +29,8 @@ export const CHARACTER_OVERVIEW_SELECT = {
   charisma: true,
   hp: true,
   energy: true,
+  maxEnergy: true,
+  energyRegenAt: true,
   gold: true,
   xp: true,
   level: true,
@@ -45,12 +53,29 @@ export function buildBaseResourcesForCharacter(characterClass, constitution) {
 
   return {
     hp,
-    energy: 20,
+    energy: DEFAULT_MAX_ENERGY,
+    maxEnergy: DEFAULT_MAX_ENERGY,
+    energyRegenAt: new Date(),
     gold: 10,
     xp: 0,
     renown: 0,
     heat: 0,
     level: 1,
+  };
+}
+
+async function withRegeneratedActiveCharacter(user) {
+  if (!user?.activeCharacter) {
+    return user;
+  }
+
+  const resolved = await resolveCharacterEnergyRegeneration(user.activeCharacter, {
+    persist: true,
+  });
+
+  return {
+    ...user,
+    activeCharacter: resolved.character,
   };
 }
 
@@ -75,7 +100,7 @@ export async function getUserWithResolvedActiveCharacter(userId) {
   }
 
   if (user.activeCharacter) {
-    return user;
+    return withRegeneratedActiveCharacter(user);
   }
 
   if (!user.ownedCharacter) {
@@ -87,11 +112,11 @@ export async function getUserWithResolvedActiveCharacter(userId) {
     data: { activeCharacterId: user.ownedCharacter.id },
   });
 
-  return {
+  return withRegeneratedActiveCharacter({
     ...user,
     activeCharacterId: user.ownedCharacter.id,
     activeCharacter: user.ownedCharacter,
-  };
+  });
 }
 
 export async function getActiveCharacterForUser(userId) {

@@ -1,9 +1,11 @@
 import Link from "next/link";
 
 import CharacterOverview from "@/components/character-overview";
+import EnergyTimer from "@/components/energy-timer";
 import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
 import { getUserWithResolvedActiveCharacter } from "@/lib/character";
+import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 
@@ -11,6 +13,9 @@ export default async function DashboardPage() {
   const user = await requirePageUser();
   const userWithCharacter = await getUserWithResolvedActiveCharacter(user.id);
   const activeCharacter = userWithCharacter?.activeCharacter ?? null;
+  const energyMeta = activeCharacter
+    ? getEnergyRegenerationMeta(activeCharacter)
+    : null;
 
   return (
     <main>
@@ -20,6 +25,10 @@ export default async function DashboardPage() {
         <>
           <p>Aktiv karaktar laddad automatiskt vid inloggning.</p>
           <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
+          <EnergyTimer
+            key={energyMeta?.nextEnergyAt ?? "energy-full"}
+            energyMeta={energyMeta}
+          />
           <CharacterOverview character={activeCharacter} />
         </>
       ) : (
