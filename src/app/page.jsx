@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
+import StartPageMusic from "@/components/audio/start-page-music";
 import HomeLoginForm from "@/components/home-login-form";
 import styles from "./page.module.css";
 
@@ -18,20 +19,17 @@ export default function HomePage() {
   return (
     <main className={`${styles.home} ${bodyFont.className}`}>
       <section className={styles.heroCard}>
-        <p className={styles.kicker}>Fantasy Browser RPG Prototype</p>
-        <h1 className={`${styles.title} ${headingFont.className}`}>
-          Zakzum Online
-        </h1>
-        <p className={styles.lead}>
-          Shape your character, chase progression, and keep your journey saved
-          between sessions.
-        </p>
-
-        <div className={styles.actions}>
-          <Link className={styles.primaryAction} href="/register">
-            Create account
-          </Link>
+        <div className={styles.heroIntro}>
+          <p className={styles.kicker}>Fantasy Browser RPG Prototype</p>
+          <h1 className={`${styles.title} ${headingFont.className}`}>
+            Zakzum Online
+          </h1>
+          <p className={styles.lead}>
+            Shape your character, chase progression, and keep your journey saved
+            between sessions.
+          </p>
         </div>
+        <StartPageMusic src="/audio/music/start-page.mp3" />
 
         <section className={styles.loginPanel}>
           <h2 className={styles.loginHeading}>Already have an account?</h2>
@@ -40,6 +38,12 @@ export default function HomePage() {
           </p>
           <HomeLoginForm />
         </section>
+
+        <div className={styles.actions}>
+          <Link className={styles.primaryAction} href="/register">
+            Create account
+          </Link>
+        </div>
 
         <div className={styles.featureGrid}>
           <article className={styles.featureItem}>
