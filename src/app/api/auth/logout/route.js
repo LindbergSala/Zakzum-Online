@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { logServerError } from "@/lib/server-logger";
 import {
   getExpiredSessionCookieOptions,
   getSessionTokenFromRequestCookies,
@@ -19,7 +20,8 @@ export async function POST() {
       getExpiredSessionCookieOptions(),
     );
     return response;
-  } catch {
+  } catch (error) {
+    logServerError("/api/auth/logout", error);
     const response = NextResponse.json(
       { message: "Something went wrong during logout." },
       { status: 500 },

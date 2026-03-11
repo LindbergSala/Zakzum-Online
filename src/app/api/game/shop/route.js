@@ -4,12 +4,14 @@ import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/api-auth";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { SHOP_ITEM_DEFINITION_MAP, SHOP_ITEM_DEFINITIONS } from "@/lib/core-loop-data";
+import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { prisma } from "@/lib/prisma";
 import {
   buildCharacterResourceUpdateInput,
   calculateCharacterResourceResult,
   getCharacterResourceSnapshot,
 } from "@/lib/resource-rules";
+import { logServerError } from "@/lib/server-logger";
 import { formatStatBonusLabel } from "@/lib/stat-effects";
 import { shopPurchaseSchema } from "@/lib/validators/core-loop";
 
@@ -108,7 +110,7 @@ export async function POST(request) {
 
   let result;
   try {
-    result = await prisma.$transaction(async (tx) => {
+    result = await runSerializableTransaction(async (tx) => {
       const latestCharacter = await tx.character.findUnique({
         where: { id: activeCharacter.id },
         select: SHOP_CHARACTER_SELECT,
@@ -246,6 +248,13 @@ export async function POST(request) {
       };
     });
   } catch (caughtError) {
+    if (isSerializableConflict(caughtError)) {
+      return NextResponse.json(
+        { message: "Purchase could not be completed due to a resource conflict. Try again." },
+        { status: 409 },
+      );
+    }
+
     if (
       caughtError instanceof Prisma.PrismaClientKnownRequestError &&
       caughtError.code === "P2002"
@@ -259,6 +268,11 @@ export async function POST(request) {
       );
     }
 
+    logServerError("/api/game/shop", caughtError, {
+      userId: user.id,
+      characterId: activeCharacter.id,
+      itemId: parsed.data.itemId,
+    });
     return NextResponse.json(
       { message: "Something went wrong while processing the purchase." },
       { status: 500 },

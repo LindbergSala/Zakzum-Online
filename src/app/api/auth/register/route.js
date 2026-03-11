@@ -3,6 +3,7 @@ import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { logServerError } from "@/lib/server-logger";
 import { registerSchema } from "@/lib/validators/auth";
 
 export async function POST(request) {
@@ -75,6 +76,7 @@ export async function POST(request) {
       );
     }
 
+    logServerError("/api/auth/register", error);
     return NextResponse.json(
       { message: "Something went wrong during registration." },
       { status: 500 },

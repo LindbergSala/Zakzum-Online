@@ -9,6 +9,7 @@ import {
 } from "@/lib/character";
 import { applyClassStartBonuses } from "@/lib/class-identity";
 import { prisma } from "@/lib/prisma";
+import { logServerError } from "@/lib/server-logger";
 import { createCharacterSchema } from "@/lib/validators/character";
 
 export async function GET() {
@@ -112,6 +113,7 @@ export async function POST(request) {
       );
     }
 
+    logServerError("/api/character", caughtError, { userId: user.id });
     return NextResponse.json(
       { message: "Something went wrong while creating character." },
       { status: 500 },

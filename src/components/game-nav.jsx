@@ -11,14 +11,20 @@ const gameLinks = [
   { href: "/log", label: "Log" },
 ];
 
+const showDebugLink = process.env.NODE_ENV !== "production";
+
 export default function GameNav() {
+  const navLinks = showDebugLink
+    ? [...gameLinks, { href: "/debug", label: "Debug" }]
+    : gameLinks;
+
   return (
     <>
       <p>
-        {gameLinks.map((link, index) => (
+        {navLinks.map((link, index) => (
           <span key={link.href}>
             <Link href={link.href}>{link.label}</Link>
-            {index < gameLinks.length - 1 ? " | " : ""}
+            {index < navLinks.length - 1 ? " | " : ""}
           </span>
         ))}
       </p>

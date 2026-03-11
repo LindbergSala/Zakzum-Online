@@ -3,8 +3,10 @@ import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/api-auth";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { SHOP_ITEM_DEFINITION_MAP } from "@/lib/core-loop-data";
+import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { prisma } from "@/lib/prisma";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
+import { logServerError } from "@/lib/server-logger";
 import { formatStatBonusLabel, getCharacterEffectiveStats } from "@/lib/stat-effects";
 import { inventoryEquipSchema } from "@/lib/validators/core-loop";
 
@@ -110,100 +112,158 @@ export async function POST(request) {
     );
   }
 
-  const ownedItems = await prisma.characterItem.findMany({
-    where: { characterId: activeCharacter.id },
-    select: {
-      id: true,
-      itemId: true,
-      itemName: true,
-      isEquipped: true,
-    },
-  });
-  const ownedItem = ownedItems.find((item) => item.itemId === itemId);
+  const currentResources = getCharacterResourceSnapshot(activeCharacter);
+  let result;
+  try {
+    result = await runSerializableTransaction(async (tx) => {
+      const latestCharacter = await tx.character.findUnique({
+        where: { id: activeCharacter.id },
+        select: { id: true },
+      });
 
-  if (!ownedItem) {
+      if (!latestCharacter) {
+        return {
+          ok: false,
+          status: 404,
+          message: "Character was not found.",
+        };
+      }
+
+      const ownedItems = await tx.characterItem.findMany({
+        where: { characterId: latestCharacter.id },
+        select: {
+          id: true,
+          itemId: true,
+          itemName: true,
+          isEquipped: true,
+        },
+      });
+      const ownedItem = ownedItems.find((item) => item.itemId === itemId);
+
+      if (!ownedItem) {
+        return {
+          ok: false,
+          status: 404,
+          message: "You do not own this item.",
+        };
+      }
+
+      const sameSlotItemIds = ownedItems
+        .filter(
+          (item) => SHOP_ITEM_DEFINITION_MAP[item.itemId]?.slot === itemDefinition.slot,
+        )
+        .map((item) => item.itemId);
+
+      if (sameSlotItemIds.length > 0) {
+        await tx.characterItem.updateMany({
+          where: {
+            characterId: latestCharacter.id,
+            itemId: { in: sameSlotItemIds },
+          },
+          data: { isEquipped: false },
+        });
+      }
+
+      const equippedItem = await tx.characterItem.update({
+        where: {
+          characterId_itemId: {
+            characterId: latestCharacter.id,
+            itemId,
+          },
+        },
+        data: { isEquipped: true },
+        select: {
+          id: true,
+          itemId: true,
+          itemName: true,
+          isEquipped: true,
+        },
+      });
+
+      const allItems = await tx.characterItem.findMany({
+        where: { characterId: latestCharacter.id },
+        select: {
+          id: true,
+          itemId: true,
+          itemName: true,
+          isEquipped: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      const equippedInSameSlot = allItems.filter(
+        (item) =>
+          item.isEquipped &&
+          SHOP_ITEM_DEFINITION_MAP[item.itemId]?.slot === itemDefinition.slot,
+      );
+
+      if (equippedInSameSlot.length > 1) {
+        throw new Error("SLOT_EQUIP_CONFLICT");
+      }
+
+      const logEntry = await tx.activityLog.create({
+        data: {
+          characterId: latestCharacter.id,
+          type: "EQUIP",
+          activityId: itemId,
+          activityName: `Equip: ${ownedItem.itemName}`,
+          success: true,
+          energyCost: 0,
+          roll: 0,
+          rollTotal: 0,
+          successTarget: 0,
+          statModifier: 0,
+          chancePercent: 0,
+          delta: {},
+          beforeResources: currentResources,
+          afterResources: currentResources,
+          details: {
+            item: {
+              id: itemId,
+              name: ownedItem.itemName,
+              slot: itemDefinition.slot,
+              effects: itemDefinition.effects ?? {},
+            },
+          },
+        },
+        select: { id: true },
+      });
+
+      return { ok: true, equippedItem, allItems, logEntry, ownedItem };
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "SLOT_EQUIP_CONFLICT") {
+      return NextResponse.json(
+        { message: "Equip conflict detected: only one item can be equipped per slot." },
+        { status: 409 },
+      );
+    }
+
+    if (isSerializableConflict(error)) {
+      return NextResponse.json(
+        { message: "Equip could not be completed due to a slot conflict. Try again." },
+        { status: 409 },
+      );
+    }
+
+    logServerError("/api/game/inventory", error, {
+      userId: user.id,
+      characterId: activeCharacter.id,
+      itemId,
+    });
     return NextResponse.json(
-      { message: "You do not own this item." },
-      { status: 404 },
+      { message: "Something went wrong while processing equip." },
+      { status: 500 },
     );
   }
 
-  const sameSlotItemIds = ownedItems
-    .filter(
-      (item) => SHOP_ITEM_DEFINITION_MAP[item.itemId]?.slot === itemDefinition.slot,
-    )
-    .map((item) => item.itemId);
-  const currentResources = getCharacterResourceSnapshot(activeCharacter);
-
-  const result = await prisma.$transaction(async (tx) => {
-    if (sameSlotItemIds.length > 0) {
-      await tx.characterItem.updateMany({
-        where: {
-          characterId: activeCharacter.id,
-          itemId: { in: sameSlotItemIds },
-        },
-        data: { isEquipped: false },
-      });
-    }
-
-    const equippedItem = await tx.characterItem.update({
-      where: {
-        characterId_itemId: {
-          characterId: activeCharacter.id,
-          itemId,
-        },
-      },
-      data: { isEquipped: true },
-      select: {
-        id: true,
-        itemId: true,
-        itemName: true,
-        isEquipped: true,
-      },
-    });
-
-    const allItems = await tx.characterItem.findMany({
-      where: { characterId: activeCharacter.id },
-      select: {
-        id: true,
-        itemId: true,
-        itemName: true,
-        isEquipped: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    const logEntry = await tx.activityLog.create({
-      data: {
-        characterId: activeCharacter.id,
-        type: "EQUIP",
-        activityId: itemId,
-        activityName: `Equip: ${ownedItem.itemName}`,
-        success: true,
-        energyCost: 0,
-        roll: 0,
-        rollTotal: 0,
-        successTarget: 0,
-        statModifier: 0,
-        chancePercent: 0,
-        delta: {},
-        beforeResources: currentResources,
-        afterResources: currentResources,
-        details: {
-          item: {
-            id: itemId,
-            name: ownedItem.itemName,
-            slot: itemDefinition.slot,
-            effects: itemDefinition.effects ?? {},
-          },
-        },
-      },
-      select: { id: true },
-    });
-
-    return { equippedItem, allItems, logEntry };
-  });
+  if (!result.ok) {
+    return NextResponse.json(
+      { message: result.message },
+      { status: result.status },
+    );
+  }
 
   const enrichedItems = enrichInventoryItems(result.allItems);
   const equippedItems = enrichedItems.filter((item) => item.isEquipped);
@@ -211,9 +271,9 @@ export async function POST(request) {
 
   return NextResponse.json(
     {
-      message: ownedItem.isEquipped
-        ? `${ownedItem.itemName} was already equipped.`
-        : `${ownedItem.itemName} is now equipped.`,
+      message: result.ownedItem.isEquipped
+        ? `${result.ownedItem.itemName} was already equipped.`
+        : `${result.ownedItem.itemName} is now equipped.`,
       item: result.equippedItem,
       logId: result.logEntry.id,
       items: enrichedItems,

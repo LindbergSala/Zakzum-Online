@@ -8,13 +8,14 @@ import {
   getClassPassiveRollModifier,
 } from "@/lib/class-identity";
 import { ACTIVITY_DEFINITION_MAP, ACTIVITY_DEFINITIONS } from "@/lib/core-loop-data";
-import { prisma } from "@/lib/prisma";
+import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { resolveActivityRoll } from "@/lib/roll-engine";
 import {
   buildCharacterResourceUpdateInput,
   calculateCharacterResourceResult,
   getCharacterResourceSnapshot,
 } from "@/lib/resource-rules";
+import { logServerError } from "@/lib/server-logger";
 import { getCharacterEffectiveStats } from "@/lib/stat-effects";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { activityActionSchema } from "@/lib/validators/core-loop";
@@ -102,218 +103,237 @@ export async function POST(request) {
     );
   }
 
-  const activity = ACTIVITY_DEFINITION_MAP[parsed.data.activityId];
-  const result = await prisma.$transaction(async (tx) => {
-    const latestCharacter = await tx.character.findUnique({
-      where: { id: activeCharacter.id },
-      select: ACTIVITY_CHARACTER_SELECT,
-    });
+  try {
+    const activity = ACTIVITY_DEFINITION_MAP[parsed.data.activityId];
+    const result = await runSerializableTransaction(async (tx) => {
+      const latestCharacter = await tx.character.findUnique({
+        where: { id: activeCharacter.id },
+        select: ACTIVITY_CHARACTER_SELECT,
+      });
 
-    if (!latestCharacter) {
-      return {
-        ok: false,
-        status: 404,
-        message: "Character was not found.",
-      };
-    }
+      if (!latestCharacter) {
+        return {
+          ok: false,
+          status: 404,
+          message: "Character was not found.",
+        };
+      }
 
-    const equippedItems = await tx.characterItem.findMany({
-      where: {
-        characterId: latestCharacter.id,
-        isEquipped: true,
-      },
-      select: {
-        itemId: true,
-      },
-    });
-
-    const classPassive = getClassPassive(latestCharacter.characterClass);
-    const passiveRollModifier = getClassPassiveRollModifier(
-      latestCharacter.characterClass,
-    );
-    const statSummary = getCharacterEffectiveStats(latestCharacter, equippedItems);
-    const rollResult = resolveActivityRoll(statSummary.effective, activity, {
-      level: latestCharacter.level,
-      passiveRollModifier,
-    });
-    const passiveResolvedDelta = applyClassPassiveDelta({
-      characterClass: latestCharacter.characterClass,
-      success: rollResult.success,
-      delta: rollResult.delta,
-    });
-
-    const calculation = calculateCharacterResourceResult(latestCharacter, {
-      energyCost: activity.energyCost,
-      delta: passiveResolvedDelta.delta,
-    });
-
-    if (!calculation.ok) {
-      return {
-        ok: false,
-        status: 400,
-        message: calculation.message,
-        requiredEnergy: calculation.requiredEnergy,
-        resources: getCharacterResourceSnapshot(latestCharacter),
-      };
-    }
-
-    const now = new Date();
-    const updateResult = await tx.character.updateMany({
-      where: {
-        id: latestCharacter.id,
-        updatedAt: latestCharacter.updatedAt,
-      },
-      data: {
-        ...buildCharacterResourceUpdateInput(calculation.after),
-        energyRegenAt: now,
-      },
-    });
-
-    if (updateResult.count !== 1) {
-      return {
-        ok: false,
-        status: 409,
-        message: "Character resources changed. Please try the action again.",
-      };
-    }
-
-    const updatedCharacter = await tx.character.findUnique({
-      where: { id: latestCharacter.id },
-      select: {
-        id: true,
-        hp: true,
-        energy: true,
-        maxEnergy: true,
-        energyRegenAt: true,
-        gold: true,
-        xp: true,
-        level: true,
-        renown: true,
-        heat: true,
-      },
-    });
-
-    const logEntry = await tx.activityLog.create({
-      data: {
-        characterId: latestCharacter.id,
-        type: "ACTIVITY",
-        activityId: activity.id,
-        activityName: activity.name,
-        success: rollResult.success,
-        energyCost: activity.energyCost,
-        roll: rollResult.roll,
-        rollTotal: rollResult.rollTotal,
-        successTarget: rollResult.successTarget,
-        statModifier: rollResult.statModifier,
-        chancePercent: rollResult.chancePercent,
-        delta: calculation.delta,
-        beforeResources: calculation.before,
-        afterResources: calculation.after,
-        details: {
-          roll: {
-            value: rollResult.roll,
-            total: rollResult.rollTotal,
-            target: rollResult.successTarget,
-            statModifier: rollResult.statModifier,
-            chancePercent: rollResult.chancePercent,
-          },
-          classIdentity: {
-            class: latestCharacter.characterClass,
-            passive: classPassive,
-            passiveRollModifier,
-            passiveDeltaBonus: passiveResolvedDelta.deltaBonus,
-          },
-          stats: statSummary,
+      const equippedItems = await tx.characterItem.findMany({
+        where: {
+          characterId: latestCharacter.id,
+          isEquipped: true,
         },
-      },
-      select: { id: true },
+        select: {
+          itemId: true,
+        },
+      });
+
+      const classPassive = getClassPassive(latestCharacter.characterClass);
+      const passiveRollModifier = getClassPassiveRollModifier(
+        latestCharacter.characterClass,
+      );
+      const statSummary = getCharacterEffectiveStats(latestCharacter, equippedItems);
+      const rollResult = resolveActivityRoll(statSummary.effective, activity, {
+        level: latestCharacter.level,
+        passiveRollModifier,
+      });
+      const passiveResolvedDelta = applyClassPassiveDelta({
+        characterClass: latestCharacter.characterClass,
+        success: rollResult.success,
+        delta: rollResult.delta,
+      });
+
+      const calculation = calculateCharacterResourceResult(latestCharacter, {
+        energyCost: activity.energyCost,
+        delta: passiveResolvedDelta.delta,
+      });
+
+      if (!calculation.ok) {
+        return {
+          ok: false,
+          status: 400,
+          message: calculation.message,
+          requiredEnergy: calculation.requiredEnergy,
+          resources: getCharacterResourceSnapshot(latestCharacter),
+        };
+      }
+
+      const now = new Date();
+      const updateResult = await tx.character.updateMany({
+        where: {
+          id: latestCharacter.id,
+          updatedAt: latestCharacter.updatedAt,
+        },
+        data: {
+          ...buildCharacterResourceUpdateInput(calculation.after),
+          energyRegenAt: now,
+        },
+      });
+
+      if (updateResult.count !== 1) {
+        return {
+          ok: false,
+          status: 409,
+          message: "Character resources changed. Please try the action again.",
+        };
+      }
+
+      const updatedCharacter = await tx.character.findUnique({
+        where: { id: latestCharacter.id },
+        select: {
+          id: true,
+          hp: true,
+          energy: true,
+          maxEnergy: true,
+          energyRegenAt: true,
+          gold: true,
+          xp: true,
+          level: true,
+          renown: true,
+          heat: true,
+        },
+      });
+
+      const logEntry = await tx.activityLog.create({
+        data: {
+          characterId: latestCharacter.id,
+          type: "ACTIVITY",
+          activityId: activity.id,
+          activityName: activity.name,
+          success: rollResult.success,
+          energyCost: activity.energyCost,
+          roll: rollResult.roll,
+          rollTotal: rollResult.rollTotal,
+          successTarget: rollResult.successTarget,
+          statModifier: rollResult.statModifier,
+          chancePercent: rollResult.chancePercent,
+          delta: calculation.delta,
+          beforeResources: calculation.before,
+          afterResources: calculation.after,
+          details: {
+            roll: {
+              value: rollResult.roll,
+              total: rollResult.rollTotal,
+              target: rollResult.successTarget,
+              statModifier: rollResult.statModifier,
+              chancePercent: rollResult.chancePercent,
+            },
+            classIdentity: {
+              class: latestCharacter.characterClass,
+              passive: classPassive,
+              passiveRollModifier,
+              passiveDeltaBonus: passiveResolvedDelta.deltaBonus,
+            },
+            stats: statSummary,
+          },
+        },
+        select: { id: true },
+      });
+
+      return {
+        ok: true,
+        updatedCharacter,
+        logEntry,
+        classPassive,
+        passiveRollModifier,
+        passiveResolvedDelta,
+        rollResult,
+        statSummary,
+        calculation,
+        leveledUp: calculation.after.level > calculation.before.level,
+        characterClass: latestCharacter.characterClass,
+      };
     });
 
-    return {
-      ok: true,
-      updatedCharacter,
-      logEntry,
-      classPassive,
-      passiveRollModifier,
-      passiveResolvedDelta,
-      rollResult,
-      statSummary,
-      calculation,
-      leveledUp: calculation.after.level > calculation.before.level,
-      characterClass: latestCharacter.characterClass,
-    };
-  });
+    if (!result.ok) {
+      return NextResponse.json(
+        {
+          message: result.message,
+          requiredEnergy: result.requiredEnergy,
+          resources: result.resources,
+        },
+        { status: result.status },
+      );
+    }
 
-  if (!result.ok) {
     return NextResponse.json(
       {
-        message: result.message,
-        requiredEnergy: result.requiredEnergy,
-        resources: result.resources,
+        message: result.leveledUp
+          ? result.rollResult.success
+            ? `${activity.name} succeeded. Level up! You are now level ${result.calculation.after.level}.`
+            : `${activity.name} failed. Level up! You are now level ${result.calculation.after.level}.`
+          : result.rollResult.success
+            ? `${activity.name} succeeded.`
+            : `${activity.name} failed.`,
+        action: {
+          id: activity.id,
+          name: activity.name,
+          energyCost: activity.energyCost,
+        },
+        result: {
+          success: result.rollResult.success,
+          energyCost: activity.energyCost,
+          progression: {
+            leveledUp: result.leveledUp,
+            levelBefore: result.calculation.before.level,
+            levelAfter: result.calculation.after.level,
+            xp: getLevelProgressMeta(
+              result.calculation.after.level,
+              result.calculation.after.xp,
+            ),
+          },
+          classIdentity: {
+            class: result.characterClass,
+            passive: result.classPassive,
+            passiveRollModifier: result.passiveRollModifier,
+            passiveDeltaBonus: result.passiveResolvedDelta.deltaBonus,
+          },
+          roll: {
+            value: result.rollResult.roll,
+            total: result.rollResult.rollTotal,
+            target: result.rollResult.successTarget,
+            statModifier: result.rollResult.statModifier,
+            baseStatModifier: result.rollResult.calculations.baseStatModifier,
+            levelModifier: result.rollResult.calculations.levelModifier,
+            passiveRollModifier: result.rollResult.calculations.passiveRollModifier,
+            characterLevel: result.rollResult.calculations.characterLevel,
+            chancePercent: result.rollResult.chancePercent,
+            primaryStat: result.rollResult.calculations.primaryStat,
+            secondaryStat: result.rollResult.calculations.secondaryStat,
+            primaryStatValue: result.rollResult.calculations.primaryStatValue,
+            secondaryStatValue: result.rollResult.calculations.secondaryStatValue,
+            primaryModifier: result.rollResult.calculations.primaryModifier,
+            secondaryModifier: result.rollResult.calculations.secondaryModifier,
+            scale: result.rollResult.scale,
+          },
+          stats: result.statSummary,
+          delta: result.calculation.delta,
+          totals: {
+            before: result.calculation.before,
+            after: getCharacterResourceSnapshot(result.updatedCharacter),
+          },
+          logId: result.logEntry?.id,
+        },
       },
-      { status: result.status },
+      { status: 200 },
+    );
+  } catch (error) {
+    if (isSerializableConflict(error)) {
+      return NextResponse.json(
+        { message: "Activity could not be completed due to a resource conflict. Try again." },
+        { status: 409 },
+      );
+    }
+
+    logServerError("/api/game/activities", error, {
+      userId: user.id,
+      characterId: activeCharacter.id,
+      activityId: parsed.data.activityId,
+    });
+    return NextResponse.json(
+      { message: "Something went wrong while processing the activity." },
+      { status: 500 },
     );
   }
-
-  return NextResponse.json(
-    {
-      message: result.leveledUp
-        ? result.rollResult.success
-          ? `${activity.name} succeeded. Level up! You are now level ${result.calculation.after.level}.`
-          : `${activity.name} failed. Level up! You are now level ${result.calculation.after.level}.`
-        : result.rollResult.success
-          ? `${activity.name} succeeded.`
-          : `${activity.name} failed.`,
-      action: {
-        id: activity.id,
-        name: activity.name,
-        energyCost: activity.energyCost,
-      },
-      result: {
-        success: result.rollResult.success,
-        energyCost: activity.energyCost,
-        progression: {
-          leveledUp: result.leveledUp,
-          levelBefore: result.calculation.before.level,
-          levelAfter: result.calculation.after.level,
-          xp: getLevelProgressMeta(
-            result.calculation.after.level,
-            result.calculation.after.xp,
-          ),
-        },
-        classIdentity: {
-          class: result.characterClass,
-          passive: result.classPassive,
-          passiveRollModifier: result.passiveRollModifier,
-          passiveDeltaBonus: result.passiveResolvedDelta.deltaBonus,
-        },
-        roll: {
-          value: result.rollResult.roll,
-          total: result.rollResult.rollTotal,
-          target: result.rollResult.successTarget,
-          statModifier: result.rollResult.statModifier,
-          baseStatModifier: result.rollResult.calculations.baseStatModifier,
-          levelModifier: result.rollResult.calculations.levelModifier,
-          passiveRollModifier: result.rollResult.calculations.passiveRollModifier,
-          characterLevel: result.rollResult.calculations.characterLevel,
-          chancePercent: result.rollResult.chancePercent,
-          primaryStat: result.rollResult.calculations.primaryStat,
-          secondaryStat: result.rollResult.calculations.secondaryStat,
-          primaryStatValue: result.rollResult.calculations.primaryStatValue,
-          secondaryStatValue: result.rollResult.calculations.secondaryStatValue,
-          primaryModifier: result.rollResult.calculations.primaryModifier,
-          secondaryModifier: result.rollResult.calculations.secondaryModifier,
-          scale: result.rollResult.scale,
-        },
-        stats: result.statSummary,
-        delta: result.calculation.delta,
-        totals: {
-          before: result.calculation.before,
-          after: getCharacterResourceSnapshot(result.updatedCharacter),
-        },
-        logId: result.logEntry?.id,
-      },
-    },
-    { status: 200 },
-  );
 }

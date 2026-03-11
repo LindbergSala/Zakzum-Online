@@ -2,6 +2,7 @@ import { compare } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { logServerError } from "@/lib/server-logger";
 import {
   createSession,
   getSessionCookieOptions,
@@ -75,7 +76,8 @@ export async function POST(request) {
     );
 
     return response;
-  } catch {
+  } catch (error) {
+    logServerError("/api/auth/login", error);
     return NextResponse.json(
       { message: "Something went wrong during login." },
       { status: 500 },
