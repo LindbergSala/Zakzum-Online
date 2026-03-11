@@ -13,21 +13,21 @@ export default async function CharacterPage() {
   if (!character) {
     return (
       <main>
+        <GameNav />
         <h1>Character overview</h1>
         <p>You do not have an active character yet.</p>
         <p>
           <Link href="/character/create">Create character</Link>
         </p>
-        <GameNav />
       </main>
     );
   }
 
   return (
     <main>
+      <GameNav />
       <h1>Character overview</h1>
       <CharacterOverview character={character} />
-      <GameNav />
       <p>
         <Link href="/dashboard">Back to dashboard</Link>
       </p>

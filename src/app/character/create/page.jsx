@@ -14,6 +14,7 @@ export default async function CharacterCreatePage() {
   if (existingCharacter) {
     return (
       <main>
+        <GameNav />
         <h1>Character</h1>
         <p>You already have a character on this account.</p>
         <p>
@@ -22,7 +23,6 @@ export default async function CharacterCreatePage() {
           | Level:{" "}
           <strong>{existingCharacter.level}</strong>
         </p>
-        <GameNav />
         <p>
           <Link href="/dashboard">Back to dashboard</Link>
         </p>
@@ -35,6 +35,7 @@ export default async function CharacterCreatePage() {
 
   return (
     <main>
+      <GameNav />
       <h1>Create character</h1>
       <p>Class selection and base stats come from your character base.</p>
       <p>
@@ -44,7 +45,6 @@ export default async function CharacterCreatePage() {
         Class start bonus is applied after point-buy validation.
       </p>
       <CharacterCreateForm />
-      <GameNav />
       <p>
         <Link href="/dashboard">Back to dashboard</Link>
       </p>

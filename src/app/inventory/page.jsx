@@ -68,6 +68,7 @@ export default async function InventoryPage() {
 
   return (
     <main>
+      <GameNav />
       <h1>Inventory</h1>
       {activeCharacter ? (
         <>
@@ -96,7 +97,6 @@ export default async function InventoryPage() {
           <Link href="/character/create">Create character</Link>.
         </p>
       )}
-      <GameNav />
       <p>
         <Link href="/dashboard">Back to dashboard</Link>
       </p>

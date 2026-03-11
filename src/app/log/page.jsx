@@ -98,6 +98,7 @@ export default async function LogPage() {
 
   return (
     <main>
+      <GameNav />
       <h1>Log</h1>
       <p>Showing latest {LOG_ENTRY_LIMIT} actions.</p>
       {!activeCharacter ? (
@@ -141,7 +142,6 @@ export default async function LogPage() {
           ))}
         </ul>
       )}
-      <GameNav />
       <p>
         <Link href="/dashboard">Back to dashboard</Link>
       </p>

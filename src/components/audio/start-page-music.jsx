@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
-import styles from "./start-page-music.module.css";
+const StartPageMusicContext = createContext(null);
 
-export default function StartPageMusic({ src }) {
+export default function StartPageMusic({ src, children }) {
   const audioRef = useRef(null);
   const [enabled, setEnabled] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -71,22 +71,37 @@ export default function StartPageMusic({ src }) {
 
   const isActive = enabled && isPlaying;
   const buttonLabel = isActive ? "Stang av musik" : "Starta musik";
+  const contextValue = {
+    isActive,
+    buttonLabel,
+    toggleMusic,
+  };
 
   return (
-    <div
-      className={styles.wrapper}
-      style={{ position: "absolute", top: "1rem", right: "1rem" }}
-    >
+    <StartPageMusicContext.Provider value={contextValue}>
+      {children}
       <audio ref={audioRef} src={src} loop preload="metadata" />
-      <button
-        className={`${styles.button} ${isActive ? styles.active : styles.inactive}`}
-        type="button"
-        onClick={toggleMusic}
-        aria-label={buttonLabel}
-        title={buttonLabel}
-      >
-        🎻
-      </button>
-    </div>
+    </StartPageMusicContext.Provider>
+  );
+}
+
+export function MusicToggleButton({ className }) {
+  const music = useContext(StartPageMusicContext);
+
+  if (!music) {
+    return null;
+  }
+
+  return (
+    <button
+      className={className}
+      type="button"
+      onClick={music.toggleMusic}
+      aria-label={music.buttonLabel}
+      title={music.buttonLabel}
+      data-active={music.isActive ? "true" : "false"}
+    >
+      🎻
+    </button>
   );
 }

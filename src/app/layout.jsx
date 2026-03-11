@@ -1,4 +1,5 @@
 import "./globals.css";
+import StartPageMusic from "@/components/audio/start-page-music";
 
 export const metadata = {
   title: "Zakzum Online",
@@ -8,7 +9,11 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <StartPageMusic src="/audio/music/start-page.mp3">
+          {children}
+        </StartPageMusic>
+      </body>
     </html>
   );
 }

@@ -13,6 +13,7 @@ export default async function ActivitiesPage() {
 
   return (
     <main>
+      <GameNav />
       <h1>Activities</h1>
       <p>Choose an activity to open its dedicated page.</p>
       {activeCharacter ? (
@@ -26,7 +27,6 @@ export default async function ActivitiesPage() {
           <Link href="/character/create">Create character</Link>.
         </p>
       )}
-      <GameNav />
       <p>
         <Link href="/dashboard">Back to dashboard</Link>
       </p>

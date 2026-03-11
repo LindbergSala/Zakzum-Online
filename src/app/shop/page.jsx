@@ -40,6 +40,7 @@ export default async function ShopPage() {
 
   return (
     <main>
+      <GameNav />
       <h1>Shop</h1>
       {activeCharacter ? (
         <>
@@ -52,7 +53,6 @@ export default async function ShopPage() {
           <Link href="/character/create">Create character</Link>.
         </p>
       )}
-      <GameNav />
       <p>
         <Link href="/dashboard">Back to dashboard</Link>
       </p>

@@ -108,6 +108,7 @@ export default async function DebugPage() {
 
   return (
     <main>
+      <GameNav />
       <h1>Debug View (Dev Only)</h1>
       <p>Testdata och analytics for felsokning under utveckling.</p>
 
@@ -176,11 +177,9 @@ export default async function DebugPage() {
         </ul>
       )}
 
-      <GameNav />
       <p>
         <Link href="/dashboard">Back to dashboard</Link>
       </p>
     </main>
   );
 }
-

@@ -22,6 +22,7 @@ export default async function ActivityDetailPage({ params }) {
 
   return (
     <main>
+      <GameNav />
       <h1>{activity.name}</h1>
       {!activeCharacter ? (
         <p>
@@ -34,7 +35,6 @@ export default async function ActivityDetailPage({ params }) {
           <ActivityRunner activity={activity} />
         </>
       )}
-      <GameNav />
       <p>
         <Link href="/activities">Back to activities</Link>
       </p>
