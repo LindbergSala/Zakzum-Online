@@ -40,11 +40,13 @@ export default function InventoryActions({ items }) {
   const [activeItemId, setActiveItemId] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [statSummary, setStatSummary] = useState(null);
+  const [lastEquipResult, setLastEquipResult] = useState(null);
 
   async function handleEquip(itemId) {
     setIsLoading(true);
     setActiveItemId(itemId);
     setFeedback(null);
+    setLastEquipResult(null);
 
     try {
       const response = await fetch("/api/game/inventory", {
@@ -62,6 +64,7 @@ export default function InventoryActions({ items }) {
 
       setStatSummary(data.stats ?? null);
       setFeedback({ tone: "ok", text: data.message });
+      setLastEquipResult(data);
       router.refresh();
     } catch {
       setFeedback({
@@ -80,6 +83,11 @@ export default function InventoryActions({ items }) {
 
   return (
     <>
+      {isLoading ? (
+        <p className="feedback loading" aria-live="polite">
+          Applying equipment...
+        </p>
+      ) : null}
       <ul>
         {items.map((item) => (
           <li key={item.id}>
@@ -99,7 +107,32 @@ export default function InventoryActions({ items }) {
         ))}
       </ul>
       {feedback ? (
-        <p className={`feedback ${feedback.tone}`}>{feedback.text}</p>
+        feedback.tone === "error" ? (
+          <section className="action-result-card action-result-error" aria-live="polite">
+            <p>
+              <strong>Equip result:</strong> ERROR
+            </p>
+            <p>{feedback.text}</p>
+          </section>
+        ) : (
+          <p className={`feedback ${feedback.tone}`} aria-live="polite">
+            {feedback.text}
+          </p>
+        )
+      ) : null}
+      {lastEquipResult ? (
+        <section className="action-result-card action-result-ok" aria-live="polite">
+          <p>
+            <strong>Equip result:</strong> SUCCESS
+          </p>
+          <p>
+            <strong>Item:</strong> {lastEquipResult.item?.itemName ?? "Unknown item"}
+          </p>
+          <p>
+            <strong>Status:</strong>{" "}
+            {lastEquipResult.item?.isEquipped ? "Equipped" : "Not equipped"}
+          </p>
+        </section>
       ) : null}
       <StatBreakdown summary={statSummary} />
     </>

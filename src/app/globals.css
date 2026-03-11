@@ -93,6 +93,28 @@ button:disabled {
   color: #9a1e1e;
 }
 
+.feedback.loading {
+  color: #8d5b10;
+}
+
+.action-result-card {
+  margin-top: 0.9rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 10px;
+  border: 1px solid #c8c3b6;
+  background: #fff;
+}
+
+.action-result-ok {
+  border-color: #6f8f48;
+  background: linear-gradient(180deg, #f8fff1 0%, #edf6e1 100%);
+}
+
+.action-result-error {
+  border-color: #a94d3f;
+  background: linear-gradient(180deg, #fff3ef 0%, #f7e1db 100%);
+}
+
 .activity-list {
   list-style: none;
   margin: 1rem 0;

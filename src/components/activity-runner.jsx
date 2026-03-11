@@ -71,6 +71,7 @@ export default function ActivityRunner({ activity }) {
   async function runActivity() {
     setIsLoading(true);
     setFeedback(null);
+    setLastResult(null);
 
     try {
       const response = await fetch("/api/game/activities", {
@@ -125,12 +126,34 @@ export default function ActivityRunner({ activity }) {
         </button>
       </p>
 
+      {isLoading ? (
+        <p className="feedback loading" aria-live="polite">
+          Resolving action...
+        </p>
+      ) : null}
+
       {feedback ? (
-        <p className={`feedback ${feedback.tone}`}>{feedback.text}</p>
+        feedback.tone === "error" ? (
+          <section className="action-result-card action-result-error" aria-live="polite">
+            <p>
+              <strong>Action result:</strong> ERROR
+            </p>
+            <p>{feedback.text}</p>
+          </section>
+        ) : (
+          <p className={`feedback ${feedback.tone}`} aria-live="polite">
+            {feedback.text}
+          </p>
+        )
       ) : null}
 
       {lastResult ? (
-        <div>
+        <section
+          className={`action-result-card ${
+            lastResult.success ? "action-result-ok" : "action-result-error"
+          }`}
+          aria-live="polite"
+        >
           <p>
             <strong>Result:</strong>{" "}
             {lastResult.success ? "SUCCESS" : "FAIL"}
@@ -177,7 +200,7 @@ export default function ActivityRunner({ activity }) {
             <strong>New totals:</strong>{" "}
             {formatTotals(lastResult.totals?.after)}
           </p>
-        </div>
+        </section>
       ) : null}
     </section>
   );
