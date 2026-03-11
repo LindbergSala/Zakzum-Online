@@ -64,7 +64,8 @@ export function resolveActivityRoll(characterStats, activityDefinition, options 
   const baseStatModifier = primaryModifier * 2 + secondaryModifier;
   const characterLevel = Math.max(1, Number(options.level) || 1);
   const levelModifier = Math.max(0, Math.floor((characterLevel - 1) / 2));
-  const statModifier = baseStatModifier + levelModifier;
+  const passiveRollModifier = Number(options.passiveRollModifier) || 0;
+  const statModifier = baseStatModifier + levelModifier + passiveRollModifier;
 
   const random =
     typeof options.random === "function" ? options.random : Math.random;
@@ -104,6 +105,7 @@ export function resolveActivityRoll(characterStats, activityDefinition, options 
       characterLevel,
       baseStatModifier,
       levelModifier,
+      passiveRollModifier,
     },
   };
 }

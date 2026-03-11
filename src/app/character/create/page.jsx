@@ -40,6 +40,9 @@ export default async function CharacterCreatePage() {
       <p>
         Point-buy regler: varje stat 8-15, total budget 27 poang.
       </p>
+      <p>
+        Klassens startbonus laggs pa efter validering av point-buy.
+      </p>
       <CharacterCreateForm />
       <GameNav />
       <p>

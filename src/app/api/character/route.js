@@ -7,6 +7,7 @@ import {
   CHARACTER_OVERVIEW_SELECT,
   getUserWithResolvedActiveCharacter,
 } from "@/lib/character";
+import { applyClassStartBonuses } from "@/lib/class-identity";
 import { prisma } from "@/lib/prisma";
 import { createCharacterSchema } from "@/lib/validators/character";
 
@@ -65,9 +66,13 @@ export async function POST(request) {
       );
     }
 
+    const classAdjustedStats = applyClassStartBonuses(
+      parsed.data,
+      parsed.data.characterClass,
+    );
     const baseResources = buildBaseResourcesForCharacter(
       parsed.data.characterClass,
-      parsed.data.constitution,
+      classAdjustedStats.constitution,
     );
 
     const createdCharacter = await prisma.$transaction(async (tx) => {
@@ -75,6 +80,7 @@ export async function POST(request) {
         data: {
           userId: user.id,
           ...parsed.data,
+          ...classAdjustedStats,
           ...baseResources,
         },
         select: CHARACTER_OVERVIEW_SELECT,

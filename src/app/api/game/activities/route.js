@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
 import { getActiveCharacterForUser } from "@/lib/character";
+import {
+  applyClassPassiveDelta,
+  getClassPassive,
+  getClassPassiveRollModifier,
+} from "@/lib/class-identity";
 import { ACTIVITY_DEFINITION_MAP, ACTIVITY_DEFINITIONS } from "@/lib/core-loop-data";
 import { prisma } from "@/lib/prisma";
 import { resolveActivityRoll } from "@/lib/roll-engine";
@@ -87,14 +92,24 @@ export async function POST(request) {
     },
   });
 
+  const classPassive = getClassPassive(activeCharacter.characterClass);
+  const passiveRollModifier = getClassPassiveRollModifier(
+    activeCharacter.characterClass,
+  );
   const statSummary = getCharacterEffectiveStats(activeCharacter, equippedItems);
   const rollResult = resolveActivityRoll(statSummary.effective, activity, {
     level: activeCharacter.level,
+    passiveRollModifier,
+  });
+  const passiveResolvedDelta = applyClassPassiveDelta({
+    characterClass: activeCharacter.characterClass,
+    success: rollResult.success,
+    delta: rollResult.delta,
   });
 
   const calculation = calculateCharacterResourceResult(activeCharacter, {
     energyCost: activity.energyCost,
-    delta: rollResult.delta,
+    delta: passiveResolvedDelta.delta,
   });
 
   if (!calculation.ok) {
@@ -157,6 +172,12 @@ export async function POST(request) {
             statModifier: rollResult.statModifier,
             chancePercent: rollResult.chancePercent,
           },
+          classIdentity: {
+            class: activeCharacter.characterClass,
+            passive: classPassive,
+            passiveRollModifier,
+            passiveDeltaBonus: passiveResolvedDelta.deltaBonus,
+          },
           stats: statSummary,
         },
       },
@@ -189,6 +210,12 @@ export async function POST(request) {
           levelAfter: calculation.after.level,
           xp: getLevelProgressMeta(calculation.after.level, calculation.after.xp),
         },
+        classIdentity: {
+          class: activeCharacter.characterClass,
+          passive: classPassive,
+          passiveRollModifier,
+          passiveDeltaBonus: passiveResolvedDelta.deltaBonus,
+        },
         roll: {
           value: rollResult.roll,
           total: rollResult.rollTotal,
@@ -196,6 +223,7 @@ export async function POST(request) {
           statModifier: rollResult.statModifier,
           baseStatModifier: rollResult.calculations.baseStatModifier,
           levelModifier: rollResult.calculations.levelModifier,
+          passiveRollModifier: rollResult.calculations.passiveRollModifier,
           characterLevel: rollResult.calculations.characterLevel,
           chancePercent: rollResult.chancePercent,
           primaryStat: rollResult.calculations.primaryStat,

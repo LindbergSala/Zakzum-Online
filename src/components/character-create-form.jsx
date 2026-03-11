@@ -11,6 +11,10 @@ import {
   CHARACTER_POINT_BUY_MIN_STAT,
   CHARACTER_STAT_FIELDS,
 } from "@/lib/character-data";
+import {
+  formatClassStartBonusLabel,
+  getClassPassive,
+} from "@/lib/class-identity";
 
 const DEFAULT_STAT_VALUE = CHARACTER_POINT_BUY_MIN_STAT;
 
@@ -36,6 +40,8 @@ export default function CharacterCreateForm() {
   const pointsRemaining =
     pointBuyCost === null ? null : CHARACTER_POINT_BUY_BUDGET - pointBuyCost;
   const isOverBudget = pointsRemaining !== null && pointsRemaining < 0;
+  const classStartBonus = formatClassStartBonusLabel(formData.characterClass);
+  const classPassive = getClassPassive(formData.characterClass);
 
   function updateField(key, value) {
     setFormData((previous) => ({
@@ -133,6 +139,12 @@ export default function CharacterCreateForm() {
           ))}
         </select>
       </label>
+      <p className="feedback ok">
+        Startbonus: {classStartBonus}
+      </p>
+      <p className="feedback ok">
+        Klasspassiv: <strong>{classPassive.name}</strong> - {classPassive.description}
+      </p>
       {fieldErrors.characterClass ? (
         <p className="feedback error">{fieldErrors.characterClass[0]}</p>
       ) : null}

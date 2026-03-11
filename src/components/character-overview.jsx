@@ -1,4 +1,8 @@
 import { getCharacterClassLabel } from "@/lib/character-data";
+import {
+  formatClassStartBonusLabel,
+  getClassPassive,
+} from "@/lib/class-identity";
 
 function ResourceRow({ label, value }) {
   return (
@@ -17,6 +21,9 @@ function StatRow({ label, value }) {
 }
 
 export default function CharacterOverview({ character }) {
+  const classPassive = getClassPassive(character.characterClass);
+  const classStartBonus = formatClassStartBonusLabel(character.characterClass);
+
   return (
     <>
       <p>
@@ -24,6 +31,13 @@ export default function CharacterOverview({ character }) {
       </p>
       <p>
         <strong>Klass:</strong> {getCharacterClassLabel(character.characterClass)}
+      </p>
+      <p>
+        <strong>Startbonus:</strong> {classStartBonus}
+      </p>
+      <p>
+        <strong>Klasspassiv:</strong> {classPassive.name} -{" "}
+        {classPassive.description}
       </p>
       <p>
         <strong>Grundstats</strong>

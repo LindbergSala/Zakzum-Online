@@ -44,6 +44,24 @@ function formatTotals(resources) {
   ].join(" | ");
 }
 
+function formatDeltaBonus(deltaBonus) {
+  if (!deltaBonus || typeof deltaBonus !== "object") {
+    return "Ingen extra bonus i denna action.";
+  }
+
+  const parts = Object.entries(deltaBonus)
+    .filter(([, value]) => Number(value) !== 0)
+    .map(([key, value]) => {
+      const numericValue = Number(value);
+      const sign = numericValue > 0 ? "+" : "";
+      return `${key}: ${sign}${numericValue}`;
+    });
+
+  return parts.length > 0
+    ? parts.join(", ")
+    : "Ingen extra bonus i denna action.";
+}
+
 export default function ActivityRunner({ activity }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -140,6 +158,16 @@ export default function ActivityRunner({ activity }) {
             {lastResult.progression.xp.xp} / nasta level vid{" "}
             {lastResult.progression.xp.nextLevelXpTarget}
             {lastResult.progression.leveledUp ? " | LEVEL UP!" : ""}
+          </p>
+          <p>
+            <strong>Klasspassiv:</strong>{" "}
+            {lastResult.classIdentity.passive.name} -{" "}
+            {lastResult.classIdentity.passive.description}
+          </p>
+          <p>
+            <strong>Passiv effekt denna action:</strong>{" "}
+            Roll +{lastResult.classIdentity.passiveRollModifier},{" "}
+            {formatDeltaBonus(lastResult.classIdentity.passiveDeltaBonus)}
           </p>
           <p>
             <strong>Reward/Penalty (delta):</strong>{" "}
