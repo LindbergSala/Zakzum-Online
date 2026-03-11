@@ -126,9 +126,20 @@ export default function ActivityRunner({ activity }) {
             {lastResult.roll.target}, chans {lastResult.roll.chancePercent}%)
           </p>
           <p>
+            <strong>Level-bonus i roll:</strong> +{lastResult.roll.levelModifier}{" "}
+            (level {lastResult.roll.characterLevel}, basmod{" "}
+            {lastResult.roll.baseStatModifier})
+          </p>
+          <p>
             <strong>Stats i roll:</strong>{" "}
             {formatStatWithBonus(lastResult.roll.primaryStat, lastResult.stats)} och{" "}
             {formatStatWithBonus(lastResult.roll.secondaryStat, lastResult.stats)}
+          </p>
+          <p>
+            <strong>Progression:</strong> Level {lastResult.progression.levelAfter} | XP{" "}
+            {lastResult.progression.xp.xp} / nasta level vid{" "}
+            {lastResult.progression.xp.nextLevelXpTarget}
+            {lastResult.progression.leveledUp ? " | LEVEL UP!" : ""}
           </p>
           <p>
             <strong>Reward/Penalty (delta):</strong>{" "}

@@ -61,7 +61,10 @@ export function resolveActivityRoll(characterStats, activityDefinition, options 
   const secondaryStatValue = Number(characterStats[secondaryStat]) || 0;
   const primaryModifier = getStatModifier(primaryStatValue);
   const secondaryModifier = getStatModifier(secondaryStatValue);
-  const statModifier = primaryModifier * 2 + secondaryModifier;
+  const baseStatModifier = primaryModifier * 2 + secondaryModifier;
+  const characterLevel = Math.max(1, Number(options.level) || 1);
+  const levelModifier = Math.max(0, Math.floor((characterLevel - 1) / 2));
+  const statModifier = baseStatModifier + levelModifier;
 
   const random =
     typeof options.random === "function" ? options.random : Math.random;
@@ -98,6 +101,9 @@ export function resolveActivityRoll(characterStats, activityDefinition, options 
       secondaryStatValue,
       primaryModifier,
       secondaryModifier,
+      characterLevel,
+      baseStatModifier,
+      levelModifier,
     },
   };
 }

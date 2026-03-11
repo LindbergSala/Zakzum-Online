@@ -6,6 +6,7 @@ import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
 import { getUserWithResolvedActiveCharacter } from "@/lib/character";
 import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
+import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 
@@ -15,6 +16,9 @@ export default async function DashboardPage() {
   const activeCharacter = userWithCharacter?.activeCharacter ?? null;
   const energyMeta = activeCharacter
     ? getEnergyRegenerationMeta(activeCharacter)
+    : null;
+  const levelProgress = activeCharacter
+    ? getLevelProgressMeta(activeCharacter.level, activeCharacter.xp)
     : null;
 
   return (
@@ -29,6 +33,12 @@ export default async function DashboardPage() {
             key={energyMeta?.nextEnergyAt ?? "energy-full"}
             energyMeta={energyMeta}
           />
+          <p>
+            <strong>Progression:</strong> Level {levelProgress.level} | XP{" "}
+            {levelProgress.xp} | Nasta level vid {levelProgress.nextLevelXpTarget} XP
+            {" ("}
+            {levelProgress.xpToNextLevel} kvar{")"}
+          </p>
           <CharacterOverview character={activeCharacter} />
         </>
       ) : (

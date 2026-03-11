@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/api-auth";
 import { getUserWithResolvedActiveCharacter } from "@/lib/character";
 import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
+import { getLevelProgressMeta } from "@/lib/level-progression";
 
 export async function GET() {
   const { user, error } = await requireApiUser();
@@ -23,6 +24,9 @@ export async function GET() {
       },
       activeCharacter,
       energy: activeCharacter ? getEnergyRegenerationMeta(activeCharacter) : null,
+      progression: activeCharacter
+        ? getLevelProgressMeta(activeCharacter.level, activeCharacter.xp)
+        : null,
     },
     { status: 200 },
   );

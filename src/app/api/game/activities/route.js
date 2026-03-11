@@ -11,6 +11,7 @@ import {
   getCharacterResourceSnapshot,
 } from "@/lib/resource-rules";
 import { getCharacterEffectiveStats } from "@/lib/stat-effects";
+import { getLevelProgressMeta } from "@/lib/level-progression";
 import { activityActionSchema } from "@/lib/validators/core-loop";
 
 export async function GET() {
@@ -87,7 +88,9 @@ export async function POST(request) {
   });
 
   const statSummary = getCharacterEffectiveStats(activeCharacter, equippedItems);
-  const rollResult = resolveActivityRoll(statSummary.effective, activity);
+  const rollResult = resolveActivityRoll(statSummary.effective, activity, {
+    level: activeCharacter.level,
+  });
 
   const calculation = calculateCharacterResourceResult(activeCharacter, {
     energyCost: activity.energyCost,
@@ -104,6 +107,8 @@ export async function POST(request) {
       { status: 400 },
     );
   }
+
+  const leveledUp = calculation.after.level > calculation.before.level;
 
   const result = await prisma.$transaction(async (tx) => {
     const now = new Date();
@@ -163,9 +168,13 @@ export async function POST(request) {
 
   return NextResponse.json(
     {
-      message: rollResult.success
-        ? `${activity.name} lyckades.`
-        : `${activity.name} misslyckades.`,
+      message: leveledUp
+        ? rollResult.success
+          ? `${activity.name} lyckades. Level up! Du ar nu level ${calculation.after.level}.`
+          : `${activity.name} misslyckades. Level up! Du ar nu level ${calculation.after.level}.`
+        : rollResult.success
+          ? `${activity.name} lyckades.`
+          : `${activity.name} misslyckades.`,
       action: {
         id: activity.id,
         name: activity.name,
@@ -174,11 +183,20 @@ export async function POST(request) {
       result: {
         success: rollResult.success,
         energyCost: activity.energyCost,
+        progression: {
+          leveledUp,
+          levelBefore: calculation.before.level,
+          levelAfter: calculation.after.level,
+          xp: getLevelProgressMeta(calculation.after.level, calculation.after.xp),
+        },
         roll: {
           value: rollResult.roll,
           total: rollResult.rollTotal,
           target: rollResult.successTarget,
           statModifier: rollResult.statModifier,
+          baseStatModifier: rollResult.calculations.baseStatModifier,
+          levelModifier: rollResult.calculations.levelModifier,
+          characterLevel: rollResult.calculations.characterLevel,
           chancePercent: rollResult.chancePercent,
           primaryStat: rollResult.calculations.primaryStat,
           secondaryStat: rollResult.calculations.secondaryStat,
