@@ -59,7 +59,7 @@ export default function CharacterCreateForm() {
     if (isOverBudget) {
       setFeedback({
         tone: "error",
-        text: `Du har fordelat for manga poang. Max ar ${CHARACTER_POINT_BUY_BUDGET}.`,
+        text: `You have assigned too many points. Max is ${CHARACTER_POINT_BUY_BUDGET}.`,
       });
       setIsLoading(false);
       return;
@@ -92,13 +92,13 @@ export default function CharacterCreateForm() {
         return;
       }
 
-      setFeedback({ tone: "ok", text: "Karaktar skapad. Skickar dig vidare..." });
+      setFeedback({ tone: "ok", text: "Character created. Redirecting..." });
       router.push("/dashboard");
       router.refresh();
     } catch {
       setFeedback({
         tone: "error",
-        text: "Kunde inte skapa karaktar. Forsok igen.",
+        text: "Could not create character. Try again.",
       });
     } finally {
       setIsLoading(false);
@@ -108,7 +108,7 @@ export default function CharacterCreateForm() {
   return (
     <form onSubmit={onSubmit}>
       <label htmlFor="name">
-        Namn
+        Name
         <input
           id="name"
           name="name"
@@ -125,7 +125,7 @@ export default function CharacterCreateForm() {
       ) : null}
 
       <label htmlFor="characterClass">
-        Klass
+        Class
         <select
           id="characterClass"
           name="characterClass"
@@ -140,10 +140,10 @@ export default function CharacterCreateForm() {
         </select>
       </label>
       <p className="feedback ok">
-        Startbonus: {classStartBonus}
+        Start bonus: {classStartBonus}
       </p>
       <p className="feedback ok">
-        Klasspassiv: <strong>{classPassive.name}</strong> - {classPassive.description}
+        Class passive: <strong>{classPassive.name}</strong> - {classPassive.description}
       </p>
       {fieldErrors.characterClass ? (
         <p className="feedback error">{fieldErrors.characterClass[0]}</p>
@@ -179,14 +179,14 @@ export default function CharacterCreateForm() {
       <p className={`feedback ${isOverBudget ? "error" : "ok"}`}>
         Point-buy: {pointBuyCost ?? "-"} / {CHARACTER_POINT_BUY_BUDGET}
         {" | "}
-        Kvar: {pointsRemaining ?? "-"}
+        Remaining: {pointsRemaining ?? "-"}
       </p>
       {fieldErrors.pointBudget ? (
         <p className="feedback error">{fieldErrors.pointBudget[0]}</p>
       ) : null}
 
       <button disabled={isLoading || isOverBudget} type="submit">
-        {isLoading ? "Skapar karaktar..." : "Skapa karaktar"}
+        {isLoading ? "Creating character..." : "Create character"}
       </button>
 
       {feedback ? (

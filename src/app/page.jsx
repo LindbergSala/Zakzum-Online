@@ -5,14 +5,13 @@ export default function HomePage() {
     <main>
       <h1>Zakzum Online</h1>
       <p>
-        Skapa konto eller logga in for att fa tillgang till din sparade
-        karaktar.
+        Create an account or log in to access your saved character.
       </p>
       <p>
-        <Link href="/register">Ga till registrering</Link>
+        <Link href="/register">Go to registration</Link>
       </p>
       <p>
-        <Link href="/login">Ga till inloggning</Link>
+        <Link href="/login">Go to login</Link>
       </p>
     </main>
   );

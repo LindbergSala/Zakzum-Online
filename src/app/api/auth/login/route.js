@@ -9,7 +9,7 @@ import {
 } from "@/lib/session";
 import { loginSchema } from "@/lib/validators/auth";
 
-const INVALID_CREDENTIALS_MESSAGE = "Fel e-post eller losenord.";
+const INVALID_CREDENTIALS_MESSAGE = "Incorrect email or password.";
 
 export async function POST(request) {
   try {
@@ -18,7 +18,7 @@ export async function POST(request) {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        { message: "Ogiltig JSON i request body." },
+        { message: "Invalid JSON in request body." },
         { status: 400 },
       );
     }
@@ -28,7 +28,7 @@ export async function POST(request) {
     if (!parsed.success) {
       return NextResponse.json(
         {
-          message: "Ogiltig inmatning.",
+          message: "Invalid input.",
           errors: parsed.error.flatten().fieldErrors,
         },
         { status: 400 },
@@ -64,7 +64,7 @@ export async function POST(request) {
     const { token, expiresAt } = await createSession(user.id);
 
     const response = NextResponse.json(
-      { message: "Inloggning lyckades." },
+      { message: "Login successful." },
       { status: 200 },
     );
 
@@ -77,9 +77,8 @@ export async function POST(request) {
     return response;
   } catch {
     return NextResponse.json(
-      { message: "Nagot gick fel vid inloggning." },
+      { message: "Something went wrong during login." },
       { status: 500 },
     );
   }
 }
-

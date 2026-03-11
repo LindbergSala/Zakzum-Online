@@ -34,7 +34,7 @@ export function calculateCharacterResourceResult(character, options) {
     return {
       ok: false,
       reason: "NOT_ENOUGH_ENERGY",
-      message: `Inte tillrackligt med Energy. Kravs ${energyCost}, du har ${character.energy}.`,
+      message: `Not enough Energy. Required ${energyCost}, you have ${character.energy}.`,
       requiredEnergy: energyCost,
       currentEnergy: character.energy,
     };

@@ -9,7 +9,7 @@ export async function requireApiUser() {
     return {
       user: null,
       error: NextResponse.json(
-        { message: "Du maste vara inloggad for att anvanda denna endpoint." },
+        { message: "You must be logged in to use this endpoint." },
         { status: 401 },
       ),
     };
@@ -17,4 +17,3 @@ export async function requireApiUser() {
 
   return { user, error: null };
 }
-

@@ -13,10 +13,10 @@ export default async function CharacterPage() {
   if (!character) {
     return (
       <main>
-        <h1>Karaktarsoversikt</h1>
-        <p>Du har ingen aktiv karaktar an.</p>
+        <h1>Character overview</h1>
+        <p>You do not have an active character yet.</p>
         <p>
-          <Link href="/character/create">Skapa karaktar</Link>
+          <Link href="/character/create">Create character</Link>
         </p>
         <GameNav />
       </main>
@@ -25,13 +25,12 @@ export default async function CharacterPage() {
 
   return (
     <main>
-      <h1>Karaktarsoversikt</h1>
+      <h1>Character overview</h1>
       <CharacterOverview character={character} />
       <GameNav />
       <p>
-        <Link href="/dashboard">Till dashboard</Link>
+        <Link href="/dashboard">Back to dashboard</Link>
       </p>
     </main>
   );
 }
-

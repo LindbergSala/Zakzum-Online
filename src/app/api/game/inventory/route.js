@@ -75,7 +75,7 @@ export async function POST(request) {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { message: "Ogiltig JSON i request body." },
+      { message: "Invalid JSON in request body." },
       { status: 400 },
     );
   }
@@ -85,7 +85,7 @@ export async function POST(request) {
   if (!parsed.success) {
     return NextResponse.json(
       {
-        message: "Ogiltigt item-val.",
+        message: "Invalid item selection.",
         errors: parsed.error.flatten().fieldErrors,
       },
       { status: 400 },
@@ -96,7 +96,7 @@ export async function POST(request) {
 
   if (!activeCharacter) {
     return NextResponse.json(
-      { message: "Du maste skapa en karaktar innan du kan equipa items." },
+      { message: "You must create a character before you can equip items." },
       { status: 400 },
     );
   }
@@ -105,7 +105,7 @@ export async function POST(request) {
   const itemDefinition = SHOP_ITEM_DEFINITION_MAP[itemId];
   if (!itemDefinition) {
     return NextResponse.json(
-      { message: "Okand item-definition." },
+      { message: "Unknown item definition." },
       { status: 400 },
     );
   }
@@ -123,7 +123,7 @@ export async function POST(request) {
 
   if (!ownedItem) {
     return NextResponse.json(
-      { message: "Du ager inte detta item." },
+      { message: "You do not own this item." },
       { status: 404 },
     );
   }
@@ -212,8 +212,8 @@ export async function POST(request) {
   return NextResponse.json(
     {
       message: ownedItem.isEquipped
-        ? `${ownedItem.itemName} var redan equipped.`
-        : `${ownedItem.itemName} ar nu equipped.`,
+        ? `${ownedItem.itemName} was already equipped.`
+        : `${ownedItem.itemName} is now equipped.`,
       item: result.equippedItem,
       logId: result.logEntry.id,
       items: enrichedItems,

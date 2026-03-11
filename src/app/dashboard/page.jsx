@@ -24,10 +24,10 @@ export default async function DashboardPage() {
   return (
     <main>
       <h1>Dashboard</h1>
-      <p>Du ar inloggad som {user.email}.</p>
+      <p>You are logged in as {user.email}.</p>
       {activeCharacter ? (
         <>
-          <p>Aktiv karaktar laddad automatiskt vid inloggning.</p>
+          <p>Active character loaded automatically on login.</p>
           <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
           <EnergyTimer
             key={energyMeta?.nextEnergyAt ?? "energy-full"}
@@ -35,21 +35,21 @@ export default async function DashboardPage() {
           />
           <p>
             <strong>Progression:</strong> Level {levelProgress.level} | XP{" "}
-            {levelProgress.xp} | Nasta level vid {levelProgress.nextLevelXpTarget} XP
+            {levelProgress.xp} | Next level at {levelProgress.nextLevelXpTarget} XP
             {" ("}
-            {levelProgress.xpToNextLevel} kvar{")"}
+            {levelProgress.xpToNextLevel} remaining{")"}
           </p>
           <CharacterOverview character={activeCharacter} />
         </>
       ) : (
         <p>
-          Du har ingen aktiv karaktar an.{" "}
-          <Link href="/character/create">Skapa karaktar</Link>.
+          You do not have an active character yet.{" "}
+          <Link href="/character/create">Create character</Link>.
         </p>
       )}
       <GameNav />
       <p>
-        <Link href="/">Till startsidan</Link>
+        <Link href="/">Back to home page</Link>
       </p>
     </main>
   );

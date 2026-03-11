@@ -33,7 +33,7 @@ export default function ShopActions({ items }) {
     } catch {
       setFeedback({
         tone: "error",
-        text: "Kopet misslyckades. Forsok igen.",
+        text: "Purchase failed. Try again.",
       });
     } finally {
       setIsLoading(false);
@@ -42,7 +42,7 @@ export default function ShopActions({ items }) {
   }
 
   if (!items || items.length === 0) {
-    return <p>Inga butik-items tillgangliga.</p>;
+    return <p>No shop items available.</p>;
   }
 
   return (
@@ -57,7 +57,7 @@ export default function ShopActions({ items }) {
               item.equipped ? (
                 <em>(equipped)</em>
               ) : (
-                <em>(agd)</em>
+                <em>(owned)</em>
               )
             ) : null}
             <br />
@@ -67,10 +67,10 @@ export default function ShopActions({ items }) {
               disabled={isLoading || item.owned}
             >
               {isLoading && activeItemId === item.id
-                ? "Koper..."
+                ? "Buying..."
                 : item.owned
-                  ? "Redan koppt"
-                  : `Kop ${item.name}`}
+                  ? "Already purchased"
+                  : `Buy ${item.name}`}
             </button>
           </li>
         ))}

@@ -9,7 +9,7 @@ const LOG_ENTRY_LIMIT = 10;
 
 function formatDelta(delta) {
   if (!delta || typeof delta !== "object") {
-    return "Ingen delta.";
+    return "No delta.";
   }
 
   const parts = Object.entries(delta).map(([key, value]) => {
@@ -23,11 +23,11 @@ function formatDelta(delta) {
 
 function formatType(type) {
   if (type === "ACTIVITY") {
-    return "Aktivitet";
+    return "Activity";
   }
 
   if (type === "SHOP") {
-    return "Kop";
+    return "Shop";
   }
 
   if (type === "EQUIP") {
@@ -39,7 +39,7 @@ function formatType(type) {
 
 function formatResources(resources) {
   if (!resources || typeof resources !== "object") {
-    return "Ingen resursdata.";
+    return "No resource data.";
   }
 
   return [
@@ -64,8 +64,8 @@ function formatDetails(entry) {
   }
 
   const pricePart =
-    typeof item.price === "number" ? `, pris ${item.price} Gold` : "";
-  return `${item.name ?? entry.activityName} (${item.slot ?? "okand slot"}${pricePart})`;
+    typeof item.price === "number" ? `, price ${item.price} Gold` : "";
+  return `${item.name ?? entry.activityName} (${item.slot ?? "unknown slot"}${pricePart})`;
 }
 
 export default async function LogPage() {
@@ -98,33 +98,33 @@ export default async function LogPage() {
 
   return (
     <main>
-      <h1>Logg</h1>
-      <p>Visar senaste {LOG_ENTRY_LIMIT} actions.</p>
+      <h1>Log</h1>
+      <p>Showing latest {LOG_ENTRY_LIMIT} actions.</p>
       {!activeCharacter ? (
         <p>
-          Du maste skapa en karaktar for att fa aktivitetslogg.{" "}
-          <Link href="/character/create">Skapa karaktar</Link>.
+          You must create a character to view the activity log.{" "}
+          <Link href="/character/create">Create character</Link>.
         </p>
       ) : entries.length === 0 ? (
-        <p>Inga actions loggade an.</p>
+        <p>No actions logged yet.</p>
       ) : (
         <ul>
           {entries.map((entry) => (
             <li key={entry.id}>
               <strong>{entry.activityName}</strong> ({formatType(entry.type)}) -{" "}
               {entry.success ? "SUCCESS" : "FAIL"} -{" "}
-              {new Date(entry.createdAt).toLocaleString("sv-SE")}
+              {new Date(entry.createdAt).toLocaleString("en-US")}
               <br />
               {entry.type === "ACTIVITY" ? (
                 <>
                   Roll: {entry.roll} + mod {entry.statModifier} = {entry.rollTotal}{" "}
-                  (target {entry.successTarget}, chans {entry.chancePercent}%)
+                  (target {entry.successTarget}, chance {entry.chancePercent}%)
                   <br />
-                  Energy-kostnad: {entry.energyCost}
+                  Energy cost: {entry.energyCost}
                 </>
               ) : (
                 <>
-                  Resultat: {entry.success ? "OK" : "FAIL"}
+                  Result: {entry.success ? "OK" : "FAIL"}
                   {formatDetails(entry) ? (
                     <>
                       <br />
@@ -136,14 +136,14 @@ export default async function LogPage() {
               <br />
               Delta: {formatDelta(entry.delta)}
               <br />
-              Nya totalsummor: {formatResources(entry.afterResources)}
+              New totals: {formatResources(entry.afterResources)}
             </li>
           ))}
         </ul>
       )}
       <GameNav />
       <p>
-        <Link href="/dashboard">Till dashboard</Link>
+        <Link href="/dashboard">Back to dashboard</Link>
       </p>
     </main>
   );

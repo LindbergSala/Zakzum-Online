@@ -23,7 +23,7 @@ function StatSummary({ summary }) {
   return (
     <>
       <p>
-        <strong>Nuvarande effektiva stats</strong>
+        <strong>Current effective stats</strong>
       </p>
       <ul>
         {CHARACTER_STAT_KEYS.map((key) => (
@@ -75,10 +75,10 @@ export default async function InventoryPage() {
           <StatSummary summary={statSummary} />
           <InventoryActions items={items} />
           <p>
-            Agda items:
+            Owned items:
           </p>
           {items.length === 0 ? (
-            <p>Inga items an. Kop i butik forst.</p>
+            <p>No items yet. Buy one in the shop first.</p>
           ) : (
             <ul>
               {items.map((item) => (
@@ -92,13 +92,13 @@ export default async function InventoryPage() {
         </>
       ) : (
         <p>
-          Du maste skapa en karaktar for att anvanda inventory.{" "}
-          <Link href="/character/create">Skapa karaktar</Link>.
+          You must create a character before you can use inventory.{" "}
+          <Link href="/character/create">Create character</Link>.
         </p>
       )}
       <GameNav />
       <p>
-        <Link href="/dashboard">Till dashboard</Link>
+        <Link href="/dashboard">Back to dashboard</Link>
       </p>
     </main>
   );

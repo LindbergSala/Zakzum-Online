@@ -55,7 +55,7 @@ export async function POST(request) {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { message: "Ogiltig JSON i request body." },
+      { message: "Invalid JSON in request body." },
       { status: 400 },
     );
   }
@@ -65,7 +65,7 @@ export async function POST(request) {
   if (!parsed.success) {
     return NextResponse.json(
       {
-        message: "Ogiltig aktivitet.",
+        message: "Invalid activity.",
         errors: parsed.error.flatten().fieldErrors,
       },
       { status: 400 },
@@ -76,7 +76,7 @@ export async function POST(request) {
 
   if (!activeCharacter) {
     return NextResponse.json(
-      { message: "Du maste skapa en karaktar innan du kan gora aktiviteter." },
+      { message: "You must create a character before you can do activities." },
       { status: 400 },
     );
   }
@@ -191,11 +191,11 @@ export async function POST(request) {
     {
       message: leveledUp
         ? rollResult.success
-          ? `${activity.name} lyckades. Level up! Du ar nu level ${calculation.after.level}.`
-          : `${activity.name} misslyckades. Level up! Du ar nu level ${calculation.after.level}.`
+          ? `${activity.name} succeeded. Level up! You are now level ${calculation.after.level}.`
+          : `${activity.name} failed. Level up! You are now level ${calculation.after.level}.`
         : rollResult.success
-          ? `${activity.name} lyckades.`
-          : `${activity.name} misslyckades.`,
+          ? `${activity.name} succeeded.`
+          : `${activity.name} failed.`,
       action: {
         id: activity.id,
         name: activity.name,

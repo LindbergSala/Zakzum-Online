@@ -37,7 +37,7 @@ export async function POST(request) {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        { message: "Ogiltig JSON i request body." },
+        { message: "Invalid JSON in request body." },
         { status: 400 },
       );
     }
@@ -47,7 +47,7 @@ export async function POST(request) {
     if (!parsed.success) {
       return NextResponse.json(
         {
-          message: "Ogiltig inmatning.",
+          message: "Invalid input.",
           errors: parsed.error.flatten().fieldErrors,
         },
         { status: 400 },
@@ -61,7 +61,7 @@ export async function POST(request) {
 
     if (existingCharacter) {
       return NextResponse.json(
-        { message: "Du har redan en karaktar for detta konto." },
+        { message: "You already have a character for this account." },
         { status: 409 },
       );
     }
@@ -96,7 +96,7 @@ export async function POST(request) {
 
     return NextResponse.json(
       {
-        message: "Karaktar skapad.",
+        message: "Character created.",
         character: createdCharacter,
       },
       { status: 201 },
@@ -107,13 +107,13 @@ export async function POST(request) {
       caughtError.code === "P2002"
     ) {
       return NextResponse.json(
-        { message: "Du har redan en karaktar for detta konto." },
+        { message: "You already have a character for this account." },
         { status: 409 },
       );
     }
 
     return NextResponse.json(
-      { message: "Nagot gick fel vid skapande av karaktar." },
+      { message: "Something went wrong while creating character." },
       { status: 500 },
     );
   }

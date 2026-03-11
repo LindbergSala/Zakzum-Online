@@ -7,7 +7,7 @@ import { CHARACTER_STAT_LABELS } from "@/lib/stat-effects";
 
 function formatDelta(delta) {
   if (!delta || typeof delta !== "object") {
-    return "Ingen delta.";
+    return "No delta.";
   }
 
   return Object.entries(delta)
@@ -30,7 +30,7 @@ function formatStatWithBonus(statKey, stats) {
 
 function formatTotals(resources) {
   if (!resources || typeof resources !== "object") {
-    return "Ingen resursdata.";
+    return "No resource data.";
   }
 
   return [
@@ -46,7 +46,7 @@ function formatTotals(resources) {
 
 function formatDeltaBonus(deltaBonus) {
   if (!deltaBonus || typeof deltaBonus !== "object") {
-    return "Ingen extra bonus i denna action.";
+    return "No extra bonus on this action.";
   }
 
   const parts = Object.entries(deltaBonus)
@@ -59,7 +59,7 @@ function formatDeltaBonus(deltaBonus) {
 
   return parts.length > 0
     ? parts.join(", ")
-    : "Ingen extra bonus i denna action.";
+    : "No extra bonus on this action.";
 }
 
 export default function ActivityRunner({ activity }) {
@@ -94,7 +94,7 @@ export default function ActivityRunner({ activity }) {
       setLastResult(null);
       setFeedback({
         tone: "error",
-        text: "Aktiviteten kunde inte genomforas. Forsok igen.",
+        text: "The activity could not be completed. Try again.",
       });
     } finally {
       setIsLoading(false);
@@ -105,10 +105,10 @@ export default function ActivityRunner({ activity }) {
     <section className={`activity-page-panel activity-theme-${activity.id}`}>
       <p>{activity.pageIntro}</p>
       <p>
-        <strong>Riskprofil:</strong> {activity.riskProfile}
+        <strong>Risk profile:</strong> {activity.riskProfile}
       </p>
       <p>
-        <strong>Energy-kostnad:</strong> {activity.energyCost}
+        <strong>Energy cost:</strong> {activity.energyCost}
       </p>
       <p>
         <strong>Success reward:</strong>{" "}
@@ -121,7 +121,7 @@ export default function ActivityRunner({ activity }) {
 
       <p>
         <button type="button" onClick={runActivity} disabled={isLoading}>
-          {isLoading ? "Korer..." : `Starta ${activity.name}`}
+          {isLoading ? "Running..." : `Start ${activity.name}`}
         </button>
       </p>
 
@@ -132,40 +132,40 @@ export default function ActivityRunner({ activity }) {
       {lastResult ? (
         <div>
           <p>
-            <strong>Resultat:</strong>{" "}
+            <strong>Result:</strong>{" "}
             {lastResult.success ? "SUCCESS" : "FAIL"}
           </p>
           <p>
-            <strong>Energy-kostnad:</strong> {lastResult.energyCost}
+            <strong>Energy cost:</strong> {lastResult.energyCost}
           </p>
           <p>
             <strong>Roll:</strong> {lastResult.roll.value} + mod{" "}
             {lastResult.roll.statModifier} = {lastResult.roll.total} (target{" "}
-            {lastResult.roll.target}, chans {lastResult.roll.chancePercent}%)
+            {lastResult.roll.target}, chance {lastResult.roll.chancePercent}%)
           </p>
           <p>
-            <strong>Level-bonus i roll:</strong> +{lastResult.roll.levelModifier}{" "}
-            (level {lastResult.roll.characterLevel}, basmod{" "}
+            <strong>Level bonus in roll:</strong> +{lastResult.roll.levelModifier}{" "}
+            (level {lastResult.roll.characterLevel}, base mod{" "}
             {lastResult.roll.baseStatModifier})
           </p>
           <p>
-            <strong>Stats i roll:</strong>{" "}
-            {formatStatWithBonus(lastResult.roll.primaryStat, lastResult.stats)} och{" "}
+            <strong>Stats in roll:</strong>{" "}
+            {formatStatWithBonus(lastResult.roll.primaryStat, lastResult.stats)} and{" "}
             {formatStatWithBonus(lastResult.roll.secondaryStat, lastResult.stats)}
           </p>
           <p>
             <strong>Progression:</strong> Level {lastResult.progression.levelAfter} | XP{" "}
-            {lastResult.progression.xp.xp} / nasta level vid{" "}
+            {lastResult.progression.xp.xp} / next level at{" "}
             {lastResult.progression.xp.nextLevelXpTarget}
             {lastResult.progression.leveledUp ? " | LEVEL UP!" : ""}
           </p>
           <p>
-            <strong>Klasspassiv:</strong>{" "}
+            <strong>Class passive:</strong>{" "}
             {lastResult.classIdentity.passive.name} -{" "}
             {lastResult.classIdentity.passive.description}
           </p>
           <p>
-            <strong>Passiv effekt denna action:</strong>{" "}
+            <strong>Passive effect this action:</strong>{" "}
             Roll +{lastResult.classIdentity.passiveRollModifier},{" "}
             {formatDeltaBonus(lastResult.classIdentity.passiveDeltaBonus)}
           </p>
@@ -174,7 +174,7 @@ export default function ActivityRunner({ activity }) {
             {formatDelta(lastResult.delta)}
           </p>
           <p>
-            <strong>Nya totalsummor:</strong>{" "}
+            <strong>New totals:</strong>{" "}
             {formatTotals(lastResult.totals?.after)}
           </p>
         </div>

@@ -40,7 +40,7 @@ export default async function ShopPage() {
 
   return (
     <main>
-      <h1>Butik</h1>
+      <h1>Shop</h1>
       {activeCharacter ? (
         <>
           <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
@@ -48,13 +48,13 @@ export default async function ShopPage() {
         </>
       ) : (
         <p>
-          Du maste skapa en karaktar for att handla.{" "}
-          <Link href="/character/create">Skapa karaktar</Link>.
+          You must create a character before you can shop.{" "}
+          <Link href="/character/create">Create character</Link>.
         </p>
       )}
       <GameNav />
       <p>
-        <Link href="/dashboard">Till dashboard</Link>
+        <Link href="/dashboard">Back to dashboard</Link>
       </p>
     </main>
   );

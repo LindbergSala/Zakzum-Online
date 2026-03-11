@@ -65,7 +65,7 @@ export async function POST(request) {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { message: "Ogiltig JSON i request body." },
+      { message: "Invalid JSON in request body." },
       { status: 400 },
     );
   }
@@ -75,7 +75,7 @@ export async function POST(request) {
   if (!parsed.success) {
     return NextResponse.json(
       {
-        message: "Ogiltigt item-val.",
+        message: "Invalid item selection.",
         errors: parsed.error.flatten().fieldErrors,
       },
       { status: 400 },
@@ -86,7 +86,7 @@ export async function POST(request) {
 
   if (!activeCharacter) {
     return NextResponse.json(
-      { message: "Du maste skapa en karaktar innan du kan handla." },
+      { message: "You must create a character before you can shop." },
       { status: 400 },
     );
   }
@@ -106,7 +106,7 @@ export async function POST(request) {
   if (existingItem) {
     return NextResponse.json(
       {
-        message: "Du ager redan detta item.",
+        message: "You already own this item.",
         resources: getCharacterResourceSnapshot(activeCharacter),
       },
       { status: 409 },
@@ -119,7 +119,7 @@ export async function POST(request) {
 
   if (!calculation.ok) {
     return NextResponse.json(
-      { message: "Kopet kunde inte genomforas." },
+      { message: "Purchase could not be completed." },
       { status: 400 },
     );
   }
@@ -127,7 +127,7 @@ export async function POST(request) {
   if (activeCharacter.gold < item.price) {
     return NextResponse.json(
       {
-        message: `Inte tillrackligt med Gold. Item kostar ${item.price}, du har ${activeCharacter.gold}.`,
+        message: `Not enough Gold. Item costs ${item.price}, you have ${activeCharacter.gold}.`,
         resources: getCharacterResourceSnapshot(activeCharacter),
       },
       { status: 400 },
@@ -170,7 +170,7 @@ export async function POST(request) {
         characterId: activeCharacter.id,
         type: "SHOP",
         activityId: item.id,
-        activityName: `Kop: ${item.name}`,
+        activityName: `Purchase: ${item.name}`,
         success: true,
         energyCost: 0,
         roll: 0,
@@ -199,7 +199,7 @@ export async function POST(request) {
 
   return NextResponse.json(
     {
-      message: `${item.name} koptes.`,
+      message: `${item.name} purchased.`,
       item: result.createdItem,
       logId: result.logEntry.id,
       resources: {

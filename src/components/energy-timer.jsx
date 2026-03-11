@@ -59,7 +59,7 @@ export default function EnergyTimer({ energyMeta }) {
 
   return (
     <p>
-      <strong>Nasta Energy:</strong> om {formatCountdown(secondsLeft)} (
+      <strong>Next Energy:</strong> in {formatCountdown(secondsLeft)} (
       {energyMeta.currentEnergy}/{energyMeta.maxEnergy})
     </p>
   );

@@ -12,7 +12,7 @@ export async function POST() {
     const token = await getSessionTokenFromRequestCookies();
     await invalidateSessionByToken(token);
 
-    const response = NextResponse.json({ message: "Utloggad." }, { status: 200 });
+    const response = NextResponse.json({ message: "Logged out." }, { status: 200 });
     response.cookies.set(
       SESSION_COOKIE_NAME,
       "",
@@ -21,7 +21,7 @@ export async function POST() {
     return response;
   } catch {
     const response = NextResponse.json(
-      { message: "Nagot gick fel vid utloggning." },
+      { message: "Something went wrong during logout." },
       { status: 500 },
     );
     response.cookies.set(
@@ -32,4 +32,3 @@ export async function POST() {
     return response;
   }
 }
-

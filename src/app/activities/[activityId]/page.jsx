@@ -25,8 +25,8 @@ export default async function ActivityDetailPage({ params }) {
       <h1>{activity.name}</h1>
       {!activeCharacter ? (
         <p>
-          Du maste skapa en karaktar for att gora aktiviteter.{" "}
-          <Link href="/character/create">Skapa karaktar</Link>.
+          You must create a character before you can do activities.{" "}
+          <Link href="/character/create">Create character</Link>.
         </p>
       ) : (
         <>
@@ -36,7 +36,7 @@ export default async function ActivityDetailPage({ params }) {
       )}
       <GameNav />
       <p>
-        <Link href="/activities">Till aktiviteter</Link>
+        <Link href="/activities">Back to activities</Link>
       </p>
     </main>
   );

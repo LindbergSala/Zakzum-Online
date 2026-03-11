@@ -27,20 +27,20 @@ export default function CharacterOverview({ character }) {
   return (
     <>
       <p>
-        <strong>Namn:</strong> {character.name}
+        <strong>Name:</strong> {character.name}
       </p>
       <p>
-        <strong>Klass:</strong> {getCharacterClassLabel(character.characterClass)}
+        <strong>Class:</strong> {getCharacterClassLabel(character.characterClass)}
       </p>
       <p>
-        <strong>Startbonus:</strong> {classStartBonus}
+        <strong>Start bonus:</strong> {classStartBonus}
       </p>
       <p>
-        <strong>Klasspassiv:</strong> {classPassive.name} -{" "}
+        <strong>Class passive:</strong> {classPassive.name} -{" "}
         {classPassive.description}
       </p>
       <p>
-        <strong>Grundstats</strong>
+        <strong>Base stats</strong>
       </p>
       <ul>
         <StatRow label="STR" value={character.strength} />
@@ -51,7 +51,7 @@ export default function CharacterOverview({ character }) {
         <StatRow label="CHA" value={character.charisma} />
       </ul>
       <p>
-        <strong>Resurser</strong>
+        <strong>Resources</strong>
       </p>
       <ul>
         <ResourceRow label="HP" value={character.hp} />

@@ -14,20 +14,20 @@ export default async function CharacterCreatePage() {
   if (existingCharacter) {
     return (
       <main>
-        <h1>Karaktar</h1>
-        <p>Du har redan en karaktar pa detta konto.</p>
+        <h1>Character</h1>
+        <p>You already have a character on this account.</p>
         <p>
-          Namn: <strong>{existingCharacter.name}</strong> | Klass:{" "}
+          Name: <strong>{existingCharacter.name}</strong> | Class:{" "}
           <strong>{getCharacterClassLabel(existingCharacter.characterClass)}</strong>{" "}
           | Level:{" "}
           <strong>{existingCharacter.level}</strong>
         </p>
         <GameNav />
         <p>
-          <Link href="/dashboard">Till dashboard</Link>
+          <Link href="/dashboard">Back to dashboard</Link>
         </p>
         <p>
-          <Link href="/character">Till karaktarsoversikt</Link>
+          <Link href="/character">Back to character overview</Link>
         </p>
       </main>
     );
@@ -35,18 +35,18 @@ export default async function CharacterCreatePage() {
 
   return (
     <main>
-      <h1>Skapa karaktar</h1>
-      <p>Valklass och grundstats kommer fran din character base.</p>
+      <h1>Create character</h1>
+      <p>Class selection and base stats come from your character base.</p>
       <p>
-        Point-buy regler: varje stat 8-15, total budget 27 poang.
+        Point-buy rules: each stat 8-15, total budget 27 points.
       </p>
       <p>
-        Klassens startbonus laggs pa efter validering av point-buy.
+        Class start bonus is applied after point-buy validation.
       </p>
       <CharacterCreateForm />
       <GameNav />
       <p>
-        <Link href="/dashboard">Till dashboard</Link>
+        <Link href="/dashboard">Back to dashboard</Link>
       </p>
     </main>
   );

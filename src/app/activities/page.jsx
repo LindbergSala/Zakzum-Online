@@ -13,8 +13,8 @@ export default async function ActivitiesPage() {
 
   return (
     <main>
-      <h1>Aktiviteter</h1>
-      <p>Valj en aktivitet for att oppna dess egen sida.</p>
+      <h1>Activities</h1>
+      <p>Choose an activity to open its dedicated page.</p>
       {activeCharacter ? (
         <>
           <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
@@ -22,13 +22,13 @@ export default async function ActivitiesPage() {
         </>
       ) : (
         <p>
-          Du maste skapa en karaktar for att gora aktiviteter.{" "}
-          <Link href="/character/create">Skapa karaktar</Link>.
+          You must create a character before you can do activities.{" "}
+          <Link href="/character/create">Create character</Link>.
         </p>
       )}
       <GameNav />
       <p>
-        <Link href="/dashboard">Till dashboard</Link>
+        <Link href="/dashboard">Back to dashboard</Link>
       </p>
     </main>
   );

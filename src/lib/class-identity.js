@@ -2,22 +2,22 @@ const CLASS_PASSIVES = {
   FIGHTER: {
     id: "fighter-battle-discipline",
     name: "Battle Discipline",
-    description: "+1 roll modifier i alla aktiviteter.",
+    description: "+1 roll modifier in all activities.",
   },
   ROGUE: {
     id: "rogue-opportunist",
     name: "Opportunist",
-    description: "Vid success far du +2 extra Gold.",
+    description: "On success you gain +2 extra Gold.",
   },
   BARBARIAN: {
     id: "barbarian-thick-skin",
     name: "Thick Skin",
-    description: "Vid fail mildras HP-straff med 2.",
+    description: "On failure, HP penalty is reduced by 2.",
   },
   WIZARD: {
     id: "wizard-arcane-insight",
     name: "Arcane Insight",
-    description: "Vid success far du +2 extra XP.",
+    description: "On success you gain +2 extra XP.",
   },
 };
 
@@ -66,7 +66,7 @@ export function getClassPassive(characterClass) {
     CLASS_PASSIVES[characterClass] ?? {
       id: "no-passive",
       name: "No Passive",
-      description: "Ingen klasspassiv tillganglig.",
+      description: "No class passive available.",
     }
   );
 }
@@ -140,6 +140,5 @@ export function formatClassStartBonusLabel(characterClass) {
     }
   }
 
-  return parts.length > 0 ? parts.join(", ") : "Ingen startbonus";
+  return parts.length > 0 ? parts.join(", ") : "No start bonus";
 }
-

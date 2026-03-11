@@ -2,9 +2,9 @@ export const ACTIVITY_DEFINITIONS = [
   {
     id: "quest",
     name: "Quest",
-    riskProfile: "Lag risk, stabil progression",
+    riskProfile: "Low risk, stable progression",
     pageIntro:
-      "Folj uppdragstavlan, hjalp bybor och bygg stabil progression med kontrollerad risk.",
+      "Follow the quest board, help townsfolk, and build steady progression with controlled risk.",
     energyCost: 3,
     roll: {
       difficulty: 11,
@@ -17,9 +17,9 @@ export const ACTIVITY_DEFINITIONS = [
   {
     id: "adventure",
     name: "Adventure",
-    riskProfile: "Hog risk, hog reward",
+    riskProfile: "High risk, high reward",
     pageIntro:
-      "Ta dig utanfor stadens murar. Storre chans till stora vinster, men straffen blir tydligare.",
+      "Venture outside the city walls. Higher chance for big wins, but penalties are harsher.",
     energyCost: 5,
     roll: {
       difficulty: 13,
@@ -32,9 +32,9 @@ export const ACTIVITY_DEFINITIONS = [
   {
     id: "arena",
     name: "Arena",
-    riskProfile: "Duellfokus, renown och XP",
+    riskProfile: "Duel focus, Renown and XP",
     pageIntro:
-      "Mota NPC-motstandare i arenan. Vinst ger framfor allt ryktbarhet och erfarenhet.",
+      "Face NPC opponents in the arena. Victory mainly grants renown and experience.",
     energyCost: 4,
     roll: {
       difficulty: 12,

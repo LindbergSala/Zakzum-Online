@@ -10,24 +10,24 @@ import {
 
 const statSchema = z.coerce
   .number()
-  .int("Stat maste vara ett heltal.")
+  .int("Stat must be an integer.")
   .min(
     CHARACTER_POINT_BUY_MIN_STAT,
-    `Stat far inte vara mindre an ${CHARACTER_POINT_BUY_MIN_STAT}.`,
+    `Stat cannot be lower than ${CHARACTER_POINT_BUY_MIN_STAT}.`,
   )
   .max(
     CHARACTER_POINT_BUY_MAX_STAT,
-    `Stat far inte vara storre an ${CHARACTER_POINT_BUY_MAX_STAT}.`,
+    `Stat cannot be higher than ${CHARACTER_POINT_BUY_MAX_STAT}.`,
   );
 
 export const createCharacterSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Namn maste vara minst 2 tecken.")
-    .max(32, "Namn far vara max 32 tecken."),
+    .min(2, "Name must be at least 2 characters.")
+    .max(32, "Name can be at most 32 characters."),
   characterClass: z.enum(CHARACTER_CLASS_VALUES, {
-    error: "Klass maste vara ett giltigt val.",
+    error: "Class must be a valid option.",
   }),
   strength: statSchema,
   dexterity: statSchema,
@@ -47,7 +47,7 @@ export const createCharacterSchema = z.object({
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["pointBudget"],
-        message: `Poangbudget overskriden: ${totalCost}/${CHARACTER_POINT_BUY_BUDGET}.`,
+        message: `Point budget exceeded: ${totalCost}/${CHARACTER_POINT_BUY_BUDGET}.`,
       });
     }
   });

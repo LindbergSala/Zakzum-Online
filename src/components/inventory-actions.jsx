@@ -20,7 +20,7 @@ function StatBreakdown({ summary }) {
   return (
     <div>
       <p>
-        <strong>Effektiva stats efter equip</strong>
+        <strong>Effective stats after equipping</strong>
       </p>
       <ul>
         {STAT_ROWS.map((stat) => (
@@ -66,7 +66,7 @@ export default function InventoryActions({ items }) {
     } catch {
       setFeedback({
         tone: "error",
-        text: "Equip misslyckades. Forsok igen.",
+        text: "Equip failed. Try again.",
       });
     } finally {
       setIsLoading(false);
@@ -75,7 +75,7 @@ export default function InventoryActions({ items }) {
   }
 
   if (!items || items.length === 0) {
-    return <p>Inga agda items att equipa.</p>;
+    return <p>No owned items to equip.</p>;
   }
 
   return (
@@ -92,7 +92,7 @@ export default function InventoryActions({ items }) {
               disabled={isLoading}
             >
               {isLoading && activeItemId === item.itemId
-                ? "Equipar..."
+                ? "Equipping..."
                 : `Equip ${item.itemName}`}
             </button>
           </li>

@@ -35,7 +35,7 @@ export default function LoginPage() {
     } catch {
       setFeedback({
         tone: "error",
-        text: "Inloggningen misslyckades. Forsok igen.",
+        text: "Login failed. Try again.",
       });
     } finally {
       setIsLoading(false);
@@ -44,12 +44,12 @@ export default function LoginPage() {
 
   return (
     <main>
-      <h1>Logga in</h1>
-      <p>Anvand din e-post och ditt losenord for att fortsatta.</p>
+      <h1>Log in</h1>
+      <p>Use your email and password to continue.</p>
 
       <form onSubmit={onSubmit}>
         <label htmlFor="email">
-          E-post
+          Email
           <input
             id="email"
             type="email"
@@ -61,7 +61,7 @@ export default function LoginPage() {
         </label>
 
         <label htmlFor="password">
-          Losenord
+          Password
           <input
             id="password"
             type="password"
@@ -74,7 +74,7 @@ export default function LoginPage() {
         </label>
 
         <button disabled={isLoading} type="submit">
-          {isLoading ? "Loggar in..." : "Logga in"}
+          {isLoading ? "Logging in..." : "Log in"}
         </button>
       </form>
 
@@ -83,7 +83,7 @@ export default function LoginPage() {
       ) : null}
 
       <p>
-        Saknar du konto? <Link href="/register">Skapa konto har</Link>.
+        Do not have an account? <Link href="/register">Create one here</Link>.
       </p>
     </main>
   );

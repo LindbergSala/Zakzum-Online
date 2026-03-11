@@ -3,12 +3,12 @@ import Link from "next/link";
 import LogoutButton from "@/components/logout-button";
 
 const gameLinks = [
-  { href: "/character", label: "Karaktar" },
+  { href: "/character", label: "Character" },
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/activities", label: "Aktiviteter" },
-  { href: "/shop", label: "Butik" },
+  { href: "/activities", label: "Activities" },
+  { href: "/shop", label: "Shop" },
   { href: "/inventory", label: "Inventory" },
-  { href: "/log", label: "Logg" },
+  { href: "/log", label: "Log" },
 ];
 
 export default function GameNav() {

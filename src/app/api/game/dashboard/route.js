@@ -17,7 +17,7 @@ export async function GET() {
 
   return NextResponse.json(
     {
-      message: "Skyddad dashboard-data.",
+      message: "Protected dashboard data.",
       user: {
         id: user.id,
         email: user.email,

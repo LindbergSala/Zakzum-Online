@@ -45,7 +45,6 @@ Varje sprint avslutas med:
 Brancher:
 main = stabil version
 dev = pågående arbete
-feature/<namn> = en sak i taget (t.ex. feature/auth)
 Commits med tydliga prefixes: add:, fix:, delete:
 
 Tekniker

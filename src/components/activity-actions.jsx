@@ -11,11 +11,11 @@ export default function ActivityActions() {
           <p>{activity.riskProfile}</p>
           <p>{activity.pageIntro}</p>
           <p>
-            <strong>Energy-kostnad:</strong> {activity.energyCost}
+            <strong>Energy cost:</strong> {activity.energyCost}
           </p>
           <p>
             <Link href={`/activities/${activity.id}`}>
-              Oppna {activity.name}
+              Open {activity.name}
             </Link>
           </p>
         </li>

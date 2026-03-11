@@ -12,7 +12,7 @@ export async function POST(request) {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        { message: "Ogiltig JSON i request body." },
+        { message: "Invalid JSON in request body." },
         { status: 400 },
       );
     }
@@ -22,7 +22,7 @@ export async function POST(request) {
     if (!parsed.success) {
       return NextResponse.json(
         {
-          message: "Ogiltig inmatning.",
+          message: "Invalid input.",
           errors: parsed.error.flatten().fieldErrors,
         },
         { status: 400 },
@@ -38,7 +38,7 @@ export async function POST(request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { message: "E-postadressen ar redan registrerad." },
+        { message: "Email address is already registered." },
         { status: 409 },
       );
     }
@@ -59,7 +59,7 @@ export async function POST(request) {
 
     return NextResponse.json(
       {
-        message: "Konto skapat.",
+        message: "Account created.",
         user: createdUser,
       },
       { status: 201 },
@@ -70,13 +70,13 @@ export async function POST(request) {
       error.code === "P2002"
     ) {
       return NextResponse.json(
-        { message: "E-postadressen ar redan registrerad." },
+        { message: "Email address is already registered." },
         { status: 409 },
       );
     }
 
     return NextResponse.json(
-      { message: "Nagot gick fel vid registrering." },
+      { message: "Something went wrong during registration." },
       { status: 500 },
     );
   }
