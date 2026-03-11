@@ -1,198 +1,477 @@
-BACKLOG (MVP) – User Stories + Acceptanskriterier
+BACKLOG – EPICS, USER STORIES AND ACCEPTANCE CRITERIA
 
-EPIC 1: Konto & Inloggning
-US-01 Registrera konto
-Som spelare vill jag kunna registrera ett konto så att min progression kan sparas.
-AC:
-- Givet giltig e-post + lösenord, när jag registrerar mig, så skapas en User i databasen.
-- Givet att e-post redan finns, när jag registrerar mig, så får jag ett tydligt fel.
-- Lösenord lagras inte i klartext.
+EPIC 1: Account and Authentication
+Description
+This epic covers functionality related to user accounts, authentication and protected pages. Players must be able to create an account, log in, log out and access their saved progression.
 
-US-02 Logga in
-Som spelare vill jag kunna logga in så att jag får åtkomst till min sparade karaktär.
-AC:
-- Givet giltiga uppgifter, när jag loggar in, så får jag en aktiv session.
-- Givet fel uppgifter, när jag loggar in, så får jag ett tydligt fel utan att läcka detaljer.
-- Efter login skickas jag till dashboard.
+US-01 Register account
+As a player I want to register an account so that my progression can be saved.
 
-US-03 Logga ut
-Som spelare vill jag kunna logga ut så att mitt konto är skyddat.
-AC:
-- När jag loggar ut, så avslutas sessionen.
-- När jag försöker nå skyddade sidor efter logout, så skickas jag till login.
+AC
 
-US-04 Skyddade sidor
-Som system vill jag kräva inloggning för spelvyer så att ingen kan läsa/skriva data anonymt.
-AC:
-- Dashboard, aktiviteter, butik, inventory och logg kräver auth.
-- API-endpoints nekar requests utan giltig session/token.
+Given a valid email and password, when I register, a User is created in the database.
 
+Given that the email already exists, when I register, a clear error is returned.
 
-EPIC 2: Karaktär
-US-05 Skapa karaktär
-Som spelare vill jag skapa en karaktär (namn + klass + grundstats) så att jag kan börja spela.
-AC:
-- Givet att jag är inloggad, när jag väljer namn + klass + stats, så skapas en Character i databasen.
-- Namn valideras (minlängd, inga tomma).
-- Klass måste vara ett giltigt val.
+Passwords are never stored in plain text.
 
-US-05.2 Point-buy för grundstats
-Som spelare vill jag skapa karaktär med en poängbudget så att builds kräver trade-offs och inte kan maxas.
-AC:
-- Varje stat vid skapande måste vara mellan 8 och 15.
-- Total point-buy-budget är 27 poäng.
-- Kostnad per stat är:
-  - 8=0, 9=1, 10=2, 11=3, 12=4, 13=5, 14=7, 15=9.
-- Om budgeten överskrids blockeras skapandet med tydligt felmeddelande.
-- Validering sker server-side i API, inte bara i UI.
+US-02 Login
+As a player I want to log in so that I can access my saved character.
 
+AC
 
-US-06 En aktiv karaktär per konto
-Som spelare vill jag att spelet vet vilken karaktär som är “min” så att dashboard alltid visar rätt data.
-AC:
-- User har koppling till en aktiv Character.
-- Vid login laddas rätt Character automatiskt.
+Given valid credentials, when I log in, a session is created.
 
-US-07 Se karaktärsöversikt
-Som spelare vill jag se mina stats så att jag fattar mina chanser/risker.
-AC:
-- Karaktärsvy visar minst: klass, grundstats, samt HP/Energy/Gold/XP/Level/Renown.
-- Data matchar databasen (refresh visar samma).
+Given invalid credentials, the system returns a generic error message.
 
+After login the user is redirected to the dashboard.
 
-EPIC 3: Dashboard (core loop)
-US-08 Visa dashboard-resurser
-Som spelare vill jag se HP, Energy, Gold, XP/Level, Renown så att jag kan planera nästa val.
-AC:
-- Dashboard visar alla fem värden.
-- Värdena uppdateras efter varje aktivitet/köp/equip.
+US-03 Logout
+As a player I want to log out so that my account remains secure.
 
-US-09 Resursgränser
-Som system vill jag ha tydliga gränser så att resurser inte blir negativa eller orimliga.
-AC:
-- HP kan inte gå under 0.
-- Energy kan inte gå under 0.
-- Gold kan inte gå under 0 (om du inte tillåter skuld).
+AC
 
-US-10 Blocka actions utan Energy
-Som spelare vill jag inte kunna starta aktiviteter utan Energy så att reglerna är konsekventa.
-AC:
-- Givet Energy < kostnad, när jag försöker starta aktivitet, så blockas den med tydligt meddelande.
-- Ingen DB-uppdatering sker om action blockas.
+When the player logs out the session is destroyed.
 
+Protected pages require login again.
 
-EPIC 4: Aktiviteter (Quest / Adventures / Arena)
-US-11 Gemensam “roll”-motor
-Som system vill jag räkna ut success/fail via slump + stat-modifierare så att alla aktiviteter funkar likadant.
-AC:
-- Roll använder slumpvärde + modifierare från stats.
-- Stats påverkar både: chans att lyckas och storlek på reward/penalty.
-- Resultat (success/fail + beräkningar) loggas.
+US-04 Protected pages
+As a system I want gameplay pages to require authentication.
 
-US-12 Quest (låg risk, stabil reward)
-Som spelare vill jag kunna göra Quest så att jag kan få trygg progression.
-AC:
-- Quest kostar en definierad mängd Energy.
-- Vid success: ger reward (Gold/XP/Renown).
-- Vid fail: ger penalty (HP/Gold/Heat).
-- Dashboard uppdateras direkt efter action.
+AC
 
-US-13 Adventures (högre risk, högre reward)
-Som spelare vill jag kunna göra Adventures så att jag kan gambla för större belöningar.
-AC:
-- Kostar mer Energy (eller tydligt annan riskprofil) än Quest.
-- Success ger större reward än Quest (mätbart).
-- Fail ger större penalty än Quest (mätbart).
-- Stats påverkar utfall tydligt.
+Dashboard, activities, shop, inventory and log require authentication.
 
-US-14 Arena (NPC-fight → Renown/XP)
-Som spelare vill jag kunna slåss i Arena mot NPC så att jag kan få Renown/XP.
-AC:
-- Arenan kostar Energy.
-- Roll avgör vinst/förlust.
-- Success ger minst Renown + XP.
-- Fail ger penalty (minst en av HP/Gold/Heat).
+API endpoints reject requests without a valid session.
 
-US-15 Resultatvy efter aktivitet
-Som spelare vill jag se resultatet av mitt val så att spelet känns tydligt och rättvist.
-AC:
-- Efter aktivitet visas: success/fail, Energy-kostnad, reward/penalty (delta), nya totalsummor.
+EPIC 2: Character
+Description
+This epic handles character creation and viewing character information.
 
+US-05 Create character
+As a player I want to create a character so that I can start playing.
 
-EPIC 5: Butik & Inventory (items påverkar stats)
-US-16 Se butik
-Som spelare vill jag se en butik med items så att jag kan förbättra min karaktär.
-AC:
-- Butik listar items med pris + effekt (vilken stat påverkas).
-- Items och priser är konsekventa (samma efter refresh).
+AC
 
-US-17 Köpa item
-Som spelare vill jag kunna köpa items så att de hamnar i mitt inventory.
-AC:
-- Givet tillräckligt Gold, när jag köper, så minskar Gold och item läggs i Inventory (DB).
-- Givet att jag saknar Gold, när jag köper, så blockas köp och inget sparas.
+The player chooses name, class and stats.
 
-US-18 Se inventory
-Som spelare vill jag se mitt inventory så att jag vet vad jag äger.
-AC:
-- Inventory visar alla ägda items.
-- Visar vilka som är equipped.
+A Character record is stored in the database.
 
-US-19 Equip item (påverkar stats)
-Som spelare vill jag kunna equip:a items så att mina stats (och därmed rolls) påverkas.
-AC:
-- När jag equip:ar ett item, så sparas equip-status i DB.
-- Efter equip uppdateras relevanta stats (direkt synligt).
-- Efter equip påverkas kommande aktivitetens roll/utfall mätbart.
+US-05.2 Point-buy system
+As a player I want to use a point-buy system so that builds require trade-offs.
 
+AC
+
+Stats must be between 8 and 15.
+
+Total budget is 27 points.
+
+Validation is done server-side.
+
+US-06 Active character
+As a player I want the system to know which character is mine.
+
+AC
+
+A User has one active Character.
+
+Dashboard automatically loads the correct character.
+
+US-07 Character overview
+As a player I want to see my stats.
+
+AC
+
+Character view shows stats and resources.
+
+Data matches the database.
+
+EPIC 3: Dashboard (Core Loop)
+
+US-08 View resources
+As a player I want to see HP, Energy, Gold, XP, Level and Renown.
+
+AC
+
+Dashboard displays all resources.
+
+Values update after actions.
+
+US-09 Resource limits
+As a system I want resource limits.
+
+AC
+
+HP cannot go below 0.
+
+Energy cannot go below 0.
+
+Gold cannot become negative.
+
+US-10 Block actions without Energy
+As a player I should not be able to start activities without energy.
+
+AC
+
+The system blocks the activity.
+
+No database update occurs.
+
+EPIC 4: Activities
+
+US-11 Roll engine
+As a system I want to calculate outcomes using randomness and stat modifiers.
+
+AC
+
+Rolls use random values and stat modifiers.
+
+Results are logged.
+
+US-12 Quest
+As a player I want to perform quests for stable progression.
+
+AC
+
+Quest costs energy.
+
+Success grants rewards.
+
+Failure causes penalties.
+
+US-13 Adventures
+As a player I want to take riskier adventures.
+
+AC
+
+Higher risk than quests.
+
+Larger rewards.
+
+US-14 Arena
+As a player I want to fight in the arena.
+
+AC
+
+Arena costs energy.
+
+Success grants XP and Renown.
+
+US-15 Result view
+As a player I want to see the outcome of my actions.
+
+AC
+
+Results display success or failure.
+
+Resource changes are shown.
+
+EPIC 5: Shop and Inventory
+
+US-16 View shop
+As a player I want to see items in a shop.
+
+AC
+
+Items display price and effect.
+
+US-17 Buy item
+As a player I want to purchase items.
+
+AC
+
+Gold decreases.
+
+Item is added to inventory.
+
+US-18 View inventory
+As a player I want to see my items.
+
+AC
+
+Inventory lists owned items.
+
+Equipped items are visible.
+
+US-19 Equip item
+As a player I want to equip items.
+
+AC
+
+Equip status is saved in the database.
+
+Stats are affected.
 
 EPIC 6: Activity Log
-US-20 Logga varje action
-Som system vill jag spara varje action i en logg så att spelaren kan se historik.
-AC:
-- Varje aktivitet/köp/equip skapar en rad i ActivityLog (DB).
-- Logg innehåller minst: typ, timestamp, resultat (success/fail där relevant), resursförändringar (delta).
 
-US-21 Visa senaste actions
-Som spelare vill jag se mina senaste actions så att jag kan följa vad som hänt.
-AC:
-- Loggvyn visar senaste N entries (t.ex. 10).
-- Ny action dyker upp direkt efter att den sker.
+US-20 Log actions
+As a system I want to log player actions.
 
-US-22 Progress sparas mellan sessioner
-Som spelare vill jag att allt är kvar efter logout/login så att spelet känns på riktigt.
-AC:
-- Efter login igen är resurser, inventory och logg kvar.
+AC
 
+Each activity creates a log entry.
 
-EPIC 7: Leveranskrav (README + setup)
-US-23 README för installation + env
-Som bedömare/utvecklare vill jag kunna installera projektet så att jag kan köra och testa det snabbt.
-AC:
-- README innehåller: installation, env-variabler, hur man startar lokalt, kort “hur man spelar” + projektöversikt.
+US-21 View recent actions
+As a player I want to see recent actions.
 
-US-24 Databasmodeller används
-Som system vill jag ha fungerande modeller/tabeller så att data faktiskt sparas.
-AC:
-- Minst: User, Character, Inventory, ActivityLog finns.
-- Flöden använder DB (inte bara memory).
+AC
 
-US-25 Git-strategi följs
-Som student vill jag jobba med tydliga brancher/commits så att projektet visar professionell versionshantering.
-AC:
-- Brancher: main/dev/feature används.
-- Commits har tydliga prefixes: add:/fix:/delete:
+Log view shows latest entries.
 
-US-26 MVP-scope hålls
-Som projektägare vill jag hålla scope realistiskt så att jag hinner leverera i tid.
-AC:
-- MVP-funktionerna i dokumentet är klara (inget “måste-ha” saknas).
-- Extra features är markerade som “stretch”.
+US-22 Progress persistence
+As a player I want progress saved between sessions.
 
+AC
 
-Definition of Done (gäller alla)
-- Funkar i UI och via API.
-- Input-validering finns.
-- Data sparas i DB där relevant.
-- Dashboard/logg uppdateras korrekt efter actions.
-- Felhantering är tydlig (användaren fattar vad som hände).
+Resources, inventory and log remain after login.
+
+EPIC 7: Delivery Requirements
+
+US-23 README
+As a developer I want installation instructions.
+
+AC
+
+README explains installation and how to start the project.
+
+US-24 Database models
+As a system I want database models.
+
+AC
+
+User
+
+Character
+
+Inventory
+
+ActivityLog
+
+US-25 Git strategy
+As a student I want proper Git usage.
+
+AC
+
+Branches are used.
+
+Commits have clear prefixes.
+
+US-26 MVP scope
+As a project owner I want realistic scope.
+
+AC
+
+All MVP features work.
+
+EPIC 8: Energy and Time Regeneration
+
+US-27 Energy regeneration
+As a player I want energy to regenerate over time.
+
+AC
+
+Energy increases automatically.
+
+US-28 Energy timer
+As a player I want to see when energy returns.
+
+AC
+
+Dashboard displays a timer.
+
+EPIC 9: Level and Progression
+
+US-29 Level up
+As a player I want to level up.
+
+AC
+
+XP exceeding a threshold increases level.
+
+US-30 Level affects gameplay
+
+AC
+
+Level influences rolls or rewards.
+
+EPIC 10: Class Identity
+
+US-31 Class affects stats
+
+AC
+
+Each class grants a stat bonus.
+
+US-32 Class passive ability
+
+AC
+
+Each class has a unique gameplay bonus.
+
+EPIC 11: Game Balance
+
+US-33 Heat affects risk
+
+AC
+
+Higher heat increases risk.
+
+US-34 Maximum stat limits
+
+AC
+
+Stats cannot exceed a defined maximum.
+
+EPIC 12: UI and Feedback
+
+US-35 Action feedback
+
+AC
+
+Result of actions is clearly shown.
+
+US-36 Loading state
+
+AC
+
+Buttons are disabled during requests.
+
+EPIC 13: API Security
+
+US-37 Input validation
+
+AC
+
+Server validates input.
+
+US-38 Server-side resource checks
+
+AC
+
+Energy and Gold validated server-side.
+
+EPIC 14: Data Consistency and Debugging
+
+US-39 Database transactions
+
+AC
+
+Activities save atomically.
+
+US-40 Inventory rules
+
+AC
+
+Same slot cannot equip multiple items.
+
+US-41 Error logging
+
+AC
+
+Server logs errors.
+
+US-42 Debug view
+
+AC
+
+Development view for testing.
+
+EPIC 15: Random Events
+
+US-43 Random event after activity
+
+AC
+
+Activities may trigger a random event.
+
+Event can modify rewards or penalties.
+
+EPIC 16: Critical Success and Failure
+
+US-44 Critical success
+
+AC
+
+Exceptional rolls grant bonus rewards.
+
+US-45 Critical failure
+
+AC
+
+Very low rolls increase penalties.
+
+EPIC 17: Item Rarity
+
+US-46 Item rarity system
+
+AC
+
+Items have rarity tiers (Common, Uncommon, Rare).
+
+Rarity affects stats or price.
+
+EPIC 18: Daily Rewards
+
+US-47 Daily login reward
+
+AC
+
+Player can claim a reward once per day.
+
+EPIC 19: Exploration Areas
+
+US-48 Multiple activity locations
+
+AC
+
+Activities can occur in different areas.
+
+Areas have different risk/reward profiles.
+
+EPIC 20: Achievements
+
+US-49 Achievement system
+
+AC
+
+Achievements unlock after milestones.
+
+EPIC 21: Economy Balancing
+
+US-50 Item price balance
+
+AC
+
+Item price correlates with stat bonuses.
+
+EPIC 22: Flavor Text and Immersion
+
+US-51 Flavor text
+
+AC
+
+Activity results include narrative text.
+
+EPIC 23: Arena NPC Enemies
+
+US-52 NPC fighters
+
+AC
+
+Arena can generate different enemy types.
+
+EPIC 24: Unlockable Content
+
+US-53 Unlock system
+
+AC
+
+Certain features unlock at specific levels.
+
+EPIC 25: Progression Milestones
+
+US-54 Progress milestones
+
+AC
+
+Reaching milestones grants bonuses or unlocks.
