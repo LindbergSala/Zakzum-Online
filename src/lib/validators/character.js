@@ -35,7 +35,7 @@ export const createCharacterSchema = z.object({
   intelligence: statSchema,
   wisdom: statSchema,
   charisma: statSchema,
-})
+}).strict()
   .superRefine((data, context) => {
     const totalCost = calculateCharacterPointBuyCost(data);
 
