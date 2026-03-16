@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 const StartPageMusicContext = createContext(null);
 
@@ -8,6 +15,18 @@ export default function StartPageMusic({ src, children }) {
   const audioRef = useRef(null);
   const [enabled, setEnabled] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const tryPlay = useCallback(async () => {
+    const audio = audioRef.current;
+
+    if (!audio) {
+      return;
+    }
+
+    try {
+      await audio.play();
+    } catch {}
+  }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -41,14 +60,26 @@ export default function StartPageMusic({ src, children }) {
       return;
     }
 
-    const playMusic = async () => {
-      try {
-        await audio.play();
-      } catch {}
+    tryPlay();
+  }, [enabled, tryPlay]);
+
+  useEffect(() => {
+    if (!enabled || isPlaying) {
+      return;
+    }
+
+    const unlockPlayback = () => {
+      tryPlay();
     };
 
-    playMusic();
-  }, [enabled]);
+    window.addEventListener("pointerdown", unlockPlayback);
+    window.addEventListener("keydown", unlockPlayback);
+
+    return () => {
+      window.removeEventListener("pointerdown", unlockPlayback);
+      window.removeEventListener("keydown", unlockPlayback);
+    };
+  }, [enabled, isPlaying, tryPlay]);
 
   const toggleMusic = async () => {
     const audio = audioRef.current;
@@ -63,10 +94,7 @@ export default function StartPageMusic({ src, children }) {
     }
 
     setEnabled(true);
-
-    try {
-      await audio.play();
-    } catch {}
+    tryPlay();
   };
 
   const isActive = enabled && isPlaying;

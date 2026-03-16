@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
+import { MusicToggleButton } from "@/components/audio/start-page-music";
 import HomeLoginForm from "@/components/home-login-form";
 import styles from "./page.module.css";
 
@@ -28,6 +29,9 @@ export default function HomePage() {
             between sessions.
           </p>
         </div>
+        <MusicToggleButton
+          className={`music-toggle-button ${styles.homeMusicButton}`}
+        />
 
         <section className={styles.loginPanel}>
           <h2 className={styles.loginHeading}>Already have an account?</h2>
