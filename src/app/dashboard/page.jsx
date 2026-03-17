@@ -247,10 +247,6 @@ export default async function DashboardPage() {
               </Link>
             </section>
           )}
-
-          <p className={styles.backLink}>
-            <Link href="/">Back to home page</Link>
-          </p>
         </section>
       </main>
     </div>
