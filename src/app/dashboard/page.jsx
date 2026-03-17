@@ -9,6 +9,7 @@ import { getUserWithResolvedActiveCharacter } from "@/lib/character";
 import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
+import { prisma } from "@/lib/prisma";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import styles from "./page.module.css";
 
@@ -23,6 +24,68 @@ const bodyFont = Source_Sans_3({
 });
 
 const showDebugLink = process.env.NODE_ENV !== "production";
+const DASHBOARD_LOG_ENTRY_LIMIT = 6;
+
+function formatType(type) {
+  if (type === "ACTIVITY") {
+    return "Activity";
+  }
+
+  if (type === "SHOP") {
+    return "Shop";
+  }
+
+  if (type === "EQUIP") {
+    return "Equip";
+  }
+
+  return type;
+}
+
+function formatDelta(delta) {
+  if (!delta || typeof delta !== "object") {
+    return "No delta.";
+  }
+
+  const parts = Object.entries(delta).map(([key, value]) => {
+    const numericValue = Number(value);
+    const sign = numericValue > 0 ? "+" : "";
+    return `${key}: ${sign}${numericValue}`;
+  });
+
+  return parts.join(", ");
+}
+
+function formatResources(resources) {
+  if (!resources || typeof resources !== "object") {
+    return "No resource data.";
+  }
+
+  return [
+    `HP ${resources.hp}`,
+    `Energy ${resources.energy}`,
+    `Gold ${resources.gold}`,
+    `XP ${resources.xp}`,
+    `Level ${resources.level}`,
+    `Renown ${resources.renown}`,
+    `Heat ${resources.heat}`,
+  ].join(" | ");
+}
+
+function formatDetails(entry) {
+  if (!entry.details || typeof entry.details !== "object") {
+    return null;
+  }
+
+  const item = entry.details.item;
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+
+  const pricePart =
+    typeof item.price === "number" ? `, price ${item.price} Gold` : "";
+  return `${item.name ?? entry.activityName} (${item.slot ?? "unknown slot"}${pricePart})`;
+}
 
 export default async function DashboardPage() {
   const user = await requirePageUser();
@@ -34,6 +97,29 @@ export default async function DashboardPage() {
   const levelProgress = activeCharacter
     ? getLevelProgressMeta(activeCharacter.level, activeCharacter.xp)
     : null;
+  const logEntries = activeCharacter
+    ? await prisma.activityLog.findMany({
+        where: { characterId: activeCharacter.id },
+        orderBy: { createdAt: "desc" },
+        take: DASHBOARD_LOG_ENTRY_LIMIT,
+        select: {
+          id: true,
+          type: true,
+          activityName: true,
+          success: true,
+          energyCost: true,
+          roll: true,
+          rollTotal: true,
+          successTarget: true,
+          statModifier: true,
+          chancePercent: true,
+          delta: true,
+          afterResources: true,
+          details: true,
+          createdAt: true,
+        },
+      })
+    : [];
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -73,11 +159,54 @@ export default async function DashboardPage() {
                   {levelProgress.nextLevelXpTarget} XP (
                   {levelProgress.xpToNextLevel} remaining)
                 </p>
+                <hr className={styles.sectionDivider} />
+                <h3 className={styles.panelSubheading}>Character overview</h3>
+                <CharacterOverview character={activeCharacter} />
               </section>
 
               <section className={styles.panel}>
-                <h2>Character overview</h2>
-                <CharacterOverview character={activeCharacter} />
+                <div className={styles.panelHeadingRow}>
+                  <h2>Recent activity log</h2>
+                  <Link className={styles.inlineLink} href="/log">
+                    Open full log
+                  </Link>
+                </div>
+                {logEntries.length === 0 ? (
+                  <p>No actions logged yet.</p>
+                ) : (
+                  <ul className={styles.logList}>
+                    {logEntries.map((entry) => (
+                      <li className={styles.logItem} key={entry.id}>
+                        <p className={styles.logTopLine}>
+                          <strong>{entry.activityName}</strong> (
+                          {formatType(entry.type)}) -{" "}
+                          {entry.success ? "SUCCESS" : "FAIL"} -{" "}
+                          {new Date(entry.createdAt).toLocaleString("en-US")}
+                        </p>
+                        {entry.type === "ACTIVITY" ? (
+                          <p className={styles.logDetail}>
+                            Roll: {entry.roll} + mod {entry.statModifier} ={" "}
+                            {entry.rollTotal} (target {entry.successTarget}, chance{" "}
+                            {entry.chancePercent}%) | Energy cost: {entry.energyCost}
+                          </p>
+                        ) : (
+                          <p className={styles.logDetail}>
+                            Result: {entry.success ? "OK" : "FAIL"}
+                            {formatDetails(entry)
+                              ? ` | ${formatDetails(entry)}`
+                              : ""}
+                          </p>
+                        )}
+                        <p className={styles.logDetail}>
+                          Delta: {formatDelta(entry.delta)}
+                        </p>
+                        <p className={styles.logDetail}>
+                          New totals: {formatResources(entry.afterResources)}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </section>
 
               <section className={`${styles.panel} ${styles.panelWide}`}>
