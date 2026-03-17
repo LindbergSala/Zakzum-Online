@@ -45,7 +45,7 @@ Varje sprint avslutas med:
 Brancher:
 main = stabil version
 dev = pågående arbete
-Commits med tydliga prefixes: add:, fix:, delete:
+Commits med tydliga prefixes: add:, fix:, feat, delete:
 
 Tekniker
 Next.js (JavaScript, App Router), CSS: Tailwind CSS eller CSS Modules, Databas: PostgreSQL, Auth: NextAuth eller egen session/cookie-lösning i Next.js, Deploy (om tid finns): Vercel + hosted Postgres, annars lokal körning för inlämning.

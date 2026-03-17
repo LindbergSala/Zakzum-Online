@@ -3,6 +3,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import { MusicToggleButton } from "@/components/audio/start-page-music";
 import HomeLoginForm from "@/components/home-login-form";
+import { getLatestUpdateMessage } from "@/lib/latest-update";
 import styles from "./page.module.css";
 
 const headingFont = Cinzel({
@@ -16,6 +17,8 @@ const bodyFont = Source_Sans_3({
 });
 
 export default function HomePage() {
+  const latestUpdateMessage = getLatestUpdateMessage();
+
   return (
     <main className={`${styles.home} ${bodyFont.className}`}>
       <section className={styles.heroCard}>
@@ -57,8 +60,8 @@ export default function HomePage() {
             <p>Activities, resources, and level growth keep momentum high.</p>
           </article>
           <article className={styles.featureItem}>
-            <h2>Simple Start</h2>
-            <p>Register, log in, and jump right into the dashboard in seconds.</p>
+            <h2>Latest update</h2>
+            <p>{latestUpdateMessage}</p>
           </article>
         </div>
       </section>
