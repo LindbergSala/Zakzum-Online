@@ -3,12 +3,17 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import CharacterOverview from "@/components/character-overview";
 import GameNav from "@/components/game-nav";
-import { getUserWithResolvedActiveCharacter } from "@/lib/character";
-import { SHOP_ITEM_DEFINITION_MAP, SHOP_ITEM_DEFINITIONS } from "@/lib/core-loop-data";
+import InventoryHydrated from "@/components/inventory/InventoryHydrated";
+import {
+  buildBaseResourcesForCharacter,
+  getUserWithResolvedActiveCharacter,
+} from "@/lib/character";
+import { SHOP_ITEM_DEFINITION_MAP } from "@/lib/core-loop-data";
+import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
 import { formatStatBonusLabel } from "@/lib/stat-effects";
-import { getTotalItemWeight } from "@/lib/weight-rules";
+import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
 import styles from "./page.module.css";
 
 const headingFont = Cinzel({
@@ -21,69 +26,119 @@ const bodyFont = Source_Sans_3({
   weight: ["400", "600", "700"],
 });
 
-const EQUIPMENT_SLOTS = Array.from(
-  new Set(SHOP_ITEM_DEFINITIONS.map((item) => item.slot)),
-);
+const SAFE_HEAT_LIMIT = 10;
 
-const SLOT_ICON_BY_SLOT = {
-  weapon: "WPN",
-  armor: "ARM",
-  helmet: "HLM",
-  shield: "SHD",
-  gloves: "GLV",
-  boots: "BTS",
-  belt: "BLT",
-  ring: "RNG",
-  trinket: "TRK",
-};
-
-function formatSlotLabel(slot) {
-  if (!slot) {
-    return "Unknown";
-  }
-
-  return slot.charAt(0).toUpperCase() + slot.slice(1);
+function clampPercent(value) {
+  return Math.max(0, Math.min(100, Math.round(value)));
 }
 
-function getSlotIcon(slot) {
-  return SLOT_ICON_BY_SLOT[slot] ?? "SLT";
+function getCharacterMaxResources(character) {
+  const baseResources = buildBaseResourcesForCharacter(
+    character.characterClass,
+    character.constitution,
+  );
+
+  return {
+    maxHp: Math.max(1, baseResources.hp, Number(character.hp) || 0),
+    maxEnergy: Math.max(
+      1,
+      baseResources.maxEnergy,
+      Number(character.maxEnergy) || 0,
+      Number(character.energy) || 0,
+    ),
+  };
+}
+
+function buildCharacterGoalCards(character, levelProgress, carryWeightSummary) {
+  const levelProgressPercent = clampPercent(
+    (levelProgress.xp / levelProgress.nextLevelXpTarget) * 100,
+  );
+  const heatProgressPercent = clampPercent(
+    ((SAFE_HEAT_LIMIT - character.heat) / SAFE_HEAT_LIMIT) * 100,
+  );
+  const isHeatInSafeRange = character.heat <= SAFE_HEAT_LIMIT;
+
+  return [
+    {
+      id: "level",
+      label: `Level ${levelProgress.level} -> ${levelProgress.level + 1}`,
+      value: `${levelProgress.xpToNextLevel} XP remaining`,
+      hint: `${levelProgress.xp}/${levelProgress.nextLevelXpTarget} XP`,
+      progressPercent: levelProgressPercent,
+    },
+    {
+      id: "heat",
+      label: "Heat control",
+      value: isHeatInSafeRange
+        ? `Safe range (${character.heat}/${SAFE_HEAT_LIMIT})`
+        : `${character.heat - SAFE_HEAT_LIMIT} above safe range`,
+      hint: isHeatInSafeRange
+        ? `${SAFE_HEAT_LIMIT - character.heat} margin left`
+        : "Consider low-risk actions to stabilize",
+      progressPercent: heatProgressPercent,
+    },
+    {
+      id: "weight",
+      label: "Carry weight",
+      value: `${carryWeightSummary.currentWeight}/${carryWeightSummary.maxWeight} Wt`,
+      hint:
+        carryWeightSummary.remainingWeight >= 0
+          ? `${carryWeightSummary.remainingWeight} Wt free`
+          : `${Math.abs(carryWeightSummary.remainingWeight)} Wt over limit`,
+      progressPercent: carryWeightSummary.usagePercent,
+    },
+  ];
 }
 
 export default async function CharacterPage() {
   const user = await requirePageUser();
   const userWithCharacter = await getUserWithResolvedActiveCharacter(user.id);
   const character = userWithCharacter?.activeCharacter ?? null;
-  const equippedItems = character
+  const rawItems = character
     ? await prisma.characterItem.findMany({
         where: {
           characterId: character.id,
-          isEquipped: true,
         },
         select: {
           id: true,
           itemId: true,
           itemName: true,
+          isEquipped: true,
         },
+        orderBy: { createdAt: "desc" },
       })
     : [];
-  const equippedItemsBySlot = Object.fromEntries(
-    equippedItems.map((item) => {
-      const definition = SHOP_ITEM_DEFINITION_MAP[item.itemId];
-      return [
-        definition?.slot ?? "unknown",
-        {
-          ...item,
-          slot: definition?.slot ?? "unknown",
-          weight: definition?.weight ?? 0,
-          effectLabel: formatStatBonusLabel(definition?.effects?.stats),
-        },
-      ];
-    }),
-  );
-  const equippedWeight = getTotalItemWeight(equippedItems);
-  const equippedSlotCount = EQUIPMENT_SLOTS.filter(
-    (slot) => Boolean(equippedItemsBySlot[slot]),
-  ).length;
+  const items = rawItems.map((item) => {
+    const definition = SHOP_ITEM_DEFINITION_MAP[item.itemId];
+    return {
+      ...item,
+      slot: definition?.slot ?? "unknown",
+      weight: definition?.weight ?? 0,
+      effectLabel: formatStatBonusLabel(definition?.effects?.stats),
+    };
+  });
+  const carryWeightSummary = character
+    ? getCharacterCarryWeightSummary(character.strength, items)
+    : null;
+  const levelProgress = character
+    ? getLevelProgressMeta(character.level, character.xp)
+    : null;
+  const maxResources = character ? getCharacterMaxResources(character) : null;
+  const hpPercent = maxResources
+    ? clampPercent((character.hp / maxResources.maxHp) * 100)
+    : 0;
+  const energyPercent = maxResources
+    ? clampPercent((character.energy / maxResources.maxEnergy) * 100)
+    : 0;
+  const goalCards =
+    character && levelProgress && carryWeightSummary
+      ? buildCharacterGoalCards(character, levelProgress, carryWeightSummary)
+      : [];
+  const inventoryStateKey = character
+    ? `${character.id}:${items
+        .map((item) => `${item.id}-${item.isEquipped ? 1 : 0}`)
+        .join("|")}`
+    : "inventory-empty";
 
   if (!character) {
     return (
@@ -124,77 +179,81 @@ export default async function CharacterPage() {
         <section className={styles.heroCard}>
           <header className={styles.heroIntro}>
             <p className={styles.kicker}>Hero Profile</p>
-            <h1 className={`${styles.title} ${headingFont.className}`}>
-              Character overview
-            </h1>
+            <h1 className={`${styles.title} ${headingFont.className}`}>{character.name}</h1>
             <p className={styles.lead}>
-              Review your class identity, base stats and current hero build.
+              Review your class identity and manage equipment in one place.
             </p>
           </header>
 
-          <div className={styles.panelGrid}>
-            <section className={`${styles.panel} ${styles.panelInGrid}`}>
-              <CharacterOverview character={character} />
-              <p className={styles.backLink}>
-                <Link href="/dashboard">Back to dashboard</Link>
-              </p>
-            </section>
+          <section className={styles.panel}>
+            <h2>Current status</h2>
+            <p className={styles.muted}>
+              Keep track of survivability and progression before your next run.
+            </p>
 
-            <section
-              className={`${styles.panel} ${styles.panelInGrid} ${styles.equipmentPanel}`}
-            >
-              <div className={styles.equipmentFrame}>
-                <div className={styles.equipmentHeader}>
-                  <h2>Equipped items</h2>
-                  <p className={styles.equipmentMeta}>
-                    {equippedSlotCount}/{EQUIPMENT_SLOTS.length} slots equipped
+            <div className={styles.resourceMeters}>
+              <article className={styles.resourceCard}>
+                <div className={styles.resourceTop}>
+                  <p className={styles.resourceLabel}>HP</p>
+                  <p className={styles.resourceValue}>
+                    {character.hp}/{maxResources.maxHp}
                   </p>
                 </div>
-                <ul className={styles.slotGrid}>
-                  {EQUIPMENT_SLOTS.map((slot) => {
-                    const item = equippedItemsBySlot[slot];
+                <div className={styles.goalTrack} aria-hidden="true">
+                  <span
+                    className={`${styles.goalFill} ${styles.hpFill}`}
+                    style={{ width: `${hpPercent}%` }}
+                  />
+                </div>
+              </article>
 
-                    return (
-                      <li className={styles.slotCard} key={slot}>
-                        <div className={styles.slotTopRow}>
-                          <div className={styles.slotTitleWrap}>
-                            <span className={styles.slotIcon} aria-hidden="true">
-                              {getSlotIcon(slot)}
-                            </span>
-                            <p className={styles.slotName}>{formatSlotLabel(slot)}</p>
-                          </div>
-                          <span
-                            className={
-                              item ? styles.slotStateEquipped : styles.slotStateEmpty
-                            }
-                          >
-                            {item ? "equipped" : "empty"}
-                          </span>
-                        </div>
-                        {item ? (
-                          <>
-                            <p className={styles.slotItemName}>{item.itemName}</p>
-                            <p className={styles.slotItemMeta}>{item.effectLabel}</p>
-                            <p className={styles.slotItemMeta}>
-                              Weight: {item.weight} Wt
-                            </p>
-                          </>
-                        ) : (
-                          <p className={styles.slotEmpty}>No item in this slot</p>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-                <p className={styles.equipmentSummary}>
-                  Total equipped weight: <strong>{equippedWeight} Wt</strong>
-                </p>
-              </div>
-              <p className={`${styles.backLink} ${styles.equipmentLink}`}>
-                <Link href="/inventory">Manage equipment in inventory</Link>
-              </p>
-            </section>
-          </div>
+              <article className={styles.resourceCard}>
+                <div className={styles.resourceTop}>
+                  <p className={styles.resourceLabel}>Energy</p>
+                  <p className={styles.resourceValue}>
+                    {character.energy}/{maxResources.maxEnergy}
+                  </p>
+                </div>
+                <div className={styles.goalTrack} aria-hidden="true">
+                  <span
+                    className={`${styles.goalFill} ${styles.energyFill}`}
+                    style={{ width: `${energyPercent}%` }}
+                  />
+                </div>
+              </article>
+            </div>
+
+            <ul className={styles.goalGrid}>
+              {goalCards.map((goal) => (
+                <li className={styles.goalCard} key={goal.id}>
+                  <p className={styles.goalLabel}>{goal.label}</p>
+                  <p className={styles.goalValue}>{goal.value}</p>
+                  <p className={styles.goalHint}>{goal.hint}</p>
+                  <div className={styles.goalTrack} aria-hidden="true">
+                    <span
+                      className={styles.goalFill}
+                      style={{ width: `${goal.progressPercent}%` }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <hr className={styles.sectionDivider} />
+            <h2>Character overview</h2>
+            <CharacterOverview character={character} showResources={false} />
+            <p className={styles.backLink}>
+              <Link href="/dashboard">Back to dashboard</Link>
+            </p>
+          </section>
+
+          <section id="inventory" className={styles.inventorySection}>
+            <InventoryHydrated
+              key={inventoryStateKey}
+              characterId={character.id}
+              items={items}
+            />
+          </section>
         </section>
       </main>
     </div>

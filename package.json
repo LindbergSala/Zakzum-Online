@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test:inventory": "tsx --test tests/inventory-placement.test.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "postinstall": "prisma generate"
@@ -34,6 +35,7 @@
   "devDependencies": {
     "eslint": "^9.39.3",
     "eslint-config-next": "^16.1.6",
-    "prisma": "^6.19.0"
+    "prisma": "^6.19.0",
+    "tsx": "^4.21.0"
   }
 }

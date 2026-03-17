@@ -197,6 +197,111 @@
   color: var(--ink-soft);
 }
 
+.muted {
+  margin: 0.3rem 0 0.65rem;
+}
+
+.resourceMeters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.58rem;
+  margin-top: 0.2rem;
+}
+
+.resourceCard {
+  border-radius: 10px;
+  padding: 0.68rem 0.76rem;
+  border: 1px solid rgba(103, 64, 35, 0.28);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.resourceTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.45rem;
+}
+
+.resourceTop .resourceLabel {
+  margin: 0;
+  color: var(--ink-strong);
+  font-weight: 700;
+}
+
+.resourceTop .resourceValue {
+  margin: 0;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.goalGrid {
+  list-style: none;
+  margin: 0.72rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.64rem;
+}
+
+.goalCard {
+  margin: 0;
+  border-radius: 11px;
+  padding: 0.7rem;
+  border: 1px solid rgba(95, 58, 33, 0.24);
+  background: rgba(255, 249, 238, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 251, 242, 0.55);
+}
+
+.goalLabel {
+  margin: 0;
+  color: var(--ink-strong);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.goalValue {
+  margin: 0.28rem 0 0;
+  color: var(--ink-strong);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.goalHint {
+  margin: 0.22rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+}
+
+.goalTrack {
+  margin-top: 0.55rem;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(126, 88, 52, 0.2);
+  overflow: hidden;
+}
+
+.goalFill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(145deg, #cf7e34 0%, #a65426 100%);
+}
+
+.hpFill {
+  background: linear-gradient(145deg, #bf5236 0%, #8f301f 100%);
+}
+
+.energyFill {
+  background: linear-gradient(145deg, #c88a3d 0%, #9b5b1f 100%);
+}
+
+.sectionDivider {
+  margin: 0.95rem 0 0.85rem;
+  border: 0;
+  border-top: 1px solid rgba(95, 58, 33, 0.26);
+}
+
 .equipmentPanel .slotGrid {
   list-style: none;
   margin: 0.72rem 0 0;
@@ -387,6 +492,15 @@
   margin: 0.9rem 0 0;
 }
 
+.carrySummary {
+  margin: 0.75rem 0 0;
+  color: var(--ink-soft);
+}
+
+.inventorySection {
+  scroll-margin-top: 6.2rem;
+}
+
 .backLink a {
   color: #6a3f20;
   font-weight: 700;
@@ -422,6 +536,14 @@
   .heroCard {
     border-radius: 16px;
     padding: 1rem;
+  }
+
+  .resourceMeters {
+    grid-template-columns: 1fr;
+  }
+
+  .goalGrid {
+    grid-template-columns: 1fr;
   }
 
   .panelGrid {

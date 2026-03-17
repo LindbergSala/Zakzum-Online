@@ -104,6 +104,7 @@ export async function POST(request) {
   }
 
   const itemId = parsed.data.itemId;
+  const action = parsed.data.action ?? "equip";
   const itemDefinition = SHOP_ITEM_DEFINITION_MAP[itemId];
   if (!itemDefinition) {
     return NextResponse.json(
@@ -148,37 +149,71 @@ export async function POST(request) {
         };
       }
 
-      const sameSlotItemIds = ownedItems
-        .filter(
-          (item) => SHOP_ITEM_DEFINITION_MAP[item.itemId]?.slot === itemDefinition.slot,
-        )
-        .map((item) => item.itemId);
+      let equippedItem = null;
+      let wasAlreadyEquipped = Boolean(ownedItem.isEquipped);
 
-      if (sameSlotItemIds.length > 0) {
-        await tx.characterItem.updateMany({
+      if (action === "equip") {
+        const sameSlotItemIds = ownedItems
+          .filter(
+            (item) =>
+              SHOP_ITEM_DEFINITION_MAP[item.itemId]?.slot === itemDefinition.slot,
+          )
+          .map((item) => item.itemId);
+
+        if (sameSlotItemIds.length > 0) {
+          await tx.characterItem.updateMany({
+            where: {
+              characterId: latestCharacter.id,
+              itemId: { in: sameSlotItemIds },
+            },
+            data: { isEquipped: false },
+          });
+        }
+
+        equippedItem = await tx.characterItem.update({
           where: {
-            characterId: latestCharacter.id,
-            itemId: { in: sameSlotItemIds },
+            characterId_itemId: {
+              characterId: latestCharacter.id,
+              itemId,
+            },
+          },
+          data: { isEquipped: true },
+          select: {
+            id: true,
+            itemId: true,
+            itemName: true,
+            isEquipped: true,
+          },
+        });
+      } else {
+        if (!ownedItem.isEquipped) {
+          return {
+            ok: true,
+            equippedItem: ownedItem,
+            allItems: ownedItems,
+            logEntry: null,
+            ownedItem,
+            wasAlreadyEquipped: false,
+            action,
+          };
+        }
+
+        equippedItem = await tx.characterItem.update({
+          where: {
+            characterId_itemId: {
+              characterId: latestCharacter.id,
+              itemId,
+            },
           },
           data: { isEquipped: false },
+          select: {
+            id: true,
+            itemId: true,
+            itemName: true,
+            isEquipped: true,
+          },
         });
       }
-
-      const equippedItem = await tx.characterItem.update({
-        where: {
-          characterId_itemId: {
-            characterId: latestCharacter.id,
-            itemId,
-          },
-        },
-        data: { isEquipped: true },
-        select: {
-          id: true,
-          itemId: true,
-          itemName: true,
-          isEquipped: true,
-        },
-      });
 
       const allItems = await tx.characterItem.findMany({
         where: { characterId: latestCharacter.id },
@@ -198,7 +233,7 @@ export async function POST(request) {
           SHOP_ITEM_DEFINITION_MAP[item.itemId]?.slot === itemDefinition.slot,
       );
 
-      if (equippedInSameSlot.length > 1) {
+      if (action === "equip" && equippedInSameSlot.length > 1) {
         throw new Error("SLOT_EQUIP_CONFLICT");
       }
 
@@ -207,7 +242,10 @@ export async function POST(request) {
           characterId: latestCharacter.id,
           type: "EQUIP",
           activityId: itemId,
-          activityName: `Equip: ${ownedItem.itemName}`,
+          activityName:
+            action === "equip"
+              ? `Equip: ${ownedItem.itemName}`
+              : `Unequip: ${ownedItem.itemName}`,
           success: true,
           energyCost: 0,
           roll: 0,
@@ -230,7 +268,15 @@ export async function POST(request) {
         select: { id: true },
       });
 
-      return { ok: true, equippedItem, allItems, logEntry, ownedItem };
+      return {
+        ok: true,
+        equippedItem,
+        allItems,
+        logEntry,
+        ownedItem,
+        wasAlreadyEquipped,
+        action,
+      };
     });
   } catch (error) {
     if (error instanceof Error && error.message === "SLOT_EQUIP_CONFLICT") {
@@ -271,11 +317,14 @@ export async function POST(request) {
 
   return NextResponse.json(
     {
-      message: result.ownedItem.isEquipped
-        ? `${result.ownedItem.itemName} was already equipped.`
-        : `${result.ownedItem.itemName} is now equipped.`,
+      message:
+        result.action === "unequip"
+          ? `${result.ownedItem.itemName} is now unequipped.`
+          : result.wasAlreadyEquipped
+            ? `${result.ownedItem.itemName} was already equipped.`
+            : `${result.ownedItem.itemName} is now equipped.`,
       item: result.equippedItem,
-      logId: result.logEntry.id,
+      logId: result.logEntry?.id ?? null,
       items: enrichedItems,
       resources: getCharacterResourceSnapshot(activeCharacter),
       stats: statSummary,

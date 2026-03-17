@@ -18,4 +18,5 @@ export const shopPurchaseSchema = z.object({
 
 export const inventoryEquipSchema = z.object({
   itemId: z.enum(SHOP_ITEM_IDS),
+  action: z.enum(["equip", "unequip"]).optional(),
 }).strict();

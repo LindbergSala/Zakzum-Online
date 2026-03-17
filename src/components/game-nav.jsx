@@ -9,7 +9,7 @@ const gameLinks = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/activities", label: "Activities" },
   { href: "/shop", label: "Shop" },
-  { href: "/inventory", label: "Inventory" },
+  { href: "/character#inventory", label: "Inventory" },
   { href: "/log", label: "Log" },
 ];
 
