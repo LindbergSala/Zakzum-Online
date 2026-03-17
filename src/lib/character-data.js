@@ -5,12 +5,28 @@ export const CHARACTER_CLASS_OPTIONS = [
   { value: "WIZARD", label: "Wizard" },
 ];
 
+export const CHARACTER_RACE_OPTIONS = [
+  { value: "HUMAN", label: "Human" },
+  { value: "DWARF", label: "Dwarf" },
+  { value: "HALF_ELF", label: "Half-elf" },
+  { value: "ELF", label: "Elf" },
+  { value: "TIEFLING", label: "Tiefling" },
+];
+
 export const CHARACTER_CLASS_VALUES = CHARACTER_CLASS_OPTIONS.map(
+  (option) => option.value,
+);
+
+export const CHARACTER_RACE_VALUES = CHARACTER_RACE_OPTIONS.map(
   (option) => option.value,
 );
 
 const CHARACTER_CLASS_LABELS = Object.fromEntries(
   CHARACTER_CLASS_OPTIONS.map((option) => [option.value, option.label]),
+);
+
+const CHARACTER_RACE_LABELS = Object.fromEntries(
+  CHARACTER_RACE_OPTIONS.map((option) => [option.value, option.label]),
 );
 
 export const CHARACTER_STAT_FIELDS = [
@@ -72,4 +88,8 @@ export function calculateCharacterPointBuyCost(stats) {
 
 export function getCharacterClassLabel(characterClassValue) {
   return CHARACTER_CLASS_LABELS[characterClassValue] ?? characterClassValue;
+}
+
+export function getCharacterRaceLabel(characterRaceValue) {
+  return CHARACTER_RACE_LABELS[characterRaceValue] ?? characterRaceValue;
 }

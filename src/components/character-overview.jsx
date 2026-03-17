@@ -1,4 +1,7 @@
-import { getCharacterClassLabel } from "@/lib/character-data";
+import {
+  getCharacterClassLabel,
+  getCharacterRaceLabel,
+} from "@/lib/character-data";
 import {
   formatClassStartBonusLabel,
   getClassPassive,
@@ -35,6 +38,9 @@ export default function CharacterOverview({
       </p>
       <p>
         <strong>Class:</strong> {getCharacterClassLabel(character.characterClass)}
+      </p>
+      <p>
+        <strong>Race:</strong> {getCharacterRaceLabel(character.characterRace)}
       </p>
       <p>
         <strong>Start bonus:</strong> {classStartBonus}

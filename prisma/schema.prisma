@@ -37,32 +37,41 @@ enum CharacterClass {
   WIZARD
 }
 
+enum CharacterRace {
+  HUMAN
+  DWARF
+  HALF_ELF
+  ELF
+  TIEFLING
+}
+
 model Character {
-  id             String         @id @default(cuid())
-  userId         String         @unique
-  user           User           @relation("OwnedCharacter", fields: [userId], references: [id], onDelete: Cascade)
-  activeForUser  User?          @relation("ActiveCharacter")
-  name           String         @db.VarChar(32)
+  id             String          @id @default(cuid())
+  userId         String          @unique
+  user           User            @relation("OwnedCharacter", fields: [userId], references: [id], onDelete: Cascade)
+  activeForUser  User?           @relation("ActiveCharacter")
+  name           String          @db.VarChar(32)
   characterClass CharacterClass
+  characterRace  CharacterRace   @default(HUMAN)
   strength       Int
   dexterity      Int
   constitution   Int
   intelligence   Int
   wisdom         Int
   charisma       Int
-  hp             Int            @default(20)
-  energy         Int            @default(20)
-  maxEnergy      Int            @default(20)
-  energyRegenAt  DateTime       @default(now())
-  gold           Int            @default(0)
-  xp             Int            @default(0)
-  renown         Int            @default(0)
-  heat           Int            @default(0)
-  level          Int            @default(1)
+  hp             Int             @default(20)
+  energy         Int             @default(20)
+  maxEnergy      Int             @default(20)
+  energyRegenAt  DateTime        @default(now())
+  gold           Int             @default(0)
+  xp             Int             @default(0)
+  renown         Int             @default(0)
+  heat           Int             @default(0)
+  level          Int             @default(1)
   items          CharacterItem[]
   activityLogs   ActivityLog[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 model CharacterItem {
@@ -86,12 +95,12 @@ enum ActivityLogType {
 }
 
 model ActivityLog {
-  id              String    @id @default(cuid())
+  id              String          @id @default(cuid())
   characterId     String
-  character       Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  character       Character       @relation(fields: [characterId], references: [id], onDelete: Cascade)
   type            ActivityLogType @default(ACTIVITY)
-  activityId      String    @db.VarChar(32)
-  activityName    String    @db.VarChar(64)
+  activityId      String          @db.VarChar(32)
+  activityName    String          @db.VarChar(64)
   success         Boolean
   energyCost      Int
   roll            Int
@@ -103,7 +112,7 @@ model ActivityLog {
   beforeResources Json
   afterResources  Json
   details         Json?
-  createdAt       DateTime  @default(now())
+  createdAt       DateTime        @default(now())
 
   @@index([characterId, createdAt])
 }

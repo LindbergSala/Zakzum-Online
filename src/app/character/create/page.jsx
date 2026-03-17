@@ -2,7 +2,10 @@ import Link from "next/link";
 
 import CharacterCreateForm from "@/components/character-create-form";
 import GameNav from "@/components/game-nav";
-import { getCharacterClassLabel } from "@/lib/character-data";
+import {
+  getCharacterClassLabel,
+  getCharacterRaceLabel,
+} from "@/lib/character-data";
 import { getUserWithResolvedActiveCharacter } from "@/lib/character";
 import { requirePageUser } from "@/lib/page-auth";
 
@@ -20,6 +23,8 @@ export default async function CharacterCreatePage() {
         <p>
           Name: <strong>{existingCharacter.name}</strong> | Class:{" "}
           <strong>{getCharacterClassLabel(existingCharacter.characterClass)}</strong>{" "}
+          | Race:{" "}
+          <strong>{getCharacterRaceLabel(existingCharacter.characterRace)}</strong>{" "}
           | Level:{" "}
           <strong>{existingCharacter.level}</strong>
         </p>

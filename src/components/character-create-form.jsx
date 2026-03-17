@@ -9,6 +9,7 @@ import {
   CHARACTER_POINT_BUY_BUDGET,
   CHARACTER_POINT_BUY_MAX_STAT,
   CHARACTER_POINT_BUY_MIN_STAT,
+  CHARACTER_RACE_OPTIONS,
   CHARACTER_STAT_FIELDS,
 } from "@/lib/character-data";
 import {
@@ -25,6 +26,7 @@ function buildInitialFormData() {
 
   return {
     name: "",
+    characterRace: CHARACTER_RACE_OPTIONS[0].value,
     characterClass: CHARACTER_CLASS_OPTIONS[0].value,
     ...stats,
   };
@@ -122,6 +124,25 @@ export default function CharacterCreateForm() {
       </label>
       {fieldErrors.name ? (
         <p className="feedback error">{fieldErrors.name[0]}</p>
+      ) : null}
+
+      <label htmlFor="characterClass">
+        Race
+        <select
+          id="characterRace"
+          name="characterRace"
+          value={formData.characterRace}
+          onChange={(event) => updateField("characterRace", event.target.value)}
+        >
+          {CHARACTER_RACE_OPTIONS.map((characterRace) => (
+            <option key={characterRace.value} value={characterRace.value}>
+              {characterRace.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      {fieldErrors.characterRace ? (
+        <p className="feedback error">{fieldErrors.characterRace[0]}</p>
       ) : null}
 
       <label htmlFor="characterClass">

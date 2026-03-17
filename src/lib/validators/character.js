@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   calculateCharacterPointBuyCost,
   CHARACTER_CLASS_VALUES,
+  CHARACTER_RACE_VALUES,
   CHARACTER_POINT_BUY_BUDGET,
   CHARACTER_POINT_BUY_MAX_STAT,
   CHARACTER_POINT_BUY_MIN_STAT,
@@ -28,6 +29,9 @@ export const createCharacterSchema = z.object({
     .max(32, "Name can be at most 32 characters."),
   characterClass: z.enum(CHARACTER_CLASS_VALUES, {
     error: "Class must be a valid option.",
+  }),
+  characterRace: z.enum(CHARACTER_RACE_VALUES, {
+    error: "Race must be a valid option.",
   }),
   strength: statSchema,
   dexterity: statSchema,

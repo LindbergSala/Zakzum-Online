@@ -88,6 +88,7 @@ export default async function DebugPage() {
         id: true,
         name: true,
         characterClass: true,
+        characterRace: true,
         level: true,
         hp: true,
         energy: true,
@@ -168,7 +169,8 @@ export default async function DebugPage() {
         <ul>
           {recentCharacters.map((character) => (
             <li key={character.id}>
-              {character.name} ({character.characterClass}) | Lvl {character.level} | HP{" "}
+              {character.name} ({character.characterRace} {character.characterClass}) | Lvl{" "}
+              {character.level} | HP{" "}
               {character.hp} | Energy {character.energy} | Gold {character.gold} | XP{" "}
               {character.xp} | Renown {character.renown} | Heat {character.heat} | Equipped{" "}
               {character.items.length}
