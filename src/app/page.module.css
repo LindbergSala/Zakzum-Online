@@ -6,14 +6,16 @@
   --panel-light: rgba(255, 247, 233, 0.92);
   --panel-shadow: rgba(46, 29, 12, 0.25);
   width: 100%;
-  min-height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
   margin: 0;
   padding: clamp(1.2rem, 4vw, 3rem);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  overflow: clip;
   background:
     linear-gradient(
       140deg,
@@ -56,6 +58,7 @@
 
 .heroCard {
   width: min(860px, 100%);
+  max-height: calc(100dvh - clamp(1.8rem, 8vw, 6rem));
   padding: clamp(1.4rem, 3.4vw, 3rem);
   border-radius: 18px;
   border: 1px solid rgba(92, 58, 32, 0.68);
@@ -445,14 +448,15 @@
 
 @media (max-width: 640px) {
   .home {
-    padding: 0.9rem;
-    align-items: flex-start;
+    padding: 0.75rem;
+    align-items: center;
   }
 
   .heroCard {
-    margin-top: 0.8rem;
+    margin-top: 0;
     border-radius: 16px;
     padding: 1.2rem;
+    max-height: calc(100dvh - 1.5rem);
   }
 
   .homeMusicButton {
@@ -472,6 +476,180 @@
   .primaryAction,
   .secondaryAction {
     width: 100%;
+  }
+}
+
+@media (max-height: 940px) {
+  .home {
+    padding: 0.65rem;
+  }
+
+  .heroCard {
+    max-height: calc(100dvh - 1.3rem);
+    padding: 0.95rem 1.15rem;
+  }
+
+  .kicker {
+    font-size: 0.72rem;
+  }
+
+  .title {
+    margin-top: 0.28rem;
+    font-size: clamp(1.95rem, 5.2vw, 3.2rem);
+  }
+
+  .lead {
+    margin-top: 0.38rem;
+    font-size: 0.94rem;
+    line-height: 1.28;
+  }
+
+  .loginPanel {
+    margin-top: 0.65rem;
+    padding: 0.66rem;
+  }
+
+  .loginText {
+    display: none;
+  }
+
+  .loginHeading {
+    font-size: 0.96rem;
+  }
+
+  .loginForm {
+    margin-top: 0.4rem;
+    gap: 0.36rem;
+  }
+
+  .loginLabel {
+    gap: 0.22rem;
+  }
+
+  .loginInput {
+    min-height: 36px;
+    padding: 0.44rem 0.58rem;
+  }
+
+  .loginButton {
+    min-height: 36px;
+    padding: 0.46rem 0.85rem;
+  }
+
+  .actions {
+    margin-top: 0.48rem;
+  }
+
+  .primaryAction {
+    min-height: 36px;
+    padding: 0.46rem 0.88rem;
+  }
+
+  .featureGrid {
+    margin-top: 0.4rem;
+    gap: 0.42rem;
+  }
+
+  .featureItem {
+    padding: 0.5rem 0.56rem;
+  }
+
+  .featureItem h2 {
+    font-size: 0.87rem;
+  }
+
+  .featureItem p {
+    margin-top: 0.24rem;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-height: 880px) {
+  .lead {
+    font-size: 0.9rem;
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 4.8vw, 2.8rem);
+  }
+
+  .loginPanel {
+    margin-top: 0.56rem;
+    padding: 0.58rem;
+  }
+
+  .featureGrid {
+    margin-top: 0.34rem;
+  }
+}
+
+@media (max-height: 800px) {
+  .home {
+    padding: 0.62rem;
+  }
+
+  .heroCard {
+    padding: 0.9rem 1rem;
+  }
+
+  .homeMusicButton {
+    top: 0.62rem;
+    right: 0.62rem;
+  }
+
+  .kicker {
+    font-size: 0.69rem;
+  }
+
+  .title {
+    font-size: clamp(1.82rem, 5.4vw, 2.6rem);
+  }
+
+  .lead {
+    margin-top: 0.52rem;
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+
+  .loginPanel {
+    margin-top: 0.68rem;
+    padding: 0.74rem;
+  }
+
+  .loginText {
+    display: none;
+  }
+
+  .actions {
+    margin-top: 0.68rem;
+  }
+
+  .primaryAction {
+    min-height: 40px;
+  }
+
+  .featureGrid {
+    margin-top: 0.68rem;
+    gap: 0.52rem;
+  }
+
+  .featureItem {
+    padding: 0.62rem;
+  }
+
+  .featureItem p {
+    display: none;
+  }
+}
+
+@media (max-height: 700px) {
+  .featureGrid {
+    display: none;
   }
 }
 
