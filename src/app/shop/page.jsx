@@ -9,6 +9,7 @@ import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import { formatStatBonusLabel } from "@/lib/stat-effects";
+import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
 
 export default async function ShopPage() {
   const user = await requirePageUser();
@@ -26,11 +27,15 @@ export default async function ShopPage() {
   const ownedById = Object.fromEntries(
     ownedItems.map((item) => [item.itemId, item]),
   );
+  const carryWeightSummary = activeCharacter
+    ? getCharacterCarryWeightSummary(activeCharacter.strength, ownedItems)
+    : null;
 
   const shopItems = SHOP_ITEM_DEFINITIONS.map((item) => ({
     id: item.id,
     name: item.name,
     price: item.price,
+    weight: item.weight,
     slot: item.slot,
     effects: item.effects,
     effectLabel: formatStatBonusLabel(item.effects?.stats),
@@ -45,6 +50,10 @@ export default async function ShopPage() {
       {activeCharacter ? (
         <>
           <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
+          <p>
+            <strong>Carry weight:</strong> {carryWeightSummary.currentWeight}/
+            {carryWeightSummary.maxWeight}
+          </p>
           <ShopActions items={shopItems} />
         </>
       ) : (

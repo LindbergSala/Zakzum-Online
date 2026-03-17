@@ -11,6 +11,7 @@ import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
+import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
 import styles from "./page.module.css";
 
 const headingFont = Cinzel({
@@ -23,8 +24,18 @@ const bodyFont = Source_Sans_3({
   weight: ["400", "600", "700"],
 });
 
-const showDebugLink = process.env.NODE_ENV !== "production";
 const DASHBOARD_LOG_ENTRY_LIMIT = 6;
+const SAFE_HEAT_LIMIT = 10;
+
+function clampPercent(value) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function getNextStepTarget(currentValue, step, minimumTarget = step) {
+  const safeValue = Number(currentValue) || 0;
+  const steppedTarget = Math.ceil((safeValue + 1) / step) * step;
+  return Math.max(minimumTarget, steppedTarget);
+}
 
 function formatType(type) {
   if (type === "ACTIVITY") {
@@ -87,10 +98,104 @@ function formatDetails(entry) {
   return `${item.name ?? entry.activityName} (${item.slot ?? "unknown slot"}${pricePart})`;
 }
 
+function buildDashboardGoals(character, levelProgress, logEntries) {
+  const levelProgressPercent = clampPercent(
+    (levelProgress.xp / levelProgress.nextLevelXpTarget) * 100,
+  );
+
+  const goldTarget = getNextStepTarget(character.gold, 100, 100);
+  const goldRemaining = Math.max(0, goldTarget - character.gold);
+  const goldProgressPercent = clampPercent((character.gold / goldTarget) * 100);
+
+  const renownTarget = getNextStepTarget(character.renown, 25, 25);
+  const renownRemaining = Math.max(0, renownTarget - character.renown);
+  const renownProgressPercent = clampPercent(
+    (character.renown / renownTarget) * 100,
+  );
+
+  const heatProgressPercent = clampPercent(
+    ((SAFE_HEAT_LIMIT - character.heat) / SAFE_HEAT_LIMIT) * 100,
+  );
+  const isHeatInSafeRange = character.heat <= SAFE_HEAT_LIMIT;
+
+  const successCount = logEntries.filter((entry) => entry.success).length;
+  const successRate = logEntries.length
+    ? clampPercent((successCount / logEntries.length) * 100)
+    : 0;
+  const carryWeightSummary = getCharacterCarryWeightSummary(
+    character.strength,
+    character.items ?? [],
+  );
+
+  return [
+    {
+      id: "level",
+      label: `Level ${levelProgress.level} -> ${levelProgress.level + 1}`,
+      value: `${levelProgress.xpToNextLevel} XP remaining`,
+      hint: `${levelProgress.xp}/${levelProgress.nextLevelXpTarget} XP`,
+      progressPercent: levelProgressPercent,
+    },
+    {
+      id: "gold",
+      label: "Gold milestone",
+      value: `${goldRemaining} Gold to ${goldTarget}`,
+      hint: `Current Gold: ${character.gold}`,
+      progressPercent: goldProgressPercent,
+    },
+    {
+      id: "renown",
+      label: "Renown milestone",
+      value: `${renownRemaining} Renown to ${renownTarget}`,
+      hint: `Current Renown: ${character.renown}`,
+      progressPercent: renownProgressPercent,
+    },
+    {
+      id: "heat",
+      label: "Heat control",
+      value: isHeatInSafeRange
+        ? `Safe range (${character.heat}/${SAFE_HEAT_LIMIT})`
+        : `${character.heat - SAFE_HEAT_LIMIT} above safe range`,
+      hint: isHeatInSafeRange
+        ? `${SAFE_HEAT_LIMIT - character.heat} margin left`
+        : "Consider low-risk actions to stabilize",
+      progressPercent: heatProgressPercent,
+    },
+    {
+      id: "weight",
+      label: "Carry weight",
+      value: `${carryWeightSummary.currentWeight}/${carryWeightSummary.maxWeight} Wt`,
+      hint:
+        carryWeightSummary.remainingWeight >= 0
+          ? `${carryWeightSummary.remainingWeight} Wt free`
+          : `${Math.abs(carryWeightSummary.remainingWeight)} Wt over limit`,
+      progressPercent: carryWeightSummary.usagePercent,
+    },
+    {
+      id: "momentum",
+      label: "Recent momentum",
+      value:
+        logEntries.length > 0
+          ? `${successRate}% success (${successCount}/${logEntries.length})`
+          : "No log data yet",
+      hint:
+        logEntries.length > 0
+          ? "Based on latest actions"
+          : "Play activities to build a trend",
+      progressPercent: successRate,
+    },
+  ];
+}
+
 export default async function DashboardPage() {
   const user = await requirePageUser();
   const userWithCharacter = await getUserWithResolvedActiveCharacter(user.id);
   const activeCharacter = userWithCharacter?.activeCharacter ?? null;
+  const ownedItems = activeCharacter
+    ? await prisma.characterItem.findMany({
+        where: { characterId: activeCharacter.id },
+        select: { itemId: true },
+      })
+    : [];
   const energyMeta = activeCharacter
     ? getEnergyRegenerationMeta(activeCharacter)
     : null;
@@ -120,6 +225,14 @@ export default async function DashboardPage() {
         },
       })
     : [];
+  const dashboardGoals =
+    activeCharacter && levelProgress
+      ? buildDashboardGoals(
+          { ...activeCharacter, items: ownedItems },
+          levelProgress,
+          logEntries,
+        )
+      : [];
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -161,7 +274,7 @@ export default async function DashboardPage() {
                 </p>
                 <hr className={styles.sectionDivider} />
                 <h3 className={styles.panelSubheading}>Character overview</h3>
-                <CharacterOverview character={activeCharacter} />
+                <CharacterOverview character={activeCharacter} showResources={false} />
               </section>
 
               <section className={styles.panel}>
@@ -210,29 +323,25 @@ export default async function DashboardPage() {
               </section>
 
               <section className={`${styles.panel} ${styles.panelWide}`}>
-                <h2>Quick actions</h2>
-                <div className={styles.actionGrid}>
-                  <Link className={styles.actionLink} href="/character">
-                    Character
-                  </Link>
-                  <Link className={styles.actionLink} href="/activities">
-                    Activities
-                  </Link>
-                  <Link className={styles.actionLink} href="/shop">
-                    Shop
-                  </Link>
-                  <Link className={styles.actionLink} href="/inventory">
-                    Inventory
-                  </Link>
-                  <Link className={styles.actionLink} href="/log">
-                    Log
-                  </Link>
-                  {showDebugLink ? (
-                    <Link className={styles.actionLink} href="/debug">
-                      Debug
-                    </Link>
-                  ) : null}
-                </div>
+                <h2>Goals & milestones</h2>
+                <p className={styles.muted}>
+                  Track your short-term targets and keep progression clear.
+                </p>
+                <ul className={styles.goalGrid}>
+                  {dashboardGoals.map((goal) => (
+                    <li className={styles.goalCard} key={goal.id}>
+                      <p className={styles.goalLabel}>{goal.label}</p>
+                      <p className={styles.goalValue}>{goal.value}</p>
+                      <p className={styles.goalHint}>{goal.hint}</p>
+                      <div className={styles.goalTrack} aria-hidden="true">
+                        <span
+                          className={styles.goalFill}
+                          style={{ width: `${goal.progressPercent}%` }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </section>
             </div>
           ) : (

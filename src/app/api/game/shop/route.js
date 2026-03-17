@@ -14,6 +14,10 @@ import {
 import { logServerError } from "@/lib/server-logger";
 import { formatStatBonusLabel } from "@/lib/stat-effects";
 import { shopPurchaseSchema } from "@/lib/validators/core-loop";
+import {
+  getCharacterCarryWeightSummary,
+  getItemWeightById,
+} from "@/lib/weight-rules";
 
 const SHOP_CHARACTER_SELECT = {
   id: true,
@@ -24,6 +28,7 @@ const SHOP_CHARACTER_SELECT = {
   level: true,
   renown: true,
   heat: true,
+  strength: true,
   updatedAt: true,
 };
 
@@ -56,6 +61,7 @@ export async function GET() {
         id: item.id,
         name: item.name,
         price: item.price,
+        weight: item.weight,
         slot: item.slot,
         effects: item.effects,
         effectLabel: formatStatBonusLabel(item.effects?.stats),
@@ -133,12 +139,34 @@ export async function POST(request) {
         },
         select: { id: true },
       });
+      const ownedItems = await tx.characterItem.findMany({
+        where: { characterId: latestCharacter.id },
+        select: { itemId: true },
+      });
 
       if (existingItem) {
         return {
           ok: false,
           status: 409,
           message: "You already own this item.",
+          resources: getCharacterResourceSnapshot(latestCharacter),
+        };
+      }
+
+      const carrySummary = getCharacterCarryWeightSummary(
+        latestCharacter.strength,
+        ownedItems,
+      );
+      const itemWeight = getItemWeightById(item.id);
+      const projectedWeight = carrySummary.currentWeight + itemWeight;
+
+      if (projectedWeight > carrySummary.maxWeight) {
+        return {
+          ok: false,
+          status: 400,
+          message:
+            `Carrying capacity exceeded. ${item.name} weighs ${itemWeight}. ` +
+            `Current ${carrySummary.currentWeight}/${carrySummary.maxWeight}.`,
           resources: getCharacterResourceSnapshot(latestCharacter),
         };
       }
@@ -232,6 +260,7 @@ export async function POST(request) {
               name: item.name,
               slot: item.slot,
               price: item.price,
+              weight: item.weight,
               effects: item.effects ?? {},
             },
           },

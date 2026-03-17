@@ -51,6 +51,7 @@ export const SHOP_ITEM_DEFINITIONS = [
     id: "iron-sword",
     name: "Iron Sword",
     price: 25,
+    weight: 8,
     slot: "weapon",
     effects: {
       stats: {
@@ -62,6 +63,7 @@ export const SHOP_ITEM_DEFINITIONS = [
     id: "leather-armor",
     name: "Leather Armor",
     price: 18,
+    weight: 10,
     slot: "armor",
     effects: {
       stats: {

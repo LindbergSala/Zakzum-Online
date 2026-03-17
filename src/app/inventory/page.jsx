@@ -14,6 +14,7 @@ import {
   formatStatBonusLabel,
   getCharacterEffectiveStats,
 } from "@/lib/stat-effects";
+import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
 
 function StatSummary({ summary }) {
   if (!summary) {
@@ -65,6 +66,9 @@ export default async function InventoryPage() {
   const statSummary = activeCharacter
     ? getCharacterEffectiveStats(activeCharacter, equippedItems)
     : null;
+  const carryWeightSummary = activeCharacter
+    ? getCharacterCarryWeightSummary(activeCharacter.strength, items)
+    : null;
 
   return (
     <main>
@@ -73,6 +77,10 @@ export default async function InventoryPage() {
       {activeCharacter ? (
         <>
           <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
+          <p>
+            <strong>Carry weight:</strong> {carryWeightSummary.currentWeight}/
+            {carryWeightSummary.maxWeight}
+          </p>
           <StatSummary summary={statSummary} />
           <InventoryActions items={items} />
           <p>

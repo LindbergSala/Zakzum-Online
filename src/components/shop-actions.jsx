@@ -89,7 +89,7 @@ export default function ShopActions({ items }) {
         {items.map((item) => (
           <li key={item.id}>
             <strong>{item.name}</strong> ({item.slot}) - {item.price} Gold -{" "}
-            {item.effectLabel}
+            {item.weight} Wt - {item.effectLabel}
             {" "}
             {item.owned ? (
               item.equipped ? (
