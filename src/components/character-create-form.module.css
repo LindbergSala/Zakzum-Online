@@ -1,0 +1,104 @@
+.form {
+  display: grid;
+  gap: 0.86rem;
+  margin-top: 1rem;
+}
+
+.identityGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.72rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+  color: #3a2512;
+}
+
+.input {
+  min-height: 42px;
+  padding: 0.58rem 0.7rem;
+  border: 1px solid rgba(106, 69, 40, 0.42);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.96rem;
+  color: #2f1f0e;
+  background: rgba(255, 248, 235, 0.86);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.input:focus-visible {
+  outline: 2px solid rgba(196, 121, 56, 0.6);
+  outline-offset: 1px;
+}
+
+.classInfoCard {
+  border-radius: 10px;
+  padding: 0.7rem 0.74rem;
+  border: 1px solid rgba(103, 64, 35, 0.26);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.72rem;
+}
+
+.pointBuyCard {
+  border-radius: 10px;
+  padding: 0.7rem 0.74rem;
+  border: 1px solid rgba(103, 64, 35, 0.26);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.submitButton {
+  cursor: pointer;
+  border: 0;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 0.72rem 1.15rem;
+  font: inherit;
+  font-weight: 700;
+  color: #fff8eb;
+  background: linear-gradient(145deg, #cf7e34 0%, #a65426 100%);
+  box-shadow: 0 10px 22px rgba(129, 67, 29, 0.31);
+}
+
+.submitButton:hover {
+  transform: translateY(-1px);
+}
+
+.submitButton:disabled {
+  opacity: 0.68;
+  cursor: wait;
+  transform: none;
+}
+
+.feedback {
+  margin: 0;
+  font-weight: 700;
+}
+
+.feedbackOk {
+  color: #355f1f;
+}
+
+.feedbackError {
+  color: #8a2316;
+}
+
+@media (max-width: 980px) {
+  .identityGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .identityGrid,
+  .statGrid {
+    grid-template-columns: 1fr;
+  }
+}
