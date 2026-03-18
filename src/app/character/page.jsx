@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import CharacterOverview from "@/components/character-overview";
+import DeleteCharacterForm from "@/components/delete-character-form";
 import GameNav from "@/components/game-nav";
 import InventoryHydrated from "@/components/inventory/InventoryHydrated";
 import StatPointAllocator from "@/components/stat-point-allocator";
@@ -254,6 +255,7 @@ export default async function CharacterPage() {
             <p className={styles.backLink}>
               <Link href="/dashboard">Back to dashboard</Link>
             </p>
+            <DeleteCharacterForm />
           </section>
 
           <section id="inventory" className={styles.inventorySection}>

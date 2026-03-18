@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { compare } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
@@ -13,6 +14,7 @@ import { logServerError } from "@/lib/server-logger";
 import {
   allocateStatPointSchema,
   createCharacterSchema,
+  deleteCharacterSchema,
 } from "@/lib/validators/character";
 
 const BASE_STAT_VALUE = 1;
@@ -232,6 +234,103 @@ export async function PATCH(request) {
     logServerError("/api/character [PATCH]", caughtError, { userId: user.id });
     return NextResponse.json(
       { message: "Something went wrong while assigning stat points." },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request) {
+  const { user, error } = await requireApiUser();
+
+  if (error) {
+    return error;
+  }
+
+  try {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { message: "Invalid JSON in request body." },
+        { status: 400 },
+      );
+    }
+
+    const parsed = deleteCharacterSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          message: "Invalid delete request.",
+          errors: parsed.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const userWithCharacter = await tx.user.findUnique({
+        where: { id: user.id },
+        select: {
+          id: true,
+          passwordHash: true,
+          ownedCharacter: {
+            select: { id: true },
+          },
+        },
+      });
+
+      if (!userWithCharacter) {
+        return {
+          ok: false,
+          status: 404,
+          message: "User account was not found.",
+        };
+      }
+
+      if (!userWithCharacter.ownedCharacter) {
+        return {
+          ok: false,
+          status: 404,
+          message: "No character found for this account.",
+        };
+      }
+
+      const isPasswordValid = await compare(
+        parsed.data.password,
+        userWithCharacter.passwordHash,
+      );
+
+      if (!isPasswordValid) {
+        return {
+          ok: false,
+          status: 401,
+          message: "Incorrect password.",
+        };
+      }
+
+      await tx.character.delete({
+        where: { id: userWithCharacter.ownedCharacter.id },
+      });
+
+      return {
+        ok: true,
+      };
+    });
+
+    if (!result.ok) {
+      return NextResponse.json({ message: result.message }, { status: result.status });
+    }
+
+    return NextResponse.json(
+      { message: "Character deleted." },
+      { status: 200 },
+    );
+  } catch (caughtError) {
+    logServerError("/api/character [DELETE]", caughtError, { userId: user.id });
+    return NextResponse.json(
+      { message: "Something went wrong while deleting character." },
       { status: 500 },
     );
   }

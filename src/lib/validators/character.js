@@ -27,3 +27,10 @@ export const allocateStatPointSchema = z.object({
     error: "Stat key must be a valid option.",
   }),
 }).strict();
+
+export const deleteCharacterSchema = z.object({
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters.")
+    .max(72, "Password can be at most 72 characters."),
+}).strict();
