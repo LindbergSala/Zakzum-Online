@@ -162,14 +162,23 @@ export default function ActivityRunner({ activity }) {
             <strong>Energy cost:</strong> {lastResult.energyCost}
           </p>
           <p>
-            <strong>Roll:</strong> {lastResult.roll.value} + mod{" "}
-            {lastResult.roll.statModifier} = {lastResult.roll.total} (target{" "}
+            <strong>Roll:</strong> {lastResult.roll.value} + bonus{" "}
+            {lastResult.roll.totalRollBonus ?? lastResult.roll.statModifier} ={" "}
+            {lastResult.roll.total} (target{" "}
             {lastResult.roll.target}, chance {lastResult.roll.chancePercent}%)
           </p>
+          {typeof lastResult.roll.baseTarget === "number" ? (
+            <p>
+              <strong>Target breakdown:</strong> Base {lastResult.roll.baseTarget} + Level scaling{" "}
+              {lastResult.roll.difficultyLevelScaling ?? 0}
+            </p>
+          ) : null}
           <p>
-            <strong>Level bonus in roll:</strong> +{lastResult.roll.levelModifier}{" "}
-            (level {lastResult.roll.characterLevel}, base mod{" "}
-            {lastResult.roll.baseStatModifier})
+            <strong>Bonus breakdown:</strong> Primary x2{" "}
+            {lastResult.roll.primaryContribution ?? "-"} + Secondary{" "}
+            {lastResult.roll.secondaryContribution ?? "-"} + Level{" "}
+            {lastResult.roll.levelContribution ?? lastResult.roll.levelModifier} + Passive{" "}
+            {lastResult.roll.passiveRollModifier}
           </p>
           <p>
             <strong>Stats in roll:</strong>{" "}

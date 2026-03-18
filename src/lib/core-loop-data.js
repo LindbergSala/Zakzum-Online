@@ -7,7 +7,8 @@ export const ACTIVITY_DEFINITIONS = [
       "Follow the quest board, help townsfolk, and build steady progression with controlled risk.",
     energyCost: 3,
     roll: {
-      difficulty: 11,
+      difficulty: 13,
+      levelScaling: 1,
       primaryStat: "wisdom",
       secondaryStat: "dexterity",
     },
@@ -22,7 +23,8 @@ export const ACTIVITY_DEFINITIONS = [
       "Venture outside the city walls. Higher chance for big wins, but penalties are harsher.",
     energyCost: 5,
     roll: {
-      difficulty: 13,
+      difficulty: 18,
+      levelScaling: 3,
       primaryStat: "strength",
       secondaryStat: "constitution",
     },
@@ -37,7 +39,8 @@ export const ACTIVITY_DEFINITIONS = [
       "Face NPC opponents in the arena. Victory mainly grants renown and experience.",
     energyCost: 4,
     roll: {
-      difficulty: 12,
+      difficulty: 16,
+      levelScaling: 2,
       primaryStat: "strength",
       secondaryStat: "dexterity",
     },
