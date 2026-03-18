@@ -44,9 +44,17 @@ export const CHARACTER_OVERVIEW_SELECT = {
 
 export function buildBaseResourcesForCharacter(characterClass, constitution) {
   const classHpBase = {
-    FIGHTER: 24,
-    ROGUE: 20,
     BARBARIAN: 28,
+    BARD: 20,
+    CLERIC: 22,
+    DRUID: 20,
+    FIGHTER: 24,
+    MONK: 22,
+    PALADIN: 26,
+    RANGER: 22,
+    ROGUE: 20,
+    SORCERER: 18,
+    WARLOCK: 18,
     WIZARD: 16,
   };
 

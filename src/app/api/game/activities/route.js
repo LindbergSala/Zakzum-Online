@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 import { requireApiUser } from "@/lib/api-auth";
 import { getActiveCharacterForUser } from "@/lib/character";
 import {
   applyClassPassiveDelta,
   getClassPassive,
+  getClassPassiveActivityEnergyCost,
+  getClassPassiveEnergyRefreshBonus,
   getClassPassiveRollModifier,
 } from "@/lib/class-identity";
 import { ACTIVITY_DEFINITION_MAP, ACTIVITY_DEFINITIONS } from "@/lib/core-loop-data";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { resolveActivityRoll } from "@/lib/roll-engine";
+import {
+  applyHalfOrcRelentless,
+  applyRacePassiveDelta,
+  getRacePassive,
+  getRacePassiveRollModifier,
+} from "@/lib/race-identity";
 import {
   buildCharacterResourceUpdateInput,
   calculateCharacterResourceResult,
@@ -18,11 +27,15 @@ import {
 import { logServerError } from "@/lib/server-logger";
 import { getCharacterEffectiveStats } from "@/lib/stat-effects";
 import { getLevelProgressMeta } from "@/lib/level-progression";
+import { getSessionTokenFromRequestCookies } from "@/lib/session";
 import { activityActionSchema } from "@/lib/validators/core-loop";
+
+const HALF_ORC_RELENTLESS_COOKIE_NAME = "zakzum_half_orc_relentless";
 
 const ACTIVITY_CHARACTER_SELECT = {
   id: true,
   characterClass: true,
+  characterRace: true,
   strength: true,
   dexterity: true,
   constitution: true,
@@ -104,6 +117,14 @@ export async function POST(request) {
     );
   }
 
+  const sessionToken = await getSessionTokenFromRequestCookies();
+  const cookieStore = await cookies();
+  const halfOrcRelentlessCookieValue =
+    cookieStore.get(HALF_ORC_RELENTLESS_COOKIE_NAME)?.value ?? "";
+  const halfOrcRelentlessUsedThisSession = Boolean(
+    sessionToken && halfOrcRelentlessCookieValue === sessionToken,
+  );
+
   try {
     const activity = ACTIVITY_DEFINITION_MAP[parsed.data.activityId];
     const result = await runSerializableTransaction(async (tx) => {
@@ -131,23 +152,41 @@ export async function POST(request) {
       });
 
       const classPassive = getClassPassive(latestCharacter.characterClass);
-      const passiveRollModifier = getClassPassiveRollModifier(
+      const racePassive = getRacePassive(latestCharacter.characterRace);
+      const activityEnergyCost = getClassPassiveActivityEnergyCost(
         latestCharacter.characterClass,
+        activity.energyCost,
       );
+      const classRollModifier = getClassPassiveRollModifier(
+        latestCharacter.characterClass,
+        activity.id,
+      );
+      const raceRollModifier = getRacePassiveRollModifier(
+        latestCharacter.characterRace,
+        activity.id,
+      );
+      const passiveRollModifier = classRollModifier + raceRollModifier;
       const statSummary = getCharacterEffectiveStats(latestCharacter, equippedItems);
       const rollResult = resolveActivityRoll(statSummary.effective, activity, {
         level: latestCharacter.level,
         passiveRollModifier,
       });
-      const passiveResolvedDelta = applyClassPassiveDelta({
+      const classPassiveResolvedDelta = applyClassPassiveDelta({
         characterClass: latestCharacter.characterClass,
         success: rollResult.success,
         delta: rollResult.delta,
+        activityId: activity.id,
+      });
+      const racePassiveResolvedDelta = applyRacePassiveDelta({
+        characterRace: latestCharacter.characterRace,
+        success: rollResult.success,
+        delta: classPassiveResolvedDelta.delta,
+        activityId: activity.id,
       });
 
       const calculation = calculateCharacterResourceResult(latestCharacter, {
-        energyCost: activity.energyCost,
-        delta: passiveResolvedDelta.delta,
+        energyCost: activityEnergyCost,
+        delta: racePassiveResolvedDelta.delta,
       });
 
       if (!calculation.ok) {
@@ -158,6 +197,19 @@ export async function POST(request) {
           requiredEnergy: calculation.requiredEnergy,
           resources: getCharacterResourceSnapshot(latestCharacter),
         };
+      }
+
+      const halfOrcRelentless = applyHalfOrcRelentless({
+        characterRace: latestCharacter.characterRace,
+        beforeResources: calculation.before,
+        afterResources: calculation.after,
+        delta: calculation.delta,
+        alreadyUsedThisSession: halfOrcRelentlessUsedThisSession,
+      });
+
+      if (halfOrcRelentless.triggered) {
+        calculation.after = halfOrcRelentless.afterResources;
+        calculation.delta = halfOrcRelentless.delta;
       }
 
       const gainedLevels = Math.max(
@@ -211,7 +263,7 @@ export async function POST(request) {
           activityId: activity.id,
           activityName: activity.name,
           success: rollResult.success,
-          energyCost: activity.energyCost,
+          energyCost: activityEnergyCost,
           roll: rollResult.roll,
           rollTotal: rollResult.rollTotal,
           successTarget: rollResult.successTarget,
@@ -233,8 +285,26 @@ export async function POST(request) {
             classIdentity: {
               class: latestCharacter.characterClass,
               passive: classPassive,
-              passiveRollModifier,
-              passiveDeltaBonus: passiveResolvedDelta.deltaBonus,
+              baseEnergyCost: activity.energyCost,
+              effectiveEnergyCost: activityEnergyCost,
+              passiveEnergyCostReduction: Math.max(
+                0,
+                activity.energyCost - activityEnergyCost,
+              ),
+              classRollModifier,
+              passiveEnergyRefreshBonus: getClassPassiveEnergyRefreshBonus(
+                latestCharacter.characterClass,
+              ),
+              passiveDeltaBonus: classPassiveResolvedDelta.deltaBonus,
+            },
+            raceIdentity: {
+              race: latestCharacter.characterRace,
+              passive: racePassive,
+              raceRollModifier,
+              passiveDeltaBonus: racePassiveResolvedDelta.deltaBonus,
+              halfOrcRelentlessTriggered: halfOrcRelentless.triggered,
+              halfOrcRelentlessDeltaBonus: halfOrcRelentless.deltaBonus,
+              halfOrcRelentlessAlreadyUsed: halfOrcRelentlessUsedThisSession,
             },
             stats: statSummary,
           },
@@ -247,14 +317,23 @@ export async function POST(request) {
         updatedCharacter,
         logEntry,
         classPassive,
+        racePassive,
+        activityEnergyCost,
+        classRollModifier,
+        raceRollModifier,
         passiveRollModifier,
-        passiveResolvedDelta,
+        classPassiveResolvedDelta,
+        racePassiveResolvedDelta,
+        halfOrcRelentlessTriggered: halfOrcRelentless.triggered,
+        halfOrcRelentlessDeltaBonus: halfOrcRelentless.deltaBonus,
+        halfOrcRelentlessAlreadyUsed: halfOrcRelentlessUsedThisSession,
         rollResult,
         statSummary,
         calculation,
         leveledUp: calculation.after.level > calculation.before.level,
         gainedStatPoints: gainedLevels,
         characterClass: latestCharacter.characterClass,
+        characterRace: latestCharacter.characterRace,
       };
     });
 
@@ -269,7 +348,7 @@ export async function POST(request) {
       );
     }
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         message: result.leveledUp
           ? result.rollResult.success
@@ -281,11 +360,11 @@ export async function POST(request) {
         action: {
           id: activity.id,
           name: activity.name,
-          energyCost: activity.energyCost,
+          energyCost: result.activityEnergyCost,
         },
         result: {
           success: result.rollResult.success,
-          energyCost: activity.energyCost,
+          energyCost: result.activityEnergyCost,
           progression: {
             leveledUp: result.leveledUp,
             gainedStatPoints: result.gainedStatPoints,
@@ -300,8 +379,26 @@ export async function POST(request) {
           classIdentity: {
             class: result.characterClass,
             passive: result.classPassive,
-            passiveRollModifier: result.passiveRollModifier,
-            passiveDeltaBonus: result.passiveResolvedDelta.deltaBonus,
+            baseEnergyCost: activity.energyCost,
+            effectiveEnergyCost: result.activityEnergyCost,
+            passiveEnergyCostReduction: Math.max(
+              0,
+              activity.energyCost - result.activityEnergyCost,
+            ),
+            passiveRollModifier: result.classRollModifier,
+            passiveEnergyRefreshBonus: getClassPassiveEnergyRefreshBonus(
+              result.characterClass,
+            ),
+            passiveDeltaBonus: result.classPassiveResolvedDelta.deltaBonus,
+          },
+          raceIdentity: {
+            race: result.characterRace,
+            passive: result.racePassive,
+            passiveRollModifier: result.raceRollModifier,
+            passiveDeltaBonus: result.racePassiveResolvedDelta.deltaBonus,
+            halfOrcRelentlessTriggered: result.halfOrcRelentlessTriggered,
+            halfOrcRelentlessDeltaBonus: result.halfOrcRelentlessDeltaBonus,
+            halfOrcRelentlessAlreadyUsed: result.halfOrcRelentlessAlreadyUsed,
           },
           roll: {
             value: result.rollResult.roll,
@@ -341,6 +438,17 @@ export async function POST(request) {
       },
       { status: 200 },
     );
+
+    if (result.halfOrcRelentlessTriggered && sessionToken) {
+      response.cookies.set(HALF_ORC_RELENTLESS_COOKIE_NAME, sessionToken, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+      });
+    }
+
+    return response;
   } catch (error) {
     if (isSerializableConflict(error)) {
       return NextResponse.json(

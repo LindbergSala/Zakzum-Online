@@ -3,6 +3,7 @@ import {
   getCharacterRaceLabel,
 } from "@/lib/character-data";
 import { getClassPassive } from "@/lib/class-identity";
+import { getRacePassive } from "@/lib/race-identity";
 import styles from "./character-overview.module.css";
 
 function ResourceRow({ label, value }) {
@@ -26,6 +27,7 @@ export default function CharacterOverview({
   showResources = true,
 }) {
   const classPassive = getClassPassive(character.characterClass);
+  const racePassive = getRacePassive(character.characterRace);
 
   return (
     <>
@@ -41,6 +43,10 @@ export default function CharacterOverview({
       <p>
         <strong>Class passive:</strong> {classPassive.name} -{" "}
         {classPassive.description}
+      </p>
+      <p>
+        <strong>Racial passive:</strong> {racePassive.name} -{" "}
+        {racePassive.description}
       </p>
       <p>
         <strong>Base stats</strong>

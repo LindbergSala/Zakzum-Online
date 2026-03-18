@@ -197,10 +197,29 @@ export default function ActivityRunner({ activity }) {
             {lastResult.classIdentity.passive.description}
           </p>
           <p>
-            <strong>Passive effect this action:</strong>{" "}
+            <strong>Class effect this action:</strong>{" "}
             Roll +{lastResult.classIdentity.passiveRollModifier},{" "}
+            Energy cost reduction{" "}
+            {lastResult.classIdentity.passiveEnergyCostReduction ?? 0},{" "}
             {formatDeltaBonus(lastResult.classIdentity.passiveDeltaBonus)}
           </p>
+          {lastResult.raceIdentity ? (
+            <>
+              <p>
+                <strong>Racial passive:</strong>{" "}
+                {lastResult.raceIdentity.passive.name} -{" "}
+                {lastResult.raceIdentity.passive.description}
+              </p>
+              <p>
+                <strong>Racial effect this action:</strong>{" "}
+                Roll +{lastResult.raceIdentity.passiveRollModifier ?? 0},{" "}
+                {formatDeltaBonus(lastResult.raceIdentity.passiveDeltaBonus)}
+                {lastResult.raceIdentity.halfOrcRelentlessTriggered
+                  ? " | Relentless triggered (survived at 1 HP)."
+                  : ""}
+              </p>
+            </>
+          ) : null}
           <p>
             <strong>Reward/Penalty (delta):</strong>{" "}
             {formatDelta(lastResult.delta)}

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getClassPassiveEnergyRefreshBonus } from "@/lib/class-identity";
 
 export const DEFAULT_MAX_ENERGY = 20;
 export const ENERGY_REGEN_INTERVAL_SECONDS = 5 * 60;
@@ -103,6 +104,15 @@ export async function resolveCharacterEnergyRegeneration(character, options = {}
 
       nextEnergy += gainedEnergy;
       changed = gainedEnergy > 0;
+      const extraEnergyOnRefresh = getClassPassiveEnergyRefreshBonus(
+        character.characterClass,
+      );
+
+      if (gainedEnergy > 0 && extraEnergyOnRefresh > 0 && nextEnergy < maxEnergy) {
+        const extraEnergy = Math.min(maxEnergy - nextEnergy, extraEnergyOnRefresh);
+        nextEnergy += extraEnergy;
+        changed = changed || extraEnergy > 0;
+      }
 
       if (nextEnergy >= maxEnergy) {
         nextAnchor = now;
@@ -143,4 +153,3 @@ export async function resolveCharacterEnergyRegeneration(character, options = {}
     meta: getEnergyRegenerationMeta(normalizedCharacter, now),
   };
 }
-

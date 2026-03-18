@@ -31,17 +31,29 @@ model Session {
 }
 
 enum CharacterClass {
-  FIGHTER
-  ROGUE
   BARBARIAN
+  BARD
+  CLERIC
+  DRUID
+  FIGHTER
+  MONK
+  PALADIN
+  RANGER
+  ROGUE
+  SORCERER
+  WARLOCK
   WIZARD
 }
 
 enum CharacterRace {
+  DRAGONBORN
   HUMAN
   DWARF
-  HALF_ELF
   ELF
+  GNOME
+  HALF_ELF
+  HALF_ORC
+  HALFLING
   TIEFLING
 }
 

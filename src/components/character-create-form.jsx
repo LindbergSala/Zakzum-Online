@@ -8,6 +8,7 @@ import {
   CHARACTER_RACE_OPTIONS,
 } from "@/lib/character-data";
 import { getClassPassive } from "@/lib/class-identity";
+import { getRacePassive } from "@/lib/race-identity";
 import styles from "./character-create-form.module.css";
 
 function buildInitialFormData() {
@@ -25,6 +26,7 @@ export default function CharacterCreateForm() {
   const [feedback, setFeedback] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const classPassive = getClassPassive(formData.characterClass);
+  const racePassive = getRacePassive(formData.characterRace);
 
   function updateField(key, value) {
     setFormData((previous) => ({
@@ -147,6 +149,9 @@ export default function CharacterCreateForm() {
         </p>
         <p className={`${styles.feedback} ${styles.feedbackOk}`}>
           Class passive: <strong>{classPassive.name}</strong> - {classPassive.description}
+        </p>
+        <p className={`${styles.feedback} ${styles.feedbackOk}`}>
+          Racial passive: <strong>{racePassive.name}</strong> - {racePassive.description}
         </p>
       </div>
 

@@ -1,15 +1,27 @@
 export const CHARACTER_CLASS_OPTIONS = [
-  { value: "FIGHTER", label: "Fighter" },
-  { value: "ROGUE", label: "Rogue" },
   { value: "BARBARIAN", label: "Barbarian" },
+  { value: "BARD", label: "Bard" },
+  { value: "CLERIC", label: "Cleric" },
+  { value: "DRUID", label: "Druid" },
+  { value: "FIGHTER", label: "Fighter" },
+  { value: "MONK", label: "Monk" },
+  { value: "PALADIN", label: "Paladin" },
+  { value: "RANGER", label: "Ranger" },
+  { value: "ROGUE", label: "Rogue" },
+  { value: "SORCERER", label: "Sorcerer" },
+  { value: "WARLOCK", label: "Warlock" },
   { value: "WIZARD", label: "Wizard" },
 ];
 
 export const CHARACTER_RACE_OPTIONS = [
+  { value: "DRAGONBORN", label: "Dragonborn" },
   { value: "HUMAN", label: "Human" },
   { value: "DWARF", label: "Dwarf" },
-  { value: "HALF_ELF", label: "Half-elf" },
   { value: "ELF", label: "Elf" },
+  { value: "GNOME", label: "Gnome" },
+  { value: "HALF_ELF", label: "Half-elf" },
+  { value: "HALF_ORC", label: "Half-orc" },
+  { value: "HALFLING", label: "Halfling" },
   { value: "TIEFLING", label: "Tiefling" },
 ];
 

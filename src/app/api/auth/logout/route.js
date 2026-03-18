@@ -8,6 +8,8 @@ import {
   SESSION_COOKIE_NAME,
 } from "@/lib/session";
 
+const HALF_ORC_RELENTLESS_COOKIE_NAME = "zakzum_half_orc_relentless";
+
 export async function POST() {
   try {
     const token = await getSessionTokenFromRequestCookies();
@@ -16,6 +18,11 @@ export async function POST() {
     const response = NextResponse.json({ message: "Logged out." }, { status: 200 });
     response.cookies.set(
       SESSION_COOKIE_NAME,
+      "",
+      getExpiredSessionCookieOptions(),
+    );
+    response.cookies.set(
+      HALF_ORC_RELENTLESS_COOKIE_NAME,
       "",
       getExpiredSessionCookieOptions(),
     );
@@ -28,6 +35,11 @@ export async function POST() {
     );
     response.cookies.set(
       SESSION_COOKIE_NAME,
+      "",
+      getExpiredSessionCookieOptions(),
+    );
+    response.cookies.set(
+      HALF_ORC_RELENTLESS_COOKIE_NAME,
       "",
       getExpiredSessionCookieOptions(),
     );
