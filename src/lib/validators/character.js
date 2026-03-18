@@ -1,25 +1,12 @@
 import { z } from "zod";
 
 import {
-  calculateCharacterPointBuyCost,
   CHARACTER_CLASS_VALUES,
   CHARACTER_RACE_VALUES,
-  CHARACTER_POINT_BUY_BUDGET,
-  CHARACTER_POINT_BUY_MAX_STAT,
-  CHARACTER_POINT_BUY_MIN_STAT,
+  CHARACTER_STAT_FIELDS,
 } from "@/lib/character-data";
 
-const statSchema = z.coerce
-  .number()
-  .int("Stat must be an integer.")
-  .min(
-    CHARACTER_POINT_BUY_MIN_STAT,
-    `Stat cannot be lower than ${CHARACTER_POINT_BUY_MIN_STAT}.`,
-  )
-  .max(
-    CHARACTER_POINT_BUY_MAX_STAT,
-    `Stat cannot be higher than ${CHARACTER_POINT_BUY_MAX_STAT}.`,
-  );
+const CHARACTER_STAT_KEYS = CHARACTER_STAT_FIELDS.map((field) => field.key);
 
 export const createCharacterSchema = z.object({
   name: z
@@ -33,25 +20,10 @@ export const createCharacterSchema = z.object({
   characterRace: z.enum(CHARACTER_RACE_VALUES, {
     error: "Race must be a valid option.",
   }),
-  strength: statSchema,
-  dexterity: statSchema,
-  constitution: statSchema,
-  intelligence: statSchema,
-  wisdom: statSchema,
-  charisma: statSchema,
-}).strict()
-  .superRefine((data, context) => {
-    const totalCost = calculateCharacterPointBuyCost(data);
+}).strict();
 
-    if (totalCost === null) {
-      return;
-    }
-
-    if (totalCost > CHARACTER_POINT_BUY_BUDGET) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["pointBudget"],
-        message: `Point budget exceeded: ${totalCost}/${CHARACTER_POINT_BUY_BUDGET}.`,
-      });
-    }
-  });
+export const allocateStatPointSchema = z.object({
+  statKey: z.enum(CHARACTER_STAT_KEYS, {
+    error: "Stat key must be a valid option.",
+  }),
+}).strict();

@@ -38,6 +38,7 @@ const ACTIVITY_CHARACTER_SELECT = {
   level: true,
   renown: true,
   heat: true,
+  unspentStatPoints: true,
   updatedAt: true,
 };
 
@@ -159,6 +160,10 @@ export async function POST(request) {
         };
       }
 
+      const gainedLevels = Math.max(
+        0,
+        calculation.after.level - calculation.before.level,
+      );
       const now = new Date();
       const updateResult = await tx.character.updateMany({
         where: {
@@ -168,6 +173,9 @@ export async function POST(request) {
         data: {
           ...buildCharacterResourceUpdateInput(calculation.after),
           energyRegenAt: now,
+          ...(gainedLevels > 0
+            ? { unspentStatPoints: { increment: gainedLevels } }
+            : {}),
         },
       });
 
@@ -192,6 +200,7 @@ export async function POST(request) {
           level: true,
           renown: true,
           heat: true,
+          unspentStatPoints: true,
         },
       });
 
@@ -242,6 +251,7 @@ export async function POST(request) {
         statSummary,
         calculation,
         leveledUp: calculation.after.level > calculation.before.level,
+        gainedStatPoints: gainedLevels,
         characterClass: latestCharacter.characterClass,
       };
     });
@@ -261,8 +271,8 @@ export async function POST(request) {
       {
         message: result.leveledUp
           ? result.rollResult.success
-            ? `${activity.name} succeeded. Level up! You are now level ${result.calculation.after.level}.`
-            : `${activity.name} failed. Level up! You are now level ${result.calculation.after.level}.`
+            ? `${activity.name} succeeded. Level up! You are now level ${result.calculation.after.level} and gained ${result.gainedStatPoints} stat point${result.gainedStatPoints === 1 ? "" : "s"}.`
+            : `${activity.name} failed. Level up! You are now level ${result.calculation.after.level} and gained ${result.gainedStatPoints} stat point${result.gainedStatPoints === 1 ? "" : "s"}.`
           : result.rollResult.success
             ? `${activity.name} succeeded.`
             : `${activity.name} failed.`,
@@ -276,12 +286,14 @@ export async function POST(request) {
           energyCost: activity.energyCost,
           progression: {
             leveledUp: result.leveledUp,
+            gainedStatPoints: result.gainedStatPoints,
             levelBefore: result.calculation.before.level,
             levelAfter: result.calculation.after.level,
             xp: getLevelProgressMeta(
               result.calculation.after.level,
               result.calculation.after.xp,
             ),
+            unspentStatPoints: result.updatedCharacter.unspentStatPoints,
           },
           classIdentity: {
             class: result.characterClass,

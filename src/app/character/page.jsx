@@ -4,6 +4,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import CharacterOverview from "@/components/character-overview";
 import GameNav from "@/components/game-nav";
 import InventoryHydrated from "@/components/inventory/InventoryHydrated";
+import StatPointAllocator from "@/components/stat-point-allocator";
 import {
   buildBaseResourcesForCharacter,
   getUserWithResolvedActiveCharacter,
@@ -238,6 +239,14 @@ export default async function CharacterPage() {
                 </li>
               ))}
             </ul>
+
+            {character.unspentStatPoints > 0 ? (
+              <StatPointAllocator character={character} />
+            ) : (
+              <p className={styles.mutedSecondary}>
+                No unspent stat points. Gain XP and level up to earn +1 stat point.
+              </p>
+            )}
 
             <hr className={styles.sectionDivider} />
             <h2>Character overview</h2>

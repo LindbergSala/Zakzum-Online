@@ -2,10 +2,7 @@ import {
   getCharacterClassLabel,
   getCharacterRaceLabel,
 } from "@/lib/character-data";
-import {
-  formatClassStartBonusLabel,
-  getClassPassive,
-} from "@/lib/class-identity";
+import { getClassPassive } from "@/lib/class-identity";
 import styles from "./character-overview.module.css";
 
 function ResourceRow({ label, value }) {
@@ -29,7 +26,6 @@ export default function CharacterOverview({
   showResources = true,
 }) {
   const classPassive = getClassPassive(character.characterClass);
-  const classStartBonus = formatClassStartBonusLabel(character.characterClass);
 
   return (
     <>
@@ -41,9 +37,6 @@ export default function CharacterOverview({
       </p>
       <p>
         <strong>Race:</strong> {getCharacterRaceLabel(character.characterRace)}
-      </p>
-      <p>
-        <strong>Start bonus:</strong> {classStartBonus}
       </p>
       <p>
         <strong>Class passive:</strong> {classPassive.name} -{" "}

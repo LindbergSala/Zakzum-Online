@@ -201,6 +201,11 @@
   margin: 0.3rem 0 0.65rem;
 }
 
+.mutedSecondary {
+  margin: 0.72rem 0 0;
+  color: var(--ink-soft);
+}
+
 .resourceMeters {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

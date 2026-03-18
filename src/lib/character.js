@@ -15,6 +15,7 @@ export const CHARACTER_RESOURCE_SELECT = {
   level: true,
   renown: true,
   heat: true,
+  unspentStatPoints: true,
 };
 
 export const CHARACTER_OVERVIEW_SELECT = {
@@ -38,6 +39,7 @@ export const CHARACTER_OVERVIEW_SELECT = {
   renown: true,
   heat: true,
   createdAt: true,
+  unspentStatPoints: true,
 };
 
 export function buildBaseResourcesForCharacter(characterClass, constitution) {

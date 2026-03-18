@@ -78,10 +78,11 @@ export default async function CharacterCreatePage() {
 
           <section className={styles.panel}>
             <p>
-              Point-buy rules: each stat 8-15, total budget 27 points.
+              Every new character starts with base stats at 1.
             </p>
             <p>
-              Class start bonus is applied after point-buy validation.
+              Each level-up grants +1 unspent stat point that you can assign on
+              your character page.
             </p>
             <CharacterCreateForm />
             <p className={styles.backLink}>

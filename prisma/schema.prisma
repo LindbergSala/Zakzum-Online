@@ -46,32 +46,33 @@ enum CharacterRace {
 }
 
 model Character {
-  id             String          @id @default(cuid())
-  userId         String          @unique
-  user           User            @relation("OwnedCharacter", fields: [userId], references: [id], onDelete: Cascade)
-  activeForUser  User?           @relation("ActiveCharacter")
-  name           String          @db.VarChar(32)
-  characterClass CharacterClass
-  characterRace  CharacterRace   @default(HUMAN)
-  strength       Int
-  dexterity      Int
-  constitution   Int
-  intelligence   Int
-  wisdom         Int
-  charisma       Int
-  hp             Int             @default(20)
-  energy         Int             @default(20)
-  maxEnergy      Int             @default(20)
-  energyRegenAt  DateTime        @default(now())
-  gold           Int             @default(0)
-  xp             Int             @default(0)
-  renown         Int             @default(0)
-  heat           Int             @default(0)
-  level          Int             @default(1)
-  items          CharacterItem[]
-  activityLogs   ActivityLog[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id                String          @id @default(cuid())
+  userId            String          @unique
+  user              User            @relation("OwnedCharacter", fields: [userId], references: [id], onDelete: Cascade)
+  activeForUser     User?           @relation("ActiveCharacter")
+  name              String          @db.VarChar(32)
+  characterClass    CharacterClass
+  characterRace     CharacterRace   @default(HUMAN)
+  strength          Int
+  dexterity         Int
+  constitution      Int
+  intelligence      Int
+  wisdom            Int
+  charisma          Int
+  hp                Int             @default(20)
+  energy            Int             @default(20)
+  maxEnergy         Int             @default(20)
+  energyRegenAt     DateTime        @default(now())
+  gold              Int             @default(0)
+  xp                Int             @default(0)
+  renown            Int             @default(0)
+  heat              Int             @default(0)
+  level             Int             @default(1)
+  unspentStatPoints Int             @default(0)
+  items             CharacterItem[]
+  activityLogs      ActivityLog[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 }
 
 model CharacterItem {
