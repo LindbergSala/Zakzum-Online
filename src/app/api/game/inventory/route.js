@@ -7,7 +7,10 @@ import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-tra
 import { prisma } from "@/lib/prisma";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import { logServerError } from "@/lib/server-logger";
-import { formatStatBonusLabel, getCharacterEffectiveStats } from "@/lib/stat-effects";
+import {
+  formatItemEffectLabel,
+  getCharacterEffectiveStats,
+} from "@/lib/stat-effects";
 import { inventoryEquipSchema } from "@/lib/validators/core-loop";
 
 function enrichInventoryItems(items) {
@@ -18,7 +21,7 @@ function enrichInventoryItems(items) {
       ...item,
       slot: definition?.slot ?? "unknown",
       effects: definition?.effects ?? { stats: {} },
-      effectLabel: formatStatBonusLabel(definition?.effects?.stats),
+      effectLabel: formatItemEffectLabel(definition?.effects),
     };
   });
 }

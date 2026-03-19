@@ -25,7 +25,11 @@ import {
   getCharacterResourceSnapshot,
 } from "@/lib/resource-rules";
 import { logServerError } from "@/lib/server-logger";
-import { getCharacterEffectiveStats } from "@/lib/stat-effects";
+import {
+  applyEquippedItemActivityDelta,
+  getCharacterEffectiveStats,
+  getEquippedItemRollModifier,
+} from "@/lib/stat-effects";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { getSessionTokenFromRequestCookies } from "@/lib/session";
 import { activityActionSchema } from "@/lib/validators/core-loop";
@@ -166,10 +170,15 @@ export async function POST(request) {
         activity.id,
       );
       const passiveRollModifier = classRollModifier + raceRollModifier;
+      const itemRollModifier = getEquippedItemRollModifier(
+        equippedItems,
+        activity.id,
+      );
+      const totalRollModifier = passiveRollModifier + itemRollModifier;
       const statSummary = getCharacterEffectiveStats(latestCharacter, equippedItems);
       const rollResult = resolveActivityRoll(statSummary.effective, activity, {
         level: latestCharacter.level,
-        passiveRollModifier,
+        passiveRollModifier: totalRollModifier,
       });
       const classPassiveResolvedDelta = applyClassPassiveDelta({
         characterClass: latestCharacter.characterClass,
@@ -183,10 +192,16 @@ export async function POST(request) {
         delta: classPassiveResolvedDelta.delta,
         activityId: activity.id,
       });
+      const itemResolvedDelta = applyEquippedItemActivityDelta({
+        equippedItems,
+        delta: racePassiveResolvedDelta.delta,
+        success: rollResult.success,
+        activityId: activity.id,
+      });
 
       const calculation = calculateCharacterResourceResult(latestCharacter, {
         energyCost: activityEnergyCost,
-        delta: racePassiveResolvedDelta.delta,
+        delta: itemResolvedDelta.delta,
       });
 
       if (!calculation.ok) {
@@ -306,6 +321,10 @@ export async function POST(request) {
               halfOrcRelentlessDeltaBonus: halfOrcRelentless.deltaBonus,
               halfOrcRelentlessAlreadyUsed: halfOrcRelentlessUsedThisSession,
             },
+            itemIdentity: {
+              rollModifier: itemRollModifier,
+              deltaBonus: itemResolvedDelta.deltaBonus,
+            },
             stats: statSummary,
           },
         },
@@ -321,9 +340,12 @@ export async function POST(request) {
         activityEnergyCost,
         classRollModifier,
         raceRollModifier,
+        itemRollModifier,
         passiveRollModifier,
+        totalRollModifier,
         classPassiveResolvedDelta,
         racePassiveResolvedDelta,
+        itemResolvedDelta,
         halfOrcRelentlessTriggered: halfOrcRelentless.triggered,
         halfOrcRelentlessDeltaBonus: halfOrcRelentless.deltaBonus,
         halfOrcRelentlessAlreadyUsed: halfOrcRelentlessUsedThisSession,
@@ -400,6 +422,10 @@ export async function POST(request) {
             halfOrcRelentlessDeltaBonus: result.halfOrcRelentlessDeltaBonus,
             halfOrcRelentlessAlreadyUsed: result.halfOrcRelentlessAlreadyUsed,
           },
+          itemIdentity: {
+            passiveRollModifier: result.itemRollModifier,
+            passiveDeltaBonus: result.itemResolvedDelta.deltaBonus,
+          },
           roll: {
             value: result.rollResult.roll,
             total: result.rollResult.rollTotal,
@@ -414,7 +440,9 @@ export async function POST(request) {
             levelContribution: result.rollResult.calculations.levelContribution,
             baseStatModifier: result.rollResult.calculations.baseStatModifier,
             levelModifier: result.rollResult.calculations.levelModifier,
-            passiveRollModifier: result.rollResult.calculations.passiveRollModifier,
+            passiveRollModifier: result.passiveRollModifier,
+            itemRollModifier: result.itemRollModifier,
+            totalPassiveRollModifier: result.totalRollModifier,
             characterLevel: result.rollResult.calculations.characterLevel,
             chancePercent: result.rollResult.chancePercent,
             primaryStat: result.rollResult.calculations.primaryStat,

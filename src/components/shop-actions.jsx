@@ -33,6 +33,20 @@ function formatDelta(delta) {
     .join(", ");
 }
 
+function formatPrice(item) {
+  const parts = [];
+
+  if (Number(item.price) > 0) {
+    parts.push(`${item.price} Gold`);
+  }
+
+  if (Number(item.renownPrice) > 0) {
+    parts.push(`${item.renownPrice} Renown`);
+  }
+
+  return parts.length > 0 ? parts.join(" + ") : "Free";
+}
+
 export default function ShopActions({ items }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -88,9 +102,14 @@ export default function ShopActions({ items }) {
       <ul>
         {items.map((item) => (
           <li key={item.id}>
-            <strong>{item.name}</strong> ({item.slot}) - {item.price} Gold -{" "}
-            {item.weight} Wt - {item.effectLabel}
-            {" "}
+            <p>
+              <strong>{item.name}</strong>
+            </p>
+            {item.description ? <p>{item.description}</p> : null}
+            <p>
+              Slot: {item.slot} | Cost: {formatPrice(item)} | Weight: {item.weight} Wt
+            </p>
+            <p>Effects: {item.effectLabel}</p>
             {item.owned ? (
               item.equipped ? (
                 <em>(equipped)</em>

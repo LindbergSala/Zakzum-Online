@@ -21,6 +21,12 @@ export function getItemWeightById(itemId) {
   return toPositiveNumber(SHOP_ITEM_DEFINITION_MAP[itemId]?.weight);
 }
 
+export function getItemCarryCapacityBonusById(itemId) {
+  return toPositiveNumber(
+    SHOP_ITEM_DEFINITION_MAP[itemId]?.effects?.carryCapacity,
+  );
+}
+
 export function getTotalItemWeight(items = []) {
   return items.reduce((total, item) => {
     const itemId = typeof item === "string" ? item : item?.itemId;
@@ -28,8 +34,17 @@ export function getTotalItemWeight(items = []) {
   }, 0);
 }
 
+export function getTotalCarryCapacityBonus(items = []) {
+  return items.reduce((total, item) => {
+    const itemId = typeof item === "string" ? item : item?.itemId;
+    return total + getItemCarryCapacityBonusById(itemId);
+  }, 0);
+}
+
 export function getCharacterCarryWeightSummary(strength, items = []) {
-  const maxWeight = getCharacterCarryCapacity(strength);
+  const baseCapacity = getCharacterCarryCapacity(strength);
+  const carryBonus = getTotalCarryCapacityBonus(items);
+  const maxWeight = baseCapacity + carryBonus;
   const currentWeight = getTotalItemWeight(items);
   const remainingWeight = maxWeight - currentWeight;
   const usagePercent = Math.max(
@@ -38,6 +53,8 @@ export function getCharacterCarryWeightSummary(strength, items = []) {
   );
 
   return {
+    baseCapacity,
+    carryBonus,
     maxWeight,
     currentWeight,
     remainingWeight,

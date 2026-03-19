@@ -1,35 +1,51 @@
 export const MARKET_DEFINITIONS = [
   {
-    id: "adventurers-outfitter",
-    name: "Adventurer's Outfitter",
+    id: "blacksmith-forge",
+    name: "Blacksmith Forge",
     summary:
-      "Reliable baseline gear for early and mid progression. Weapons, armor, and starter essentials.",
+      "Heavy weapons, shields, and forged armor. Best for STR and CON builds in Adventure and Arena.",
     status: "open",
     supportsPurchases: true,
   },
   {
-    id: "blacksmith-forge",
-    name: "Blacksmith Forge",
+    id: "leathermaker-workshop",
+    name: "Leathermaker Workshop",
     summary:
-      "Heavy equipment and hardened steel upgrades focused on frontline builds.",
-    status: "coming-soon",
-    supportsPurchases: false,
+      "Light armor and utility gear tuned for DEX-focused mobility and efficient loadouts.",
+    status: "open",
+    supportsPurchases: true,
+  },
+  {
+    id: "arcanist-sanctum",
+    name: "Arcanist Sanctum",
+    summary:
+      "Staves, charms, and rings focused on INT and WIS progression for caster-style paths.",
+    status: "open",
+    supportsPurchases: true,
   },
   {
     id: "alchemist-lab",
     name: "Alchemist Lab",
     summary:
-      "Consumables, restorative tools, and volatile mixtures for risky runs.",
-    status: "coming-soon",
-    supportsPurchases: false,
+      "Potions and restorative brews with future-friendly consumable support.",
+    status: "open",
+    supportsPurchases: true,
   },
   {
     id: "shadow-bazaar",
     name: "Shadow Bazaar",
     summary:
-      "Rare goods and suspicious deals for players chasing high-risk power spikes.",
-    status: "coming-soon",
-    supportsPurchases: false,
+      "High-risk contraband with powerful effects and dangerous trade-offs.",
+    status: "open",
+    supportsPurchases: true,
+  },
+  {
+    id: "trophy-merchant",
+    name: "Trophy Merchant",
+    summary:
+      "Prestige inventory gated by Renown, ideal for endgame identity and status builds.",
+    status: "open",
+    supportsPurchases: true,
   },
 ];
 

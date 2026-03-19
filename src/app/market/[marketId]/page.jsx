@@ -11,7 +11,7 @@ import { MARKET_DEFINITION_MAP } from "@/lib/market-data";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
-import { formatStatBonusLabel } from "@/lib/stat-effects";
+import { formatItemEffectLabel } from "@/lib/stat-effects";
 import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
 import styles from "../page.module.css";
 
@@ -52,14 +52,20 @@ export default async function MarketVendorPage({ params }) {
     ? getCharacterCarryWeightSummary(activeCharacter.strength, ownedItems)
     : null;
 
-  const shopItems = SHOP_ITEM_DEFINITIONS.map((item) => ({
+  const vendorItems = SHOP_ITEM_DEFINITIONS.filter(
+    (item) => item.marketId === market.id,
+  );
+  const shopItems = vendorItems.map((item) => ({
     id: item.id,
     name: item.name,
+    marketId: item.marketId,
+    description: item.description,
     price: item.price,
+    renownPrice: item.renownPrice ?? 0,
     weight: item.weight,
     slot: item.slot,
     effects: item.effects,
-    effectLabel: formatStatBonusLabel(item.effects?.stats),
+    effectLabel: formatItemEffectLabel(item.effects),
     owned: Boolean(ownedById[item.id]),
     equipped: Boolean(ownedById[item.id]?.isEquipped),
   }));
@@ -95,10 +101,17 @@ export default async function MarketVendorPage({ params }) {
                 <p className={styles.carryLabel}>
                   <strong>Carry weight:</strong> {carryWeightSummary.currentWeight}/
                   {carryWeightSummary.maxWeight}
+                  {carryWeightSummary.carryBonus > 0
+                    ? ` (base ${carryWeightSummary.baseCapacity} + bonus ${carryWeightSummary.carryBonus})`
+                    : ""}
                 </p>
-                <div className={styles.actionsWrap}>
-                  <ShopActions items={shopItems} />
-                </div>
+                {shopItems.length > 0 ? (
+                  <div className={styles.actionsWrap}>
+                    <ShopActions items={shopItems} />
+                  </div>
+                ) : (
+                  <p className={styles.emptyState}>This vendor has no stock yet.</p>
+                )}
               </>
             ) : (
               <p>This vendor is coming soon.</p>

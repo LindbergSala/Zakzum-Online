@@ -176,6 +176,44 @@
   color: var(--ink-soft);
 }
 
+.metricCard {
+  margin-top: 0.5rem;
+  border-radius: 10px;
+  padding: 0.68rem 0.76rem;
+  border: 1px solid rgba(103, 64, 35, 0.28);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.carryLabel {
+  margin-top: 0.5rem;
+  color: var(--ink-soft);
+}
+
+.actionsWrap {
+  margin-top: 0.65rem;
+}
+
+.actionsWrap :global(ul) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.actionsWrap :global(li) {
+  margin: 0;
+}
+
+.actionsWrap :global(button) {
+  margin-top: 0.34rem;
+}
+
+.emptyState {
+  margin-top: 0.7rem;
+  color: var(--ink-soft);
+}
+
 .marketGrid {
   list-style: none;
   margin: 0.72rem 0 0;

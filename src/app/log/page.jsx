@@ -63,8 +63,17 @@ function formatDetails(entry) {
     return null;
   }
 
-  const pricePart =
-    typeof item.price === "number" ? `, price ${item.price} Gold` : "";
+  const priceParts = [];
+
+  if (typeof item.price === "number" && item.price > 0) {
+    priceParts.push(`${item.price} Gold`);
+  }
+
+  if (typeof item.renownPrice === "number" && item.renownPrice > 0) {
+    priceParts.push(`${item.renownPrice} Renown`);
+  }
+
+  const pricePart = priceParts.length > 0 ? `, cost ${priceParts.join(" + ")}` : "";
   return `${item.name ?? entry.activityName} (${item.slot ?? "unknown slot"}${pricePart})`;
 }
 

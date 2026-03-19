@@ -16,7 +16,7 @@ import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
-import { formatStatBonusLabel } from "@/lib/stat-effects";
+import { formatItemEffectLabel } from "@/lib/stat-effects";
 import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
 import styles from "./page.module.css";
 
@@ -118,7 +118,7 @@ export default async function CharacterPage() {
       ...item,
       slot: definition?.slot ?? "unknown",
       weight: definition?.weight ?? 0,
-      effectLabel: formatStatBonusLabel(definition?.effects?.stats),
+      effectLabel: formatItemEffectLabel(definition?.effects),
     };
   });
   const carryWeightSummary = character

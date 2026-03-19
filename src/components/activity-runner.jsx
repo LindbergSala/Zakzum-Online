@@ -179,6 +179,12 @@ export default function ActivityRunner({ activity }) {
             {lastResult.roll.secondaryContribution ?? "-"} + Level{" "}
             {lastResult.roll.levelContribution ?? lastResult.roll.levelModifier} + Passive{" "}
             {lastResult.roll.passiveRollModifier}
+            {typeof lastResult.roll.itemRollModifier === "number"
+              ? ` + Item ${lastResult.roll.itemRollModifier}`
+              : ""}
+            {typeof lastResult.roll.totalPassiveRollModifier === "number"
+              ? ` (total ${lastResult.roll.totalPassiveRollModifier})`
+              : ""}
           </p>
           <p>
             <strong>Stats in roll:</strong>{" "}
@@ -219,6 +225,13 @@ export default function ActivityRunner({ activity }) {
                   : ""}
               </p>
             </>
+          ) : null}
+          {lastResult.itemIdentity ? (
+            <p>
+              <strong>Item effect this action:</strong>{" "}
+              Roll +{lastResult.itemIdentity.passiveRollModifier ?? 0},{" "}
+              {formatDeltaBonus(lastResult.itemIdentity.passiveDeltaBonus)}
+            </p>
           ) : null}
           <p>
             <strong>Reward/Penalty (delta):</strong>{" "}

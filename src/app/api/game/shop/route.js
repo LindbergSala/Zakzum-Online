@@ -12,7 +12,7 @@ import {
   getCharacterResourceSnapshot,
 } from "@/lib/resource-rules";
 import { logServerError } from "@/lib/server-logger";
-import { formatStatBonusLabel } from "@/lib/stat-effects";
+import { formatItemEffectLabel } from "@/lib/stat-effects";
 import { shopPurchaseSchema } from "@/lib/validators/core-loop";
 import {
   getCharacterCarryWeightSummary,
@@ -31,6 +31,16 @@ const SHOP_CHARACTER_SELECT = {
   strength: true,
   updatedAt: true,
 };
+
+function getItemGoldCost(item) {
+  const price = Number(item?.price);
+  return Number.isFinite(price) ? Math.max(0, Math.floor(price)) : 0;
+}
+
+function getItemRenownCost(item) {
+  const renownPrice = Number(item?.renownPrice);
+  return Number.isFinite(renownPrice) ? Math.max(0, Math.floor(renownPrice)) : 0;
+}
 
 export async function GET() {
   const { user, error } = await requireApiUser();
@@ -60,11 +70,14 @@ export async function GET() {
       items: SHOP_ITEM_DEFINITIONS.map((item) => ({
         id: item.id,
         name: item.name,
-        price: item.price,
+        marketId: item.marketId,
+        description: item.description,
+        price: getItemGoldCost(item),
+        renownPrice: getItemRenownCost(item),
         weight: item.weight,
         slot: item.slot,
         effects: item.effects,
-        effectLabel: formatStatBonusLabel(item.effects?.stats),
+        effectLabel: formatItemEffectLabel(item.effects),
         owned: Boolean(ownedById[item.id]),
         equipped: Boolean(ownedById[item.id]?.isEquipped),
       })),
@@ -113,6 +126,8 @@ export async function POST(request) {
   }
 
   const item = SHOP_ITEM_DEFINITION_MAP[parsed.data.itemId];
+  const itemGoldCost = getItemGoldCost(item);
+  const itemRenownCost = getItemRenownCost(item);
 
   let result;
   try {
@@ -158,30 +173,55 @@ export async function POST(request) {
         ownedItems,
       );
       const itemWeight = getItemWeightById(item.id);
-      const projectedWeight = carrySummary.currentWeight + itemWeight;
+      const projectedCarrySummary = getCharacterCarryWeightSummary(
+        latestCharacter.strength,
+        [...ownedItems, { itemId: item.id }],
+      );
 
-      if (projectedWeight > carrySummary.maxWeight) {
+      if (projectedCarrySummary.currentWeight > projectedCarrySummary.maxWeight) {
         return {
           ok: false,
           status: 400,
           message:
             `Carrying capacity exceeded. ${item.name} weighs ${itemWeight}. ` +
-            `Current ${carrySummary.currentWeight}/${carrySummary.maxWeight}.`,
+            `Current ${carrySummary.currentWeight}/${carrySummary.maxWeight}, ` +
+            `projected ${projectedCarrySummary.currentWeight}/${projectedCarrySummary.maxWeight}.`,
           resources: getCharacterResourceSnapshot(latestCharacter),
         };
       }
 
-      if (latestCharacter.gold < item.price) {
+      if (latestCharacter.gold < itemGoldCost) {
         return {
           ok: false,
           status: 400,
-          message: `Not enough Gold. Item costs ${item.price}, you have ${latestCharacter.gold}.`,
+          message: `Not enough Gold. Item costs ${itemGoldCost}, you have ${latestCharacter.gold}.`,
           resources: getCharacterResourceSnapshot(latestCharacter),
         };
       }
 
+      if (latestCharacter.renown < itemRenownCost) {
+        return {
+          ok: false,
+          status: 400,
+          message:
+            `Not enough Renown. Item costs ${itemRenownCost}, ` +
+            `you have ${latestCharacter.renown}.`,
+          resources: getCharacterResourceSnapshot(latestCharacter),
+        };
+      }
+
+      const purchaseDelta = {};
+
+      if (itemGoldCost > 0) {
+        purchaseDelta.gold = -itemGoldCost;
+      }
+
+      if (itemRenownCost > 0) {
+        purchaseDelta.renown = -itemRenownCost;
+      }
+
       const calculation = calculateCharacterResourceResult(latestCharacter, {
-        delta: { gold: -item.price },
+        delta: purchaseDelta,
       });
 
       if (!calculation.ok) {
@@ -258,9 +298,12 @@ export async function POST(request) {
             item: {
               id: item.id,
               name: item.name,
+              marketId: item.marketId,
               slot: item.slot,
-              price: item.price,
+              price: itemGoldCost,
+              renownPrice: itemRenownCost,
               weight: item.weight,
+              description: item.description,
               effects: item.effects ?? {},
             },
           },
