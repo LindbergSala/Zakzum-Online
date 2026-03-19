@@ -3,14 +3,12 @@ import { notFound } from "next/navigation";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import GameNav from "@/components/game-nav";
-import ResourceStrip from "@/components/resource-strip";
 import ShopActions from "@/components/shop-actions";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { SHOP_ITEM_DEFINITIONS } from "@/lib/core-loop-data";
 import { MARKET_DEFINITION_MAP } from "@/lib/market-data";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
-import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import { formatItemEffectLabel } from "@/lib/stat-effects";
 import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
 import styles from "../page.module.css";
@@ -111,16 +109,23 @@ export default async function MarketVendorPage({ params }) {
               </p>
             ) : market.supportsPurchases ? (
               <>
-                <div className={styles.metricCard}>
-                  <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
+                <div className={styles.vendorMetrics}>
+                  <article className={styles.vendorMetric}>
+                    <p className={styles.vendorMetricLabel}>Gold</p>
+                    <p className={styles.vendorMetricValue}>{activeCharacter.gold}</p>
+                  </article>
+                  <article className={styles.vendorMetric}>
+                    <p className={styles.vendorMetricLabel}>Carry weight</p>
+                    <p className={styles.vendorMetricValue}>
+                      {carryWeightSummary.currentWeight}/{carryWeightSummary.maxWeight}
+                    </p>
+                    {carryWeightSummary.carryBonus > 0 ? (
+                      <p className={styles.vendorMetricMeta}>
+                        Base {carryWeightSummary.baseCapacity} + bonus {carryWeightSummary.carryBonus}
+                      </p>
+                    ) : null}
+                  </article>
                 </div>
-                <p className={styles.carryLabel}>
-                  <strong>Carry weight:</strong> {carryWeightSummary.currentWeight}/
-                  {carryWeightSummary.maxWeight}
-                  {carryWeightSummary.carryBonus > 0
-                    ? ` (base ${carryWeightSummary.baseCapacity} + bonus ${carryWeightSummary.carryBonus})`
-                    : ""}
-                </p>
                 {shopItems.length > 0 ? (
                   <div className={styles.actionsWrap}>
                     <ShopActions items={shopItems} />

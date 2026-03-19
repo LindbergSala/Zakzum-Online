@@ -8,13 +8,25 @@ import {
   useRef,
   useState,
 } from "react";
+import { usePathname } from "next/navigation";
 
 const StartPageMusicContext = createContext(null);
+const MARKET_MUSIC_PATH = "/audio/music/market-sounds.mp3";
+
+function resolveTrackByPathname(pathname, fallbackSrc) {
+  if (typeof pathname === "string" && pathname.startsWith("/market")) {
+    return MARKET_MUSIC_PATH;
+  }
+
+  return fallbackSrc;
+}
 
 export default function StartPageMusic({ src, children }) {
+  const pathname = usePathname();
   const audioRef = useRef(null);
   const [enabled, setEnabled] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const activeSrc = resolveTrackByPathname(pathname, src);
 
   const tryPlay = useCallback(async () => {
     const audio = audioRef.current;
@@ -64,6 +76,17 @@ export default function StartPageMusic({ src, children }) {
   }, [enabled, tryPlay]);
 
   useEffect(() => {
+    const audio = audioRef.current;
+
+    if (!audio || !enabled) {
+      return;
+    }
+
+    audio.currentTime = 0;
+    tryPlay();
+  }, [activeSrc, enabled, tryPlay]);
+
+  useEffect(() => {
     if (!enabled || isPlaying) {
       return;
     }
@@ -108,7 +131,7 @@ export default function StartPageMusic({ src, children }) {
   return (
     <StartPageMusicContext.Provider value={contextValue}>
       {children}
-      <audio ref={audioRef} src={src} loop preload="metadata" />
+      <audio ref={audioRef} src={activeSrc} loop preload="metadata" />
     </StartPageMusicContext.Provider>
   );
 }

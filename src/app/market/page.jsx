@@ -40,12 +40,6 @@ export default async function MarketPage() {
           </header>
 
           <section className={styles.panel}>
-            <h2>Available vendors</h2>
-            <p className={styles.muted}>
-              {activeCharacter
-                ? `Active character: ${activeCharacter.name}.`
-                : "Create a character to start buying items."}
-            </p>
             <ul className={styles.marketGrid}>
               {MARKET_DEFINITIONS.map((market) => (
                 <li className={styles.marketCard} key={market.id}>
