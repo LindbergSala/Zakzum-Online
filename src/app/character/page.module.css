@@ -233,6 +233,12 @@
   font-weight: 700;
 }
 
+.resourceTop .resourceLabelMeta {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: #745130;
+}
+
 .resourceTop .resourceValue {
   margin: 0;
   color: var(--ink-soft);

@@ -212,6 +212,45 @@
   margin: 0.3rem 0 0.65rem;
 }
 
+.resourceMeters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.58rem;
+  margin-top: 0.2rem;
+}
+
+.resourceCard {
+  border-radius: 10px;
+  padding: 0.68rem 0.76rem;
+  border: 1px solid rgba(103, 64, 35, 0.28);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.resourceTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.45rem;
+}
+
+.resourceLabel {
+  margin: 0;
+  color: var(--ink-strong);
+  font-weight: 700;
+}
+
+.resourceLabelMeta {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: #745130;
+}
+
+.resourceValue {
+  margin: 0;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
 .metricCard {
   margin-top: 0.5rem;
   border-radius: 10px;
@@ -341,6 +380,14 @@
   background: linear-gradient(145deg, #cf7e34 0%, #a65426 100%);
 }
 
+.hpFill {
+  background: linear-gradient(145deg, #bf5236 0%, #8f301f 100%);
+}
+
+.energyFill {
+  background: linear-gradient(145deg, #c88a3d 0%, #9b5b1f 100%);
+}
+
 .emptyState {
   margin-top: 1.2rem;
   max-width: 620px;
@@ -427,6 +474,10 @@
   .heroCard {
     border-radius: 16px;
     padding: 1rem;
+  }
+
+  .resourceMeters {
+    grid-template-columns: 1fr;
   }
 
   .goalGrid {

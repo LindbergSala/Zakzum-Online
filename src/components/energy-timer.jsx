@@ -10,7 +10,7 @@ function formatCountdown(secondsLeft) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-export default function EnergyTimer({ energyMeta }) {
+export default function EnergyTimer({ energyMeta, variant = "block", className = "" }) {
   const router = useRouter();
   const refreshTriggeredRef = useRef(false);
   const [secondsLeft, setSecondsLeft] = useState(() =>
@@ -48,19 +48,25 @@ export default function EnergyTimer({ energyMeta }) {
     return null;
   }
 
+  const timerText = energyMeta.isFull
+    ? "Next Energy: Full"
+    : `Next Energy: in ${formatCountdown(secondsLeft)}`;
+
+  if (variant === "inline") {
+    return <span className={className}>{timerText}</span>;
+  }
+
   if (energyMeta.isFull) {
     return (
       <p>
-        <strong>Energy:</strong> Full ({energyMeta.currentEnergy}/
-        {energyMeta.maxEnergy})
+        <strong>Next Energy:</strong> Full
       </p>
     );
   }
 
   return (
     <p>
-      <strong>Next Energy:</strong> in {formatCountdown(secondsLeft)} (
-      {energyMeta.currentEnergy}/{energyMeta.maxEnergy})
+      <strong>Next Energy:</strong> in {formatCountdown(secondsLeft)}
     </p>
   );
 }

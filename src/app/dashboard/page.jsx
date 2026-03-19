@@ -4,13 +4,14 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import CharacterOverview from "@/components/character-overview";
 import EnergyTimer from "@/components/energy-timer";
 import GameNav from "@/components/game-nav";
-import ResourceStrip from "@/components/resource-strip";
-import { getUserWithResolvedActiveCharacter } from "@/lib/character";
+import {
+  buildBaseResourcesForCharacter,
+  getUserWithResolvedActiveCharacter,
+} from "@/lib/character";
 import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
-import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
 import styles from "./page.module.css";
 
@@ -186,6 +187,23 @@ function buildDashboardGoals(character, levelProgress, logEntries) {
   ];
 }
 
+function getCharacterMaxResources(character) {
+  const baseResources = buildBaseResourcesForCharacter(
+    character.characterClass,
+    character.constitution,
+  );
+
+  return {
+    maxHp: Math.max(1, baseResources.hp, Number(character.hp) || 0),
+    maxEnergy: Math.max(
+      1,
+      baseResources.maxEnergy,
+      Number(character.maxEnergy) || 0,
+      Number(character.energy) || 0,
+    ),
+  };
+}
+
 export default async function DashboardPage() {
   const user = await requirePageUser();
   const userWithCharacter = await getUserWithResolvedActiveCharacter(user.id);
@@ -233,6 +251,15 @@ export default async function DashboardPage() {
           logEntries,
         )
       : [];
+  const maxResources = activeCharacter
+    ? getCharacterMaxResources(activeCharacter)
+    : null;
+  const hpPercent = maxResources
+    ? clampPercent((activeCharacter.hp / maxResources.maxHp) * 100)
+    : 0;
+  const energyPercent = maxResources
+    ? clampPercent((activeCharacter.energy / maxResources.maxEnergy) * 100)
+    : 0;
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -255,16 +282,44 @@ export default async function DashboardPage() {
                 <p className={styles.muted}>
                   Active character loaded automatically on login.
                 </p>
-                <div className={styles.metricCard}>
-                  <ResourceStrip
-                    resources={getCharacterResourceSnapshot(activeCharacter)}
-                  />
-                </div>
-                <div className={styles.metricCard}>
-                  <EnergyTimer
-                    key={energyMeta?.nextEnergyAt ?? "energy-full"}
-                    energyMeta={energyMeta}
-                  />
+                <div className={styles.resourceMeters}>
+                  <article className={styles.resourceCard}>
+                    <div className={styles.resourceTop}>
+                      <p className={styles.resourceLabel}>HP</p>
+                      <p className={styles.resourceValue}>
+                        {activeCharacter.hp}/{maxResources.maxHp}
+                      </p>
+                    </div>
+                    <div className={styles.goalTrack} aria-hidden="true">
+                      <span
+                        className={`${styles.goalFill} ${styles.hpFill}`}
+                        style={{ width: `${hpPercent}%` }}
+                      />
+                    </div>
+                  </article>
+
+                  <article className={styles.resourceCard}>
+                    <div className={styles.resourceTop}>
+                      <p className={styles.resourceLabel}>
+                        Energy{" "}
+                        <EnergyTimer
+                          key={energyMeta?.nextEnergyAt ?? "energy-full-inline-dashboard"}
+                          energyMeta={energyMeta}
+                          variant="inline"
+                          className={styles.resourceLabelMeta}
+                        />
+                      </p>
+                      <p className={styles.resourceValue}>
+                        {activeCharacter.energy}/{maxResources.maxEnergy}
+                      </p>
+                    </div>
+                    <div className={styles.goalTrack} aria-hidden="true">
+                      <span
+                        className={`${styles.goalFill} ${styles.energyFill}`}
+                        style={{ width: `${energyPercent}%` }}
+                      />
+                    </div>
+                  </article>
                 </div>
                 <p className={styles.progression}>
                   <strong>Progression:</strong> Level {levelProgress.level} | XP{" "}

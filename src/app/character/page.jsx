@@ -3,6 +3,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import CharacterOverview from "@/components/character-overview";
 import DeleteCharacterForm from "@/components/delete-character-form";
+import EnergyTimer from "@/components/energy-timer";
 import GameNav from "@/components/game-nav";
 import InventoryHydrated from "@/components/inventory/InventoryHydrated";
 import StatPointAllocator from "@/components/stat-point-allocator";
@@ -11,6 +12,7 @@ import {
   getUserWithResolvedActiveCharacter,
 } from "@/lib/character";
 import { SHOP_ITEM_DEFINITION_MAP } from "@/lib/core-loop-data";
+import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
@@ -125,6 +127,9 @@ export default async function CharacterPage() {
   const levelProgress = character
     ? getLevelProgressMeta(character.level, character.xp)
     : null;
+  const energyMeta = character
+    ? getEnergyRegenerationMeta(character)
+    : null;
   const maxResources = character ? getCharacterMaxResources(character) : null;
   const hpPercent = maxResources
     ? clampPercent((character.hp / maxResources.maxHp) * 100)
@@ -211,7 +216,15 @@ export default async function CharacterPage() {
 
               <article className={styles.resourceCard}>
                 <div className={styles.resourceTop}>
-                  <p className={styles.resourceLabel}>Energy</p>
+                  <p className={styles.resourceLabel}>
+                    Energy{" "}
+                    <EnergyTimer
+                      key={energyMeta?.nextEnergyAt ?? "energy-full-inline-character"}
+                      energyMeta={energyMeta}
+                      variant="inline"
+                      className={styles.resourceLabelMeta}
+                    />
+                  </p>
                   <p className={styles.resourceValue}>
                     {character.energy}/{maxResources.maxEnergy}
                   </p>
