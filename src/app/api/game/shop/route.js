@@ -107,7 +107,7 @@ export async function POST(request) {
 
   if (!activeCharacter) {
     return NextResponse.json(
-      { message: "You must create a character before you can shop." },
+      { message: "You must create a character before you can use the market." },
       { status: 400 },
     );
   }

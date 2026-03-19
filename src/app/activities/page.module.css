@@ -1,0 +1,253 @@
+.pageShell {
+  --ink-strong: #2f1f0e;
+  --ink-soft: #4e3720;
+  --accent-deep: #8e4722;
+  min-height: 100vh;
+  padding: clamp(0.85rem, 3vw, 2rem);
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      142deg,
+      rgba(25, 16, 9, 0.64) 0%,
+      rgba(42, 27, 12, 0.5) 45%,
+      rgba(31, 20, 9, 0.64) 100%
+    ),
+    url("/images/game/worldmap.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.pageShell::before,
+.pageShell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.pageShell::before {
+  background:
+    linear-gradient(
+      115deg,
+      transparent 36%,
+      rgba(255, 255, 255, 0.3) 50%,
+      transparent 64%
+    );
+  transform: translateX(-120vw);
+  animation: glintSweep 12s linear infinite;
+  will-change: transform;
+}
+
+.pageShell::after {
+  background:
+    radial-gradient(circle at center, transparent 35%, rgba(15, 10, 6, 0.3) 100%);
+}
+
+.main {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.heroCard {
+  width: 100%;
+  padding: clamp(1.2rem, 3vw, 2.2rem);
+  border-radius: 18px;
+  border: 1px solid rgba(92, 58, 32, 0.68);
+  background: linear-gradient(
+    154deg,
+    rgba(244, 228, 196, 0.96) 0%,
+    rgba(233, 207, 165, 0.94) 46%,
+    rgba(208, 174, 126, 0.94) 100%
+  );
+  box-shadow:
+    0 28px 65px rgba(33, 20, 9, 0.4),
+    inset 0 1px 0 rgba(255, 246, 225, 0.56),
+    inset 0 0 0 1px rgba(104, 65, 36, 0.22),
+    inset 0 -28px 42px rgba(88, 53, 29, 0.3),
+    inset 0 32px 30px rgba(255, 245, 223, 0.2);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  animation: riseIn 650ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+.heroCard::before,
+.heroCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.heroCard::before {
+  background:
+    repeating-linear-gradient(
+      -12deg,
+      rgba(125, 79, 45, 0.15) 0 2px,
+      transparent 2px 8px
+    ),
+    repeating-linear-gradient(
+      18deg,
+      rgba(255, 247, 227, 0.2) 0 1px,
+      transparent 1px 5px
+    ),
+    radial-gradient(circle at 84% 16%, rgba(120, 66, 36, 0.2) 0 14%, transparent 56%),
+    radial-gradient(circle at 9% 80%, rgba(97, 56, 32, 0.17) 0 16%, transparent 58%);
+  opacity: 0.9;
+  mix-blend-mode: multiply;
+  z-index: 0;
+}
+
+.heroCard::after {
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(94, 56, 30, 0.34),
+    inset 0 0 70px rgba(85, 49, 27, 0.24),
+    inset 18px 0 24px rgba(86, 50, 27, 0.26),
+    inset -18px 0 24px rgba(84, 49, 27, 0.24),
+    inset 0 -18px 22px rgba(79, 46, 25, 0.2);
+  z-index: 0;
+}
+
+.heroCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+.heroIntro {
+  margin: 0 auto;
+  max-width: 72ch;
+  text-align: center;
+}
+
+.kicker {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--accent-deep);
+}
+
+.title {
+  margin: 0.5rem 0 0;
+  color: var(--ink-strong);
+  font-size: clamp(2.1rem, 6vw, 3.7rem);
+  line-height: 1.02;
+}
+
+.lead {
+  margin: 0.9rem auto 0;
+  max-width: 62ch;
+  font-size: clamp(1rem, 2vw, 1.16rem);
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.panel {
+  margin-top: 1.05rem;
+  border-radius: 14px;
+  padding: 1rem;
+  border: 1px solid rgba(95, 60, 33, 0.43);
+  background:
+    linear-gradient(
+      150deg,
+      rgba(245, 228, 194, 0.72) 0%,
+      rgba(228, 202, 159, 0.62) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 249, 233, 0.52),
+    inset 0 -10px 16px rgba(96, 59, 33, 0.14);
+}
+
+.panel h2 {
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: 1.12rem;
+}
+
+.muted {
+  margin: 0.3rem 0 0.65rem;
+  color: var(--ink-soft);
+}
+
+.metricCard {
+  margin-top: 0.5rem;
+  border-radius: 10px;
+  padding: 0.68rem 0.76rem;
+  border: 1px solid rgba(103, 64, 35, 0.28);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.actionsWrap {
+  margin-top: 0.65rem;
+}
+
+.actionsWrap :global(.activity-list) {
+  margin: 0;
+}
+
+.actionsWrap :global(.activity-item) {
+  border-color: rgba(95, 58, 33, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 251, 242, 0.5);
+}
+
+.backLink {
+  margin: 0.85rem 0 0;
+}
+
+.backLink a {
+  color: #6a3f20;
+  font-weight: 700;
+}
+
+.emptyState {
+  margin-top: 0.7rem;
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.987);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes glintSweep {
+  0% {
+    transform: translateX(-120vw);
+  }
+
+  100% {
+    transform: translateX(120vw);
+  }
+}
+
+@media (max-width: 640px) {
+  .pageShell {
+    padding: 0.75rem;
+  }
+
+  .heroCard {
+    border-radius: 16px;
+    padding: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pageShell::before,
+  .heroCard {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}

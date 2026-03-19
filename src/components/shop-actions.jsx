@@ -47,7 +47,7 @@ export default function ShopActions({ items }) {
     setLastPurchase(null);
 
     try {
-      const response = await fetch("/api/game/shop", {
+      const response = await fetch("/api/game/market", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId }),
@@ -66,7 +66,7 @@ export default function ShopActions({ items }) {
     } catch {
       setFeedback({
         tone: "error",
-        text: "Purchase failed. Try again.",
+        text: "Market purchase failed. Try again.",
       });
     } finally {
       setIsLoading(false);
@@ -75,7 +75,7 @@ export default function ShopActions({ items }) {
   }
 
   if (!items || items.length === 0) {
-    return <p>No shop items available.</p>;
+    return <p>No market items available.</p>;
   }
 
   return (

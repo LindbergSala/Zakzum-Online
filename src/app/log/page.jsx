@@ -27,7 +27,7 @@ function formatType(type) {
   }
 
   if (type === "SHOP") {
-    return "Shop";
+    return "Market";
   }
 
   if (type === "EQUIP") {
