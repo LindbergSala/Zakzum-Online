@@ -25,6 +25,15 @@ const bodyFont = Source_Sans_3({
   weight: ["400", "600", "700"],
 });
 
+const marketShellClassById = {
+  "blacksmith-forge": "blacksmithPageShell",
+  "alchemist-lab": "alchemistPageShell",
+  "arcanist-sanctum": "arcanistPageShell",
+  "shadow-bazaar": "bazaarPageShell",
+  "trophy-merchant": "trophyPageShell",
+  "leathermaker-workshop": "leathermakerPageShell",
+};
+
 export default async function MarketVendorPage({ params }) {
   const resolvedParams = await params;
   const market = MARKET_DEFINITION_MAP[resolvedParams.marketId];
@@ -69,9 +78,16 @@ export default async function MarketVendorPage({ params }) {
     owned: Boolean(ownedById[item.id]),
     equipped: Boolean(ownedById[item.id]?.isEquipped),
   }));
+  const pageShellClassName = [
+    styles.pageShell,
+    bodyFont.className,
+    marketShellClassById[market.id] ? styles[marketShellClassById[market.id]] : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div className={`${styles.pageShell} ${bodyFont.className}`}>
+    <div className={pageShellClassName}>
       <main className={styles.main}>
         <GameNav />
         <section className={styles.heroCard}>

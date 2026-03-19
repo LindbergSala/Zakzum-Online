@@ -20,9 +20,14 @@ const bodyFont = Source_Sans_3({
 export default async function MarketPage() {
   const user = await requirePageUser();
   const activeCharacter = await getActiveCharacterForUser(user.id);
+  const pageShellClassName = [
+    styles.pageShell,
+    styles.marketHubPageShell,
+    bodyFont.className,
+  ].join(" ");
 
   return (
-    <div className={`${styles.pageShell} ${bodyFont.className}`}>
+    <div className={pageShellClassName}>
       <main className={styles.main}>
         <GameNav />
         <section className={styles.heroCard}>
