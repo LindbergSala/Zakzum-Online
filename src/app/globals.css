@@ -10,7 +10,13 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: "Segoe UI", sans-serif;
-  background: linear-gradient(160deg, #f8f5ed 0%, #ece8df 100%);
+  background:
+    linear-gradient(160deg, rgba(26, 18, 10, 0.52) 0%, rgba(34, 24, 14, 0.48) 100%),
+    url("/images/game/worldmap.jpeg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: #1f1f1f;
 }
 
