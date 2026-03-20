@@ -86,6 +86,55 @@
   cursor: pointer;
 }
 
+.avatarRail {
+  margin-top: 0.62rem;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 64px;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0.14rem 0.04rem 0.16rem;
+}
+
+.avatarRail::-webkit-scrollbar {
+  height: 8px;
+}
+
+.avatarRail::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(136, 85, 46, 0.45);
+}
+
+.avatarRailItem {
+  border: 1px solid rgba(123, 79, 45, 0.36);
+  border-radius: 8px;
+  padding: 0.1rem;
+  background: rgba(255, 248, 236, 0.78);
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease;
+}
+
+.avatarRailItem:hover {
+  transform: translateY(-1px);
+}
+
+.avatarRailItemActive {
+  border-color: rgba(161, 90, 34, 0.86);
+  box-shadow: 0 0 0 2px rgba(185, 114, 56, 0.24);
+}
+
+.avatarRailImage {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
+}
+
 .avatarSwipeStage {
   margin-top: 0.68rem;
   border-radius: 12px;

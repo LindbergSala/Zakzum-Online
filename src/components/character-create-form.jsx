@@ -26,37 +26,20 @@ function buildInitialFormData() {
   };
 }
 
-function probeImageExists(source) {
-  return new Promise((resolve) => {
-    const probeImage = new window.Image();
-    probeImage.onload = () => resolve(true);
-    probeImage.onerror = () => resolve(false);
-    probeImage.src = source;
-  });
-}
-
 export default function CharacterCreateForm() {
   const router = useRouter();
   const [formData, setFormData] = useState(buildInitialFormData);
   const [activeAvatarIndex, setActiveAvatarIndex] = useState(0);
-  const [availableAvatarsByRace, setAvailableAvatarsByRace] = useState({});
   const [touchStartX, setTouchStartX] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const classPassive = getClassPassive(formData.characterClass);
   const racePassive = getRacePassive(formData.characterRace);
-  const raceAvatarCandidates = useMemo(
+  const raceAvatarOptions = useMemo(
     () => getAvatarOptionsForRace(formData.characterRace),
     [formData.characterRace],
   );
-  const raceAvatarOptions = useMemo(
-    () => availableAvatarsByRace[formData.characterRace] ?? [],
-    [availableAvatarsByRace, formData.characterRace],
-  );
-  const isAvatarRaceLoading =
-    availableAvatarsByRace[formData.characterRace] === undefined &&
-    raceAvatarCandidates.length > 0;
   const hasRaceAvatars = raceAvatarOptions.length > 0;
 
   function updateField(key, value) {
@@ -132,58 +115,6 @@ export default function CharacterCreateForm() {
   }
 
   useEffect(() => {
-    let isDisposed = false;
-    const raceKey = formData.characterRace;
-
-    if (availableAvatarsByRace[raceKey] !== undefined) {
-      return undefined;
-    }
-
-    if (raceAvatarCandidates.length === 0) {
-      setAvailableAvatarsByRace((previous) => ({
-        ...previous,
-        [raceKey]: [],
-      }));
-      return undefined;
-    }
-
-    async function resolveAvailableAvatars() {
-      const checks = await Promise.all(
-        raceAvatarCandidates.map((candidate) => probeImageExists(candidate)),
-      );
-
-      if (isDisposed) {
-        return;
-      }
-
-      const availableCandidates = raceAvatarCandidates.filter(
-        (_, index) => checks[index],
-      );
-
-      setAvailableAvatarsByRace((previous) => {
-        if (previous[raceKey] !== undefined) {
-          return previous;
-        }
-
-        return {
-          ...previous,
-          [raceKey]: availableCandidates,
-        };
-      });
-    }
-
-    resolveAvailableAvatars();
-
-    return () => {
-      isDisposed = true;
-    };
-  }, [availableAvatarsByRace, formData.characterRace, raceAvatarCandidates]);
-
-  useEffect(() => {
-    if (isAvatarRaceLoading) {
-      return;
-    }
-
     if (!hasRaceAvatars) {
       setActiveAvatarIndex(0);
       setFormData((previous) =>
@@ -212,7 +143,6 @@ export default function CharacterCreateForm() {
   }, [
     formData.avatarImage,
     hasRaceAvatars,
-    isAvatarRaceLoading,
     raceAvatarOptions,
   ]);
 
@@ -222,6 +152,17 @@ export default function CharacterCreateForm() {
   const nextAvatarIndex = hasRaceAvatars
     ? (activeAvatarIndex + 1) % raceAvatarOptions.length
     : 0;
+  const previousAvatarPath = raceAvatarOptions[previousAvatarIndex] ?? "";
+  const currentAvatarPath = raceAvatarOptions[activeAvatarIndex] ?? "";
+  const nextAvatarPath = raceAvatarOptions[nextAvatarIndex] ?? "";
+
+  function buildAvatarDisplaySrc(path, index) {
+    if (!path) {
+      return "";
+    }
+
+    return `${path}?race=${formData.characterRace.toLowerCase()}&slot=${index + 1}`;
+  }
 
   async function onSubmit(event) {
     event.preventDefault();
@@ -326,9 +267,7 @@ export default function CharacterCreateForm() {
       <section className={styles.avatarCard}>
         <div className={styles.avatarHeadingRow}>
           <p className={styles.avatarTitle}>Character portrait</p>
-          {isAvatarRaceLoading ? (
-            <p className={styles.avatarMeta}>Loading portraits...</p>
-          ) : hasRaceAvatars ? (
+          {hasRaceAvatars ? (
             <p className={styles.avatarMeta}>
               {activeAvatarIndex + 1}/{raceAvatarOptions.length}
             </p>
@@ -337,9 +276,7 @@ export default function CharacterCreateForm() {
           )}
         </div>
 
-        {isAvatarRaceLoading ? (
-          <p className={styles.avatarEmptyText}>Loading race portraits...</p>
-        ) : hasRaceAvatars ? (
+        {hasRaceAvatars ? (
           <>
             <div
               className={styles.avatarSwipeStage}
@@ -348,47 +285,53 @@ export default function CharacterCreateForm() {
               onTouchEnd={handleSwipeEnd}
             >
               <button
+                key={`prev-${previousAvatarPath}`}
                 type="button"
                 className={`${styles.avatarSwipeCard} ${styles.avatarSwipeSide}`}
                 onClick={() => selectAvatarByIndex(previousAvatarIndex)}
                 aria-label="Select previous portrait"
               >
                 <Image
-                  src={raceAvatarOptions[previousAvatarIndex]}
+                  src={buildAvatarDisplaySrc(previousAvatarPath, previousAvatarIndex)}
                   alt={`${formData.characterRace} previous portrait`}
                   width={150}
                   height={150}
                   className={styles.avatarSwipeImage}
+                  unoptimized
                 />
               </button>
 
               <button
+                key={`current-${currentAvatarPath}`}
                 type="button"
                 className={`${styles.avatarSwipeCard} ${styles.avatarSwipeCenter}`}
                 onClick={() => selectAvatarByIndex(activeAvatarIndex)}
                 aria-label="Current selected portrait"
               >
                 <Image
-                  src={raceAvatarOptions[activeAvatarIndex]}
+                  src={buildAvatarDisplaySrc(currentAvatarPath, activeAvatarIndex)}
                   alt={`${formData.characterRace} current portrait`}
                   width={190}
                   height={190}
                   className={styles.avatarSwipeImage}
+                  unoptimized
                 />
               </button>
 
               <button
+                key={`next-${nextAvatarPath}`}
                 type="button"
                 className={`${styles.avatarSwipeCard} ${styles.avatarSwipeSide}`}
                 onClick={() => selectAvatarByIndex(nextAvatarIndex)}
                 aria-label="Select next portrait"
               >
                 <Image
-                  src={raceAvatarOptions[nextAvatarIndex]}
+                  src={buildAvatarDisplaySrc(nextAvatarPath, nextAvatarIndex)}
                   alt={`${formData.characterRace} next portrait`}
                   width={150}
                   height={150}
                   className={styles.avatarSwipeImage}
+                  unoptimized
                 />
               </button>
             </div>
@@ -408,6 +351,30 @@ export default function CharacterCreateForm() {
               >
                 Next
               </button>
+            </div>
+
+            <div className={styles.avatarRail} aria-label="All portraits">
+              {raceAvatarOptions.map((avatarImage, index) => (
+                <button
+                  key={avatarImage}
+                  type="button"
+                  className={`${styles.avatarRailItem} ${
+                    index === activeAvatarIndex ? styles.avatarRailItemActive : ""
+                  }`}
+                  onClick={() => selectAvatarByIndex(index)}
+                  aria-label={`Select portrait ${index + 1}`}
+                  title={`Portrait ${index + 1}`}
+                >
+                  <Image
+                    src={buildAvatarDisplaySrc(avatarImage, index)}
+                    alt={`${formData.characterRace} portrait ${index + 1}`}
+                    width={64}
+                    height={64}
+                    className={styles.avatarRailImage}
+                    unoptimized
+                  />
+                </button>
+              ))}
             </div>
           </>
         ) : (
