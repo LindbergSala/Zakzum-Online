@@ -20,6 +20,51 @@
   background-attachment: fixed;
 }
 
+.questPageShell {
+  background:
+    linear-gradient(
+      150deg,
+      rgba(33, 19, 10, 0.6) 0%,
+      rgba(55, 33, 16, 0.48) 46%,
+      rgba(31, 20, 10, 0.62) 100%
+    ),
+    url("/images/game/Tavern.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.adventurePageShell {
+  background:
+    linear-gradient(
+      154deg,
+      rgba(16, 20, 14, 0.64) 0%,
+      rgba(35, 43, 30, 0.52) 50%,
+      rgba(18, 23, 16, 0.66) 100%
+    ),
+    url("/images/game/Adventure.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.arenaPageShell {
+  background:
+    linear-gradient(
+      146deg,
+      rgba(35, 11, 9, 0.66) 0%,
+      rgba(59, 20, 17, 0.54) 44%,
+      rgba(28, 9, 8, 0.68) 100%
+    ),
+    url("/images/game/Arena.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
 .pageShell::before,
 .pageShell::after {
   content: "";
@@ -44,6 +89,82 @@
 .pageShell::after {
   background:
     radial-gradient(circle at center, transparent 35%, rgba(15, 10, 6, 0.3) 100%);
+}
+
+.questPageShell::before {
+  background:
+    radial-gradient(circle at 18% 24%, rgba(255, 210, 132, 0.26) 0 14%, transparent 52%),
+    radial-gradient(circle at 82% 22%, rgba(252, 196, 118, 0.24) 0 12%, transparent 50%),
+    linear-gradient(
+      108deg,
+      rgba(255, 232, 174, 0.12) 0%,
+      transparent 38%,
+      rgba(255, 228, 154, 0.16) 54%,
+      transparent 84%
+    );
+  animation: tavernLanternPulse 14s ease-in-out infinite alternate;
+  transform: none;
+}
+
+.questPageShell::after {
+  background:
+    radial-gradient(circle at center, transparent 36%, rgba(18, 10, 5, 0.32) 100%),
+    repeating-linear-gradient(
+      -8deg,
+      rgba(126, 82, 47, 0.08) 0 3px,
+      transparent 3px 11px
+    );
+}
+
+.adventurePageShell::before {
+  background:
+    linear-gradient(
+      126deg,
+      transparent 30%,
+      rgba(175, 220, 172, 0.11) 46%,
+      rgba(205, 242, 199, 0.14) 53%,
+      transparent 68%
+    ),
+    linear-gradient(
+      98deg,
+      transparent 12%,
+      rgba(212, 235, 206, 0.1) 34%,
+      transparent 58%
+    );
+  animation: adventureMistDrift 19s linear infinite;
+}
+
+.adventurePageShell::after {
+  background:
+    radial-gradient(circle at center, transparent 32%, rgba(6, 12, 8, 0.42) 100%),
+    linear-gradient(
+      180deg,
+      rgba(26, 37, 24, 0.14) 0%,
+      rgba(20, 30, 19, 0.22) 100%
+    );
+}
+
+.arenaPageShell::before {
+  background:
+    linear-gradient(
+      112deg,
+      transparent 34%,
+      rgba(255, 202, 150, 0.2) 48%,
+      rgba(255, 223, 189, 0.16) 53%,
+      transparent 66%
+    ),
+    radial-gradient(circle at 50% -16%, rgba(255, 170, 102, 0.2) 0 32%, transparent 74%);
+  animation: arenaTorchSweep 11s linear infinite;
+}
+
+.arenaPageShell::after {
+  background:
+    radial-gradient(circle at center, transparent 34%, rgba(12, 4, 3, 0.48) 100%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(148, 66, 42, 0.07) 0 2px,
+      transparent 2px 10px
+    );
 }
 
 .main {
@@ -283,6 +404,47 @@
 
   100% {
     transform: translateX(120vw);
+  }
+}
+
+@keyframes tavernLanternPulse {
+  0% {
+    opacity: 0.55;
+    filter: saturate(0.96) brightness(0.96);
+  }
+
+  100% {
+    opacity: 0.82;
+    filter: saturate(1.06) brightness(1.06);
+  }
+}
+
+@keyframes adventureMistDrift {
+  0% {
+    transform: translate3d(-22vw, -2vh, 0);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: translate3d(0vw, 1vh, 0);
+    opacity: 0.76;
+  }
+
+  100% {
+    transform: translate3d(22vw, -1vh, 0);
+    opacity: 0.62;
+  }
+}
+
+@keyframes arenaTorchSweep {
+  0% {
+    transform: translateX(-112vw);
+    opacity: 0.72;
+  }
+
+  100% {
+    transform: translateX(112vw);
+    opacity: 0.84;
   }
 }
 

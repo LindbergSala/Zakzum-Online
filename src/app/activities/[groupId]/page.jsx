@@ -40,6 +40,12 @@ const GROUP_THEME_CLASS = {
   arena: "themeArena",
 };
 
+const GROUP_PAGE_SHELL_CLASS = {
+  quest: "questPageShell",
+  adventure: "adventurePageShell",
+  arena: "arenaPageShell",
+};
+
 export default async function ActivityGroupPage({ params }) {
   const resolvedParams = await params;
   const group = getActivityGroup(resolvedParams.groupId);
@@ -52,9 +58,18 @@ export default async function ActivityGroupPage({ params }) {
   const user = await requirePageUser();
   const activeCharacter = await getActiveCharacterForUser(user.id);
   const groupThemeClass = styles[GROUP_THEME_CLASS[group.id] ?? ""];
+  const pageShellClassName = [
+    styles.pageShell,
+    bodyFont.className,
+    GROUP_PAGE_SHELL_CLASS[group.id]
+      ? styles[GROUP_PAGE_SHELL_CLASS[group.id]]
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div className={`${styles.pageShell} ${bodyFont.className}`}>
+    <div className={pageShellClassName}>
       <main className={styles.main}>
         <GameNav />
         <section className={styles.heroCard}>
