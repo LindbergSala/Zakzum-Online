@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   CHARACTER_CLASS_OPTIONS,
@@ -30,9 +30,9 @@ function buildInitialFormData() {
 
 export default function CharacterCreateForm() {
   const router = useRouter();
-  const avatarCarouselRef = useRef(null);
   const [formData, setFormData] = useState(buildInitialFormData);
   const [activeAvatarIndex, setActiveAvatarIndex] = useState(0);
+  const [touchStartX, setTouchStartX] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -62,26 +62,6 @@ export default function CharacterCreateForm() {
     updateField("avatarImage", avatarImage);
   }
 
-  function scrollAvatarIntoView(index) {
-    if (!avatarCarouselRef.current) {
-      return;
-    }
-
-    const optionElement = avatarCarouselRef.current.querySelector(
-      `[data-avatar-index="${index}"]`,
-    );
-
-    if (!optionElement) {
-      return;
-    }
-
-    optionElement.scrollIntoView({
-      behavior: "smooth",
-      inline: "center",
-      block: "nearest",
-    });
-  }
-
   function goToNextAvatar() {
     if (!hasRaceAvatars) {
       return;
@@ -89,7 +69,6 @@ export default function CharacterCreateForm() {
 
     const nextIndex = (activeAvatarIndex + 1) % raceAvatarOptions.length;
     selectAvatarByIndex(nextIndex);
-    scrollAvatarIntoView(nextIndex);
   }
 
   function goToPreviousAvatar() {
@@ -101,7 +80,40 @@ export default function CharacterCreateForm() {
       (activeAvatarIndex - 1 + raceAvatarOptions.length) %
       raceAvatarOptions.length;
     selectAvatarByIndex(previousIndex);
-    scrollAvatarIntoView(previousIndex);
+  }
+
+  function handleSwipeStart(event) {
+    if (!hasRaceAvatars) {
+      return;
+    }
+
+    setTouchStartX(event.touches[0]?.clientX ?? null);
+  }
+
+  function handleSwipeEnd(event) {
+    if (!hasRaceAvatars || touchStartX == null) {
+      return;
+    }
+
+    const touchEndX = event.changedTouches[0]?.clientX;
+
+    if (typeof touchEndX !== "number") {
+      setTouchStartX(null);
+      return;
+    }
+
+    const swipeDistance = touchEndX - touchStartX;
+    const swipeThreshold = 40;
+
+    if (Math.abs(swipeDistance) >= swipeThreshold) {
+      if (swipeDistance < 0) {
+        goToNextAvatar();
+      } else {
+        goToPreviousAvatar();
+      }
+    }
+
+    setTouchStartX(null);
   }
 
   useEffect(() => {
@@ -136,6 +148,13 @@ export default function CharacterCreateForm() {
     hasRaceAvatars,
     raceAvatarOptions,
   ]);
+
+  const previousAvatarIndex = hasRaceAvatars
+    ? (activeAvatarIndex - 1 + raceAvatarOptions.length) % raceAvatarOptions.length
+    : 0;
+  const nextAvatarIndex = hasRaceAvatars
+    ? (activeAvatarIndex + 1) % raceAvatarOptions.length
+    : 0;
 
   async function onSubmit(event) {
     event.preventDefault();
@@ -251,15 +270,56 @@ export default function CharacterCreateForm() {
 
         {hasRaceAvatars ? (
           <>
-            <div className={styles.avatarPreviewWrap}>
-              <Image
-                src={raceAvatarOptions[activeAvatarIndex]}
-                alt={`${formData.characterRace} portrait preview ${activeAvatarIndex + 1}`}
-                width={280}
-                height={280}
-                className={styles.avatarPreview}
-                priority
-              />
+            <div
+              className={styles.avatarSwipeStage}
+              aria-label="Swipe portraits"
+              onTouchStart={handleSwipeStart}
+              onTouchEnd={handleSwipeEnd}
+            >
+              <button
+                type="button"
+                className={`${styles.avatarSwipeCard} ${styles.avatarSwipeSide}`}
+                onClick={() => selectAvatarByIndex(previousAvatarIndex)}
+                aria-label="Select previous portrait"
+              >
+                <Image
+                  src={raceAvatarOptions[previousAvatarIndex]}
+                  alt={`${formData.characterRace} previous portrait`}
+                  width={150}
+                  height={150}
+                  className={styles.avatarSwipeImage}
+                />
+              </button>
+
+              <button
+                type="button"
+                className={`${styles.avatarSwipeCard} ${styles.avatarSwipeCenter}`}
+                onClick={() => selectAvatarByIndex(activeAvatarIndex)}
+                aria-label="Current selected portrait"
+              >
+                <Image
+                  src={raceAvatarOptions[activeAvatarIndex]}
+                  alt={`${formData.characterRace} current portrait`}
+                  width={190}
+                  height={190}
+                  className={styles.avatarSwipeImage}
+                />
+              </button>
+
+              <button
+                type="button"
+                className={`${styles.avatarSwipeCard} ${styles.avatarSwipeSide}`}
+                onClick={() => selectAvatarByIndex(nextAvatarIndex)}
+                aria-label="Select next portrait"
+              >
+                <Image
+                  src={raceAvatarOptions[nextAvatarIndex]}
+                  alt={`${formData.characterRace} next portrait`}
+                  width={150}
+                  height={150}
+                  className={styles.avatarSwipeImage}
+                />
+              </button>
             </div>
 
             <div className={styles.avatarControls}>
@@ -277,35 +337,6 @@ export default function CharacterCreateForm() {
               >
                 Next
               </button>
-            </div>
-
-            <div
-              ref={avatarCarouselRef}
-              className={styles.avatarCarousel}
-              aria-label="Swipe portraits"
-            >
-              {raceAvatarOptions.map((avatarImage, index) => (
-                <button
-                  key={avatarImage}
-                  type="button"
-                  data-avatar-index={index}
-                  className={`${styles.avatarOption} ${
-                    index === activeAvatarIndex ? styles.avatarOptionActive : ""
-                  }`}
-                  onClick={() => {
-                    selectAvatarByIndex(index);
-                    scrollAvatarIntoView(index);
-                  }}
-                >
-                  <Image
-                    src={avatarImage}
-                    alt={`${formData.characterRace} portrait option ${index + 1}`}
-                    width={110}
-                    height={110}
-                    className={styles.avatarOptionImage}
-                  />
-                </button>
-              ))}
             </div>
           </>
         ) : (

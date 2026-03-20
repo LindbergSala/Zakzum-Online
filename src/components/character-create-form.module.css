@@ -68,30 +68,6 @@
   font-weight: 600;
 }
 
-.avatarPreviewWrap {
-  margin-top: 0.55rem;
-  border-radius: 12px;
-  border: 1px solid rgba(114, 73, 40, 0.34);
-  background:
-    radial-gradient(circle at 18% 16%, rgba(255, 243, 222, 0.5) 0%, transparent 58%),
-    linear-gradient(160deg, rgba(225, 193, 148, 0.64) 0%, rgba(195, 151, 101, 0.5) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 250, 241, 0.6),
-    inset 0 -10px 18px rgba(115, 74, 40, 0.14);
-  display: flex;
-  justify-content: center;
-  padding: 0.65rem;
-}
-
-.avatarPreview {
-  width: min(100%, 280px);
-  height: auto;
-  border-radius: 10px;
-  border: 1px solid rgba(102, 63, 34, 0.45);
-  object-fit: cover;
-  background: rgba(37, 24, 14, 0.5);
-}
-
 .avatarControls {
   margin-top: 0.55rem;
   display: flex;
@@ -110,51 +86,61 @@
   cursor: pointer;
 }
 
-.avatarCarousel {
-  margin-top: 0.62rem;
+.avatarSwipeStage {
+  margin-top: 0.68rem;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 83, 48, 0.34);
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255, 244, 223, 0.35) 0%, transparent 60%),
+    linear-gradient(160deg, rgba(219, 182, 132, 0.44) 0%, rgba(190, 146, 95, 0.34) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 249, 237, 0.6),
+    inset 0 -8px 14px rgba(109, 70, 39, 0.12);
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(96px, 110px);
-  gap: 0.46rem;
-  overflow-x: auto;
-  padding: 0.16rem 0.05rem 0.18rem;
-  scroll-snap-type: x mandatory;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.32fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(0.25rem, 1vw, 0.68rem);
+  padding: 0.56rem;
+  overflow: hidden;
 }
 
-.avatarCarousel::-webkit-scrollbar {
-  height: 8px;
-}
-
-.avatarCarousel::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(136, 85, 46, 0.45);
-}
-
-.avatarOption {
-  border: 1px solid rgba(123, 79, 45, 0.36);
+.avatarSwipeCard {
+  border: 1px solid rgba(123, 79, 45, 0.4);
   border-radius: 10px;
-  padding: 0.14rem;
-  background: rgba(255, 248, 236, 0.78);
+  padding: 0.12rem;
+  background: rgba(255, 248, 236, 0.82);
   cursor: pointer;
-  scroll-snap-align: center;
   transition:
     transform 120ms ease,
+    opacity 120ms ease,
+    filter 120ms ease,
     border-color 120ms ease,
     box-shadow 120ms ease;
 }
 
-.avatarOption:hover {
+.avatarSwipeCenter {
+  border-color: rgba(160, 92, 37, 0.82);
+  box-shadow: 0 0 0 2px rgba(183, 109, 51, 0.24);
+}
+
+.avatarSwipeSide {
+  opacity: 0.52;
+  transform: scale(0.82);
+  filter: saturate(0.78);
+}
+
+.avatarSwipeSide:hover {
+  opacity: 0.72;
+}
+
+.avatarSwipeCenter:hover {
   transform: translateY(-1px);
 }
 
-.avatarOptionActive {
-  border-color: rgba(161, 90, 34, 0.8);
-  box-shadow: 0 0 0 2px rgba(185, 114, 56, 0.24);
-}
-
-.avatarOptionImage {
+.avatarSwipeImage {
   width: 100%;
   height: auto;
+  aspect-ratio: 1 / 1;
   border-radius: 8px;
   object-fit: cover;
   display: block;
@@ -228,5 +214,11 @@
 
   .avatarControls {
     flex-direction: column;
+  }
+
+  .avatarSwipeStage {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) minmax(0, 0.9fr);
+    gap: 0.18rem;
+    padding: 0.45rem 0.35rem;
   }
 }
