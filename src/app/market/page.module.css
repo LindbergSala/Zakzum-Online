@@ -17,7 +17,7 @@
       rgba(42, 27, 12, 0.5) 45%,
       rgba(31, 20, 9, 0.64) 100%
     ),
-    url("/images/game/worldmap.jpeg");
+    url("/images/game/worldmap.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -55,7 +55,7 @@
       rgba(34, 24, 18, 0.56) 45%,
       rgba(22, 15, 11, 0.68) 100%
     ),
-    url("/images/game/blacksmith.jpg");
+    url("/images/game/Blacksmith.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -74,7 +74,7 @@
       rgba(30, 24, 34, 0.58) 45%,
       rgba(18, 14, 19, 0.68) 100%
     ),
-    url("/images/game/Alchemist.jpg");
+    url("/images/game/Alchemist.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -93,7 +93,7 @@
       rgba(28, 25, 39, 0.6) 45%,
       rgba(16, 15, 25, 0.7) 100%
     ),
-    url("/images/game/Arcanist.jpg");
+    url("/images/game/Arcanist.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -112,7 +112,7 @@
       rgba(34, 22, 17, 0.62) 45%,
       rgba(18, 12, 10, 0.72) 100%
     ),
-    url("/images/game/Bazaar.jpg");
+    url("/images/game/Bazaar.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -131,7 +131,7 @@
       rgba(30, 25, 20, 0.62) 45%,
       rgba(18, 16, 12, 0.7) 100%
     ),
-    url("/images/game/Trophy.jpg");
+    url("/images/game/Trophy.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
