@@ -208,6 +208,12 @@ export const ACTIVITY_GROUPS = [
     id: "quest",
     name: "Quest Board",
     tagline: "Lower risk progression track",
+    summary: "Reliable jobs for early growth and safer momentum.",
+    overviewBadges: [
+      "Low Risk",
+      "Tier I-V",
+      "2-4 Energy",
+    ],
     description:
       "Steady, lower-risk jobs that teach the core loop and build momentum before high danger content.",
     activities: QUEST_ACTIVITY_STEPS,
@@ -216,6 +222,13 @@ export const ACTIVITY_GROUPS = [
     id: "adventure",
     name: "Adventure Board",
     tagline: "Harder next-tier progression",
+    summary:
+      "Hard contracts beyond the walls, where stronger rewards come with real danger.",
+    overviewBadges: [
+      "High Risk",
+      "Tier I-V",
+      "5-7 Energy",
+    ],
     description:
       "High-risk contracts outside the city walls. Adventure I starts above Quest V in both danger and payout profile.",
     activities: ADVENTURE_ACTIVITY_STEPS,
@@ -224,6 +237,13 @@ export const ACTIVITY_GROUPS = [
     id: "arena",
     name: "Arena Board",
     tagline: "Duel track with renown focus",
+    summary:
+      "Public duels and prestige fights built for renown, pressure, and direct combat.",
+    overviewBadges: [
+      "Renown Focus",
+      "Single Track",
+      "4 Energy",
+    ],
     description:
       "Direct combat with renown-heavy rewards. Designed for aggressive builds and prestige progression.",
     activities: ARENA_ACTIVITY_STEPS,

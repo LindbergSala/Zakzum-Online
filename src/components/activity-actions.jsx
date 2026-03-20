@@ -1,37 +1,37 @@
 import Link from "next/link";
 
-import { ACTIVITY_GROUPS, getActivitiesForGroup } from "@/lib/core-loop-data";
+import { ACTIVITY_GROUPS } from "@/lib/core-loop-data";
 
 export default function ActivityActions() {
   return (
     <ul className="activity-list">
       {ACTIVITY_GROUPS.map((group) => {
-        const activities = getActivitiesForGroup(group.id);
-        const first = activities[0];
-        const last = activities[activities.length - 1];
+        const ctaLabel =
+          group.id === "quest"
+            ? "Open Quest"
+            : group.id === "adventure"
+              ? "Open Adventure"
+              : "Open Arena";
+        const badges = Array.isArray(group.overviewBadges)
+          ? group.overviewBadges.slice(0, 3)
+          : [];
 
         return (
           <li key={group.id} className={`activity-item activity-item-${group.id}`}>
             <h2>{group.name}</h2>
-            <p>{group.tagline}</p>
-            <p>{group.description}</p>
-            <p>
-              <strong>Progression:</strong>{" "}
-              {activities.length > 1
-                ? `${first?.name} -> ${last?.name}`
-                : first?.name ?? "No activities available yet."}
+            <p className="activity-item-summary">
+              {group.summary ?? group.description}
             </p>
-            <p>
-              <strong>Difficulty range:</strong>{" "}
-              {first?.roll?.difficulty ?? "-"} to {last?.roll?.difficulty ?? "-"}
-            </p>
-            <p>
-              <strong>Energy range:</strong>{" "}
-              {first?.energyCost ?? "-"} to {last?.energyCost ?? "-"}
-            </p>
-            <p>
+            <div className="activity-item-badges" aria-label={`${group.name} quick facts`}>
+              {badges.map((badge) => (
+                <span key={`${group.id}-${badge}`} className="activity-item-badge">
+                  {badge}
+                </span>
+              ))}
+            </div>
+            <p className="activity-item-cta">
               <Link href={`/activities/${group.id}`}>
-                Open {group.name}
+                {ctaLabel}
               </Link>
             </p>
           </li>

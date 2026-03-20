@@ -191,11 +191,73 @@
 
 .actionsWrap :global(.activity-list) {
   margin: 0;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.78rem;
 }
 
 .actionsWrap :global(.activity-item) {
   border-color: rgba(95, 58, 33, 0.3);
+  border-radius: 12px;
+  padding: 0.88rem 0.9rem;
   box-shadow: inset 0 1px 0 rgba(255, 251, 242, 0.5);
+  display: grid;
+  gap: 0.52rem;
+  align-content: start;
+}
+
+.actionsWrap :global(.activity-item h2) {
+  margin: 0;
+  color: #2f1f0e;
+  font-size: 1.03rem;
+}
+
+.actionsWrap :global(.activity-item-summary) {
+  margin: 0;
+  color: #4e3720;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.actionsWrap :global(.activity-item-badges) {
+  margin-top: 0.1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+
+.actionsWrap :global(.activity-item-badge) {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.52rem;
+  border-radius: 999px;
+  border: 1px solid rgba(99, 62, 35, 0.34);
+  background: rgba(255, 247, 229, 0.78);
+  color: #4f331a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.actionsWrap :global(.activity-item-cta) {
+  margin: 0.1rem 0 0;
+}
+
+.actionsWrap :global(.activity-item-cta a) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.72rem;
+  border-radius: 10px;
+  border: 1px solid rgba(98, 59, 31, 0.45);
+  background: linear-gradient(
+    150deg,
+    rgba(178, 102, 47, 0.9) 0%,
+    rgba(137, 71, 31, 0.9) 100%
+  );
+  color: #fff7e6;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .backLink {

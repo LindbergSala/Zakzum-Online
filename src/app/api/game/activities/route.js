@@ -79,6 +79,8 @@ export async function GET() {
         id: group.id,
         name: group.name,
         tagline: group.tagline,
+        summary: group.summary,
+        overviewBadges: group.overviewBadges ?? [],
         activities: ACTIVITY_DEFINITIONS.filter(
           (activity) => activity.groupId === group.id,
         )
