@@ -11,6 +11,7 @@ test("dragonborn and elf roll modifiers are activity-specific", () => {
   assert.equal(getRacePassiveRollModifier("DRAGONBORN", "arena"), 1);
   assert.equal(getRacePassiveRollModifier("DRAGONBORN", "quest"), 0);
   assert.equal(getRacePassiveRollModifier("ELF", "quest"), 1);
+  assert.equal(getRacePassiveRollModifier("ELF", "quest-2"), 1);
   assert.equal(getRacePassiveRollModifier("ELF", "adventure"), 0);
 });
 
@@ -75,6 +76,15 @@ test("tiefling gold bonus only applies on adventure and arena success", () => {
   assert.deepEqual(arenaSuccess.deltaBonus, { gold: 2 });
   assert.equal(questSuccess.delta.gold, 8);
   assert.deepEqual(questSuccess.deltaBonus, {});
+
+  const adventureTierSuccess = applyRacePassiveDelta({
+    characterRace: "TIEFLING",
+    success: true,
+    activityId: "adventure-1",
+    delta: { gold: 6 },
+  });
+  assert.equal(adventureTierSuccess.delta.gold, 8);
+  assert.deepEqual(adventureTierSuccess.deltaBonus, { gold: 2 });
 });
 
 test("half-orc relentless can trigger once to survive at 1 HP", () => {

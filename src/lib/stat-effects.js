@@ -1,4 +1,4 @@
-import { SHOP_ITEM_DEFINITION_MAP } from "@/lib/core-loop-data";
+import { resolveActivityGroupId, SHOP_ITEM_DEFINITION_MAP } from "@/lib/core-loop-data";
 
 export const CHARACTER_STAT_KEYS = [
   "strength",
@@ -122,10 +122,14 @@ export function getEquippedItemStatBonuses(equippedItems) {
 
 export function getItemActivityRollModifier(itemId, activityId) {
   const effects = SHOP_ITEM_DEFINITION_MAP[itemId]?.effects ?? {};
+  const activityGroupId = resolveActivityGroupId(activityId) ?? activityId;
   const globalModifier = toNumericStatValue(effects.activityRollModifier);
-  const byActivityModifier = toNumericStatValue(
-    effects.activityRollModifierByActivity?.[activityId],
-  );
+  const byActivityMap = effects.activityRollModifierByActivity ?? {};
+  const byActivityModifier =
+    toNumericStatValue(byActivityMap[activityGroupId]) +
+    (activityGroupId === activityId
+      ? 0
+      : toNumericStatValue(byActivityMap[activityId]));
 
   return globalModifier + byActivityModifier;
 }
@@ -139,23 +143,36 @@ export function getEquippedItemRollModifier(equippedItems, activityId) {
 
 function getItemActivityDelta(itemId, { success, activityId }) {
   const effects = SHOP_ITEM_DEFINITION_MAP[itemId]?.effects ?? {};
+  const activityGroupId = resolveActivityGroupId(activityId) ?? activityId;
   const resolvedDelta = buildZeroResourceDelta();
+  const activityDeltaByActivity = effects.activityDeltaByActivity ?? {};
+  const activityDeltaOnSuccessByActivity = effects.activityDeltaOnSuccessByActivity ?? {};
+  const activityDeltaOnFailureByActivity = effects.activityDeltaOnFailureByActivity ?? {};
 
   mergeResourceDelta(resolvedDelta, effects.activityDelta);
-  mergeResourceDelta(resolvedDelta, effects.activityDeltaByActivity?.[activityId]);
+  mergeResourceDelta(resolvedDelta, activityDeltaByActivity[activityGroupId]);
+  if (activityGroupId !== activityId) {
+    mergeResourceDelta(resolvedDelta, activityDeltaByActivity[activityId]);
+  }
 
   if (success) {
     mergeResourceDelta(resolvedDelta, effects.activityDeltaOnSuccess);
     mergeResourceDelta(
       resolvedDelta,
-      effects.activityDeltaOnSuccessByActivity?.[activityId],
+      activityDeltaOnSuccessByActivity[activityGroupId],
     );
+    if (activityGroupId !== activityId) {
+      mergeResourceDelta(resolvedDelta, activityDeltaOnSuccessByActivity[activityId]);
+    }
   } else {
     mergeResourceDelta(resolvedDelta, effects.activityDeltaOnFailure);
     mergeResourceDelta(
       resolvedDelta,
-      effects.activityDeltaOnFailureByActivity?.[activityId],
+      activityDeltaOnFailureByActivity[activityGroupId],
     );
+    if (activityGroupId !== activityId) {
+      mergeResourceDelta(resolvedDelta, activityDeltaOnFailureByActivity[activityId]);
+    }
   }
 
   return resolvedDelta;

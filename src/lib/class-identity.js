@@ -134,6 +134,30 @@ function normalizeDeltaValue(value) {
   return Number.isFinite(numericValue) ? Math.floor(numericValue) : 0;
 }
 
+function normalizeActivityGroupId(activityId) {
+  if (typeof activityId !== "string") {
+    return "";
+  }
+
+  if (activityId === "quest" || activityId === "adventure" || activityId === "arena") {
+    return activityId;
+  }
+
+  if (activityId.startsWith("quest-")) {
+    return "quest";
+  }
+
+  if (activityId.startsWith("adventure-")) {
+    return "adventure";
+  }
+
+  if (activityId.startsWith("arena-")) {
+    return "arena";
+  }
+
+  return activityId;
+}
+
 export function getClassPassive(characterClass) {
   return (
     CLASS_PASSIVES[characterClass] ?? {
@@ -145,16 +169,18 @@ export function getClassPassive(characterClass) {
 }
 
 export function getClassPassiveRollModifier(characterClass, activityId) {
+  const activityGroupId = normalizeActivityGroupId(activityId);
+
   if (
     characterClass === "FIGHTER" &&
-    (activityId === "arena" || activityId === "adventure")
+    (activityGroupId === "arena" || activityGroupId === "adventure")
   ) {
     return 1;
   }
 
   if (
     characterClass === "RANGER" &&
-    (activityId === "quest" || activityId === "adventure")
+    (activityGroupId === "quest" || activityGroupId === "adventure")
   ) {
     return 1;
   }
@@ -233,6 +259,7 @@ export function applyClassPassiveDelta({
   delta,
   activityId,
 }) {
+  const activityGroupId = normalizeActivityGroupId(activityId);
   const nextDelta = {
     hp: normalizeDeltaValue(delta?.hp),
     energy: normalizeDeltaValue(delta?.energy),
@@ -261,7 +288,7 @@ export function applyClassPassiveDelta({
   } else if (
     characterClass === "PALADIN" &&
     success &&
-    activityId === "arena"
+    activityGroupId === "arena"
   ) {
     nextDelta.renown += 1;
     deltaBonus = { renown: 1 };

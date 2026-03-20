@@ -1,13 +1,15 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
-import ActivityActions from "@/components/activity-actions";
+import ActivityRunner from "@/components/activity-runner";
 import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
 import { getActiveCharacterForUser } from "@/lib/character";
+import { ACTIVITY_DEFINITION_MAP } from "@/lib/core-loop-data";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
-import styles from "./page.module.css";
+import styles from "../../page.module.css";
 
 const headingFont = Cinzel({
   subsets: ["latin"],
@@ -19,9 +21,17 @@ const bodyFont = Source_Sans_3({
   weight: ["400", "600", "700"],
 });
 
-export default async function ActivitiesPage() {
+export default async function ActivityRunPage({ params }) {
+  const resolvedParams = await params;
+  const activity = ACTIVITY_DEFINITION_MAP[resolvedParams.activityId];
+
+  if (!activity) {
+    notFound();
+  }
+
   const user = await requirePageUser();
   const activeCharacter = await getActiveCharacterForUser(user.id);
+  const groupPath = `/activities/${activity.groupId ?? activity.id}`;
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -29,27 +39,22 @@ export default async function ActivitiesPage() {
         <GameNav />
         <section className={styles.heroCard}>
           <header className={styles.heroIntro}>
-            <p className={styles.kicker}>Action Board</p>
-            <h1 className={`${styles.title} ${headingFont.className}`}>Activities</h1>
+            <p className={styles.kicker}>Activity Run</p>
+            <h1 className={`${styles.title} ${headingFont.className}`}>{activity.name}</h1>
             <p className={styles.lead}>
-              Choose an activity group, then progress through its internal tiers.
+              {typeof activity.tier === "number"
+                ? `Tier ${activity.tier} in ${activity.groupName}.`
+                : "Run this activity and resolve outcomes through the core roll engine."}
             </p>
           </header>
 
           <section className={styles.panel}>
-            <h2>Available activity groups</h2>
-            <p className={styles.muted}>
-              Quest is the lower-risk track, Adventure is the harder next tier, and Arena stays
-              duel-focused.
-            </p>
             {activeCharacter ? (
               <>
                 <div className={styles.metricCard}>
                   <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
                 </div>
-                <div className={styles.actionsWrap}>
-                  <ActivityActions />
-                </div>
+                <ActivityRunner activity={activity} />
               </>
             ) : (
               <p className={styles.emptyState}>
@@ -58,7 +63,10 @@ export default async function ActivitiesPage() {
               </p>
             )}
             <p className={styles.backLink}>
-              <Link href="/dashboard">Back to dashboard</Link>
+              <Link href={groupPath}>Back to {activity.groupName ?? "group"}</Link>
+            </p>
+            <p className={styles.backLink}>
+              <Link href="/activities">Back to activities</Link>
             </p>
           </section>
         </section>

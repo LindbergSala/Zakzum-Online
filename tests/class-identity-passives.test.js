@@ -11,9 +11,11 @@ import {
 test("fighter and ranger roll modifiers are activity-specific", () => {
   assert.equal(getClassPassiveRollModifier("FIGHTER", "arena"), 1);
   assert.equal(getClassPassiveRollModifier("FIGHTER", "adventure"), 1);
+  assert.equal(getClassPassiveRollModifier("FIGHTER", "adventure-2"), 1);
   assert.equal(getClassPassiveRollModifier("FIGHTER", "quest"), 0);
 
   assert.equal(getClassPassiveRollModifier("RANGER", "quest"), 1);
+  assert.equal(getClassPassiveRollModifier("RANGER", "quest-4"), 1);
   assert.equal(getClassPassiveRollModifier("RANGER", "adventure"), 1);
   assert.equal(getClassPassiveRollModifier("RANGER", "arena"), 0);
 });

@@ -57,6 +57,30 @@ function normalizeResourceValue(value) {
   return Number.isFinite(numericValue) ? Math.floor(numericValue) : 0;
 }
 
+function normalizeActivityGroupId(activityId) {
+  if (typeof activityId !== "string") {
+    return "";
+  }
+
+  if (activityId === "quest" || activityId === "adventure" || activityId === "arena") {
+    return activityId;
+  }
+
+  if (activityId.startsWith("quest-")) {
+    return "quest";
+  }
+
+  if (activityId.startsWith("adventure-")) {
+    return "adventure";
+  }
+
+  if (activityId.startsWith("arena-")) {
+    return "arena";
+  }
+
+  return activityId;
+}
+
 function buildDeltaSnapshot(delta) {
   return {
     hp: normalizeDeltaValue(delta?.hp),
@@ -80,11 +104,13 @@ export function getRacePassive(characterRace) {
 }
 
 export function getRacePassiveRollModifier(characterRace, activityId) {
-  if (characterRace === "DRAGONBORN" && activityId === "arena") {
+  const activityGroupId = normalizeActivityGroupId(activityId);
+
+  if (characterRace === "DRAGONBORN" && activityGroupId === "arena") {
     return 1;
   }
 
-  if (characterRace === "ELF" && activityId === "quest") {
+  if (characterRace === "ELF" && activityGroupId === "quest") {
     return 1;
   }
 
@@ -97,6 +123,7 @@ export function applyRacePassiveDelta({
   delta,
   activityId,
 }) {
+  const activityGroupId = normalizeActivityGroupId(activityId);
   const nextDelta = buildDeltaSnapshot(delta);
   let deltaBonus = {};
 
@@ -121,7 +148,7 @@ export function applyRacePassiveDelta({
   } else if (
     characterRace === "TIEFLING" &&
     success &&
-    (activityId === "adventure" || activityId === "arena")
+    (activityGroupId === "adventure" || activityGroupId === "arena")
   ) {
     nextDelta.gold += 2;
     deltaBonus = { gold: 2 };

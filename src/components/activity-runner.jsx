@@ -103,7 +103,12 @@ export default function ActivityRunner({ activity }) {
   }
 
   return (
-    <section className={`activity-page-panel activity-theme-${activity.id}`}>
+    <section className={`activity-page-panel activity-theme-${activity.groupId ?? activity.id}`}>
+      {typeof activity.tier === "number" ? (
+        <p>
+          <strong>Tier:</strong> {activity.tier}
+        </p>
+      ) : null}
       <p>{activity.pageIntro}</p>
       <p>
         <strong>Risk profile:</strong> {activity.riskProfile}

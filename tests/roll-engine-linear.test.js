@@ -12,7 +12,7 @@ test("linear stat modifier gives immediate +1 per +1 effective stat", () => {
 });
 
 test("roll bonus uses effective stat contributions and level contribution", () => {
-  const quest = ACTIVITY_DEFINITION_MAP.quest;
+  const quest = ACTIVITY_DEFINITION_MAP["quest-1"];
   const result = resolveActivityRoll(
     {
       wisdom: 5,
@@ -69,7 +69,7 @@ test("effective stats include item bonuses before modifier math", () => {
 });
 
 test("quest baseline chance is tuned around early game balance", () => {
-  const quest = ACTIVITY_DEFINITION_MAP.quest;
+  const quest = ACTIVITY_DEFINITION_MAP["quest-1"];
   const result = resolveActivityRoll(
     {
       wisdom: 1,
@@ -82,12 +82,12 @@ test("quest baseline chance is tuned around early game balance", () => {
     },
   );
 
-  assert.equal(result.successTarget, 13);
-  assert.equal(result.chancePercent, 55);
+  assert.equal(result.successTarget, 11);
+  assert.equal(result.chancePercent, 65);
 });
 
 test("quest uses its own level scaling for target difficulty", () => {
-  const quest = ACTIVITY_DEFINITION_MAP.quest;
+  const quest = ACTIVITY_DEFINITION_MAP["quest-3"];
   const result = resolveActivityRoll(
     {
       wisdom: 1,
@@ -105,8 +105,8 @@ test("quest uses its own level scaling for target difficulty", () => {
   assert.equal(result.successTarget, 15);
 });
 
-test("adventure uses steeper level scaling to keep high risk profile", () => {
-  const adventure = ACTIVITY_DEFINITION_MAP.adventure;
+test("adventure uses its own scaling and higher baseline risk", () => {
+  const adventure = ACTIVITY_DEFINITION_MAP["adventure-1"];
   const result = resolveActivityRoll(
     {
       strength: 5,
@@ -119,8 +119,18 @@ test("adventure uses steeper level scaling to keep high risk profile", () => {
     },
   );
 
-  assert.equal(result.calculations.activityLevelScaling, 3);
-  assert.equal(result.baseSuccessTarget, 18);
-  assert.equal(result.difficultyLevelScaling, 9);
-  assert.equal(result.successTarget, 27);
+  assert.equal(result.calculations.activityLevelScaling, 2);
+  assert.equal(result.baseSuccessTarget, 17);
+  assert.equal(result.difficultyLevelScaling, 6);
+  assert.equal(result.successTarget, 23);
+});
+
+test("adventure 1 baseline difficulty starts above quest 5", () => {
+  const questFive = ACTIVITY_DEFINITION_MAP["quest-5"];
+  const adventureOne = ACTIVITY_DEFINITION_MAP["adventure-1"];
+
+  assert.ok(adventureOne.roll.difficulty > questFive.roll.difficulty);
+  assert.ok(adventureOne.energyCost > questFive.energyCost);
+  assert.ok(adventureOne.failPenalty.hp < questFive.failPenalty.hp);
+  assert.ok(adventureOne.successReward.gold > questFive.successReward.gold);
 });

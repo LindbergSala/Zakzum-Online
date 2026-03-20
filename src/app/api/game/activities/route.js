@@ -10,7 +10,11 @@ import {
   getClassPassiveEnergyRefreshBonus,
   getClassPassiveRollModifier,
 } from "@/lib/class-identity";
-import { ACTIVITY_DEFINITION_MAP, ACTIVITY_DEFINITIONS } from "@/lib/core-loop-data";
+import {
+  ACTIVITY_DEFINITION_MAP,
+  ACTIVITY_DEFINITIONS,
+  ACTIVITY_GROUPS,
+} from "@/lib/core-loop-data";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { resolveActivityRoll } from "@/lib/roll-engine";
 import {
@@ -71,8 +75,29 @@ export async function GET() {
 
   return NextResponse.json(
     {
+      groups: ACTIVITY_GROUPS.map((group) => ({
+        id: group.id,
+        name: group.name,
+        tagline: group.tagline,
+        activities: ACTIVITY_DEFINITIONS.filter(
+          (activity) => activity.groupId === group.id,
+        )
+          .sort((left, right) => (left.tier ?? 0) - (right.tier ?? 0))
+          .map((activity) => ({
+            id: activity.id,
+            groupId: activity.groupId,
+            tier: activity.tier,
+            name: activity.name,
+            energyCost: activity.energyCost,
+            riskProfile: activity.riskProfile,
+            successReward: activity.successReward,
+            failPenalty: activity.failPenalty,
+          })),
+      })),
       activities: ACTIVITY_DEFINITIONS.map((activity) => ({
         id: activity.id,
+        groupId: activity.groupId,
+        tier: activity.tier,
         name: activity.name,
         energyCost: activity.energyCost,
         successReward: activity.successReward,
@@ -132,6 +157,14 @@ export async function POST(request) {
 
   try {
     const activity = ACTIVITY_DEFINITION_MAP[parsed.data.activityId];
+    if (!activity) {
+      return NextResponse.json(
+        { message: "Activity was not found." },
+        { status: 404 },
+      );
+    }
+    const activityGroupId = activity.groupId ?? activity.id;
+
     const result = await runSerializableTransaction(async (tx) => {
       const latestCharacter = await tx.character.findUnique({
         where: { id: activeCharacter.id },
@@ -164,17 +197,17 @@ export async function POST(request) {
       );
       const classRollModifier = getClassPassiveRollModifier(
         latestCharacter.characterClass,
-        activity.id,
+        activityGroupId,
       );
       const raceRollModifier = getRacePassiveRollModifier(
         latestCharacter.characterRace,
-        activity.id,
+        activityGroupId,
       );
       const consumableRollModifier = Number(latestCharacter.nextActivityRollBonus) || 0;
       const passiveRollModifier = classRollModifier + raceRollModifier;
       const itemRollModifier = getEquippedItemRollModifier(
         equippedItems,
-        activity.id,
+        activityGroupId,
       );
       const totalRollModifier =
         passiveRollModifier + itemRollModifier + consumableRollModifier;
@@ -187,19 +220,19 @@ export async function POST(request) {
         characterClass: latestCharacter.characterClass,
         success: rollResult.success,
         delta: rollResult.delta,
-        activityId: activity.id,
+        activityId: activityGroupId,
       });
       const racePassiveResolvedDelta = applyRacePassiveDelta({
         characterRace: latestCharacter.characterRace,
         success: rollResult.success,
         delta: classPassiveResolvedDelta.delta,
-        activityId: activity.id,
+        activityId: activityGroupId,
       });
       const itemResolvedDelta = applyEquippedItemActivityDelta({
         equippedItems,
         delta: racePassiveResolvedDelta.delta,
         success: rollResult.success,
-        activityId: activity.id,
+        activityId: activityGroupId,
       });
 
       const calculation = calculateCharacterResourceResult(latestCharacter, {
@@ -305,6 +338,7 @@ export async function POST(request) {
             classIdentity: {
               class: latestCharacter.characterClass,
               passive: classPassive,
+              activityGroupId,
               baseEnergyCost: activity.energyCost,
               effectiveEnergyCost: activityEnergyCost,
               passiveEnergyCostReduction: Math.max(
@@ -320,6 +354,7 @@ export async function POST(request) {
             raceIdentity: {
               race: latestCharacter.characterRace,
               passive: racePassive,
+              activityGroupId,
               raceRollModifier,
               passiveDeltaBonus: racePassiveResolvedDelta.deltaBonus,
               halfOrcRelentlessTriggered: halfOrcRelentless.triggered,
@@ -328,6 +363,7 @@ export async function POST(request) {
             },
             itemIdentity: {
               rollModifier: itemRollModifier,
+              activityGroupId,
               deltaBonus: itemResolvedDelta.deltaBonus,
             },
             consumableIdentity: {
@@ -366,6 +402,7 @@ export async function POST(request) {
         gainedStatPoints: gainedLevels,
         characterClass: latestCharacter.characterClass,
         characterRace: latestCharacter.characterRace,
+        activityGroupId,
       };
     });
 
@@ -391,6 +428,7 @@ export async function POST(request) {
             : `${activity.name} failed.`,
         action: {
           id: activity.id,
+          groupId: result.activityGroupId,
           name: activity.name,
           energyCost: result.activityEnergyCost,
         },
@@ -411,6 +449,7 @@ export async function POST(request) {
           classIdentity: {
             class: result.characterClass,
             passive: result.classPassive,
+            activityGroupId: result.activityGroupId,
             baseEnergyCost: activity.energyCost,
             effectiveEnergyCost: result.activityEnergyCost,
             passiveEnergyCostReduction: Math.max(
@@ -426,6 +465,7 @@ export async function POST(request) {
           raceIdentity: {
             race: result.characterRace,
             passive: result.racePassive,
+            activityGroupId: result.activityGroupId,
             passiveRollModifier: result.raceRollModifier,
             passiveDeltaBonus: result.racePassiveResolvedDelta.deltaBonus,
             halfOrcRelentlessTriggered: result.halfOrcRelentlessTriggered,
@@ -434,6 +474,7 @@ export async function POST(request) {
           },
           itemIdentity: {
             passiveRollModifier: result.itemRollModifier,
+            activityGroupId: result.activityGroupId,
             passiveDeltaBonus: result.itemResolvedDelta.deltaBonus,
           },
           consumableIdentity: {
