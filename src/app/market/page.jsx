@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import GameNav from "@/components/game-nav";
-import { getActiveCharacterForUser } from "@/lib/character";
 import { MARKET_DEFINITIONS } from "@/lib/market-data";
 import { requirePageUser } from "@/lib/page-auth";
 import styles from "./page.module.css";
@@ -18,8 +17,7 @@ const bodyFont = Source_Sans_3({
 });
 
 export default async function MarketPage() {
-  const user = await requirePageUser();
-  const activeCharacter = await getActiveCharacterForUser(user.id);
+  await requirePageUser();
   const pageShellClassName = [
     styles.pageShell,
     styles.marketHubPageShell,

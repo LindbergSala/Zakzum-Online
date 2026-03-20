@@ -15,6 +15,7 @@ export const CHARACTER_RESOURCE_SELECT = {
   level: true,
   renown: true,
   heat: true,
+  nextActivityRollBonus: true,
   unspentStatPoints: true,
 };
 
@@ -38,6 +39,7 @@ export const CHARACTER_OVERVIEW_SELECT = {
   level: true,
   renown: true,
   heat: true,
+  nextActivityRollBonus: true,
   createdAt: true,
   unspentStatPoints: true,
 };

@@ -7,6 +7,7 @@ import {
   moveItemToBackpack,
   moveItemToEquipment,
   normalizeInventoryItems,
+  splitItemStack,
   toItemsByKey,
 } from "../src/components/inventory/inventoryLogic.js";
 
@@ -107,7 +108,8 @@ test("moving equipped item back to backpack requests unequip sync", () => {
   });
 
   assert.equal(result.ok, true);
-  assert.equal(result.syncAction, "unequip");
+  assert.equal(result.syncAction.type, "unequip");
+  assert.equal(result.syncAction.itemRecordId, "sword-1");
   assert.equal(result.nextState.placements["sword-1"].zone, "backpack");
 });
 
@@ -143,8 +145,42 @@ test("stacking works only for consumables and merges full stack", () => {
   });
 
   assert.equal(stacked.ok, true);
+  assert.equal(stacked.syncAction.type, "combine");
+  assert.equal(stacked.syncAction.itemRecordId, "potion-b");
+  assert.equal(stacked.syncAction.targetItemRecordId, "potion-a");
+  assert.equal(stacked.syncAction.quantity, 3);
   assert.equal(stacked.nextState.itemsByKey["potion-a"].quantity, 5);
   assert.equal(stacked.nextState.itemsByKey["potion-b"], undefined);
+});
+
+test("split stack creates a second stack and returns split sync action", () => {
+  const state = buildState(
+    [
+      {
+        id: "potion-a",
+        itemId: "health-potion",
+        itemName: "Health Potion",
+        slot: "belt",
+        quantity: 5,
+      },
+    ],
+    {
+      "potion-a": { zone: "backpack", x: 0, y: 0 },
+    },
+  );
+
+  const split = splitItemStack({
+    state,
+    itemKey: "potion-a",
+    splitQuantity: 2,
+  });
+
+  assert.equal(split.ok, true);
+  assert.equal(split.syncAction.type, "split");
+  assert.equal(split.syncAction.itemRecordId, "potion-a");
+  assert.equal(split.syncAction.quantity, 2);
+  assert.equal(split.nextState.itemsByKey["potion-a"].quantity, 3);
+  assert.equal(split.nextState.itemsByKey[split.createdItemKey].quantity, 2);
 });
 
 test("initial state places equipped item into its equipment slot", () => {

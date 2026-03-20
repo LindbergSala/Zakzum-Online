@@ -55,6 +55,7 @@ const ACTIVITY_CHARACTER_SELECT = {
   level: true,
   renown: true,
   heat: true,
+  nextActivityRollBonus: true,
   unspentStatPoints: true,
   updatedAt: true,
 };
@@ -169,12 +170,14 @@ export async function POST(request) {
         latestCharacter.characterRace,
         activity.id,
       );
+      const consumableRollModifier = Number(latestCharacter.nextActivityRollBonus) || 0;
       const passiveRollModifier = classRollModifier + raceRollModifier;
       const itemRollModifier = getEquippedItemRollModifier(
         equippedItems,
         activity.id,
       );
-      const totalRollModifier = passiveRollModifier + itemRollModifier;
+      const totalRollModifier =
+        passiveRollModifier + itemRollModifier + consumableRollModifier;
       const statSummary = getCharacterEffectiveStats(latestCharacter, equippedItems);
       const rollResult = resolveActivityRoll(statSummary.effective, activity, {
         level: latestCharacter.level,
@@ -240,6 +243,7 @@ export async function POST(request) {
         data: {
           ...buildCharacterResourceUpdateInput(calculation.after),
           energyRegenAt: now,
+          nextActivityRollBonus: 0,
           ...(gainedLevels > 0
             ? { unspentStatPoints: { increment: gainedLevels } }
             : {}),
@@ -267,6 +271,7 @@ export async function POST(request) {
           level: true,
           renown: true,
           heat: true,
+          nextActivityRollBonus: true,
           unspentStatPoints: true,
         },
       });
@@ -325,6 +330,10 @@ export async function POST(request) {
               rollModifier: itemRollModifier,
               deltaBonus: itemResolvedDelta.deltaBonus,
             },
+            consumableIdentity: {
+              consumedNextActivityRollBonus: consumableRollModifier,
+              remainingNextActivityRollBonus: 0,
+            },
             stats: statSummary,
           },
         },
@@ -341,6 +350,7 @@ export async function POST(request) {
         classRollModifier,
         raceRollModifier,
         itemRollModifier,
+        consumableRollModifier,
         passiveRollModifier,
         totalRollModifier,
         classPassiveResolvedDelta,
@@ -426,6 +436,10 @@ export async function POST(request) {
             passiveRollModifier: result.itemRollModifier,
             passiveDeltaBonus: result.itemResolvedDelta.deltaBonus,
           },
+          consumableIdentity: {
+            consumedNextActivityRollBonus: result.consumableRollModifier,
+            remainingNextActivityRollBonus: result.updatedCharacter.nextActivityRollBonus,
+          },
           roll: {
             value: result.rollResult.roll,
             total: result.rollResult.rollTotal,
@@ -442,6 +456,7 @@ export async function POST(request) {
             levelModifier: result.rollResult.calculations.levelModifier,
             passiveRollModifier: result.passiveRollModifier,
             itemRollModifier: result.itemRollModifier,
+            consumableRollModifier: result.consumableRollModifier,
             totalPassiveRollModifier: result.totalRollModifier,
             characterLevel: result.rollResult.calculations.characterLevel,
             chancePercent: result.rollResult.chancePercent,

@@ -30,17 +30,33 @@ function clamp(value, min, max) {
   return value;
 }
 
-async function syncEquipmentAction(itemId, action) {
+async function syncInventoryAction(payload) {
   const response = await fetch("/api/game/inventory", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ itemId, action }),
+    body: JSON.stringify(payload),
   });
 
   const data = await response.json();
 
   if (!response.ok) {
     throw new Error(data.message ?? "Inventory sync failed.");
+  }
+
+  return data;
+}
+
+async function syncMarketSellAction(payload) {
+  const response = await fetch("/api/game/market", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message ?? "Market sell failed.");
   }
 
   return data;
@@ -81,7 +97,45 @@ function ItemCard({ item, draggable, onDragStart, onDragEnd, className, compact 
   );
 }
 
-export default function Inventory({ characterId, items }) {
+function toInventorySyncPayload(syncAction) {
+  if (!syncAction) {
+    return null;
+  }
+
+  if (typeof syncAction === "string") {
+    return {
+      action: syncAction,
+    };
+  }
+
+  if (typeof syncAction !== "object") {
+    return null;
+  }
+
+  const payload = {
+    action: syncAction.type,
+  };
+
+  if (syncAction.itemRecordId) {
+    payload.itemRecordId = syncAction.itemRecordId;
+  }
+
+  if (syncAction.targetItemRecordId) {
+    payload.targetItemRecordId = syncAction.targetItemRecordId;
+  }
+
+  if (Number.isFinite(syncAction.quantity) && syncAction.quantity > 0) {
+    payload.quantity = Math.floor(syncAction.quantity);
+  }
+
+  return payload;
+}
+
+export default function Inventory({
+  characterId,
+  items,
+  enableSellDropzone = false,
+}) {
   const router = useRouter();
   const backpackGridRef = useRef(null);
   const {
@@ -100,6 +154,7 @@ export default function Inventory({ characterId, items }) {
   const [dragItemKey, setDragItemKey] = useState("");
   const [backpackPreview, setBackpackPreview] = useState(null);
   const [equipmentPreview, setEquipmentPreview] = useState(null);
+  const [sellPreview, setSellPreview] = useState(false);
   const [dragAnchor, setDragAnchor] = useState({ x: 0, y: 0 });
   const [feedback, setFeedback] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
@@ -115,15 +170,21 @@ export default function Inventory({ characterId, items }) {
   );
 
   const draggedItem = dragItemKey ? state.itemsByKey[dragItemKey] : null;
+  const consumableStacks = useMemo(
+    () => backpackItems.filter((item) => item.stackable),
+    [backpackItems],
+  );
 
-  async function syncAfterDrop(itemId, action) {
-    if (!action) {
+  async function syncAfterDrop(syncAction) {
+    const payload = toInventorySyncPayload(syncAction);
+
+    if (!payload) {
       return;
     }
 
     try {
       setIsSyncing(true);
-      await syncEquipmentAction(itemId, action);
+      await syncInventoryAction(payload);
       setFeedback("");
       router.refresh();
     } catch (error) {
@@ -138,6 +199,7 @@ export default function Inventory({ characterId, items }) {
     setDragItemKey("");
     setBackpackPreview(null);
     setEquipmentPreview(null);
+    setSellPreview(false);
     setDragAnchor({ x: 0, y: 0 });
   }
 
@@ -257,6 +319,7 @@ export default function Inventory({ characterId, items }) {
       valid: placementCheck.ok,
     });
     setEquipmentPreview(null);
+    setSellPreview(false);
   }
 
   async function handleBackpackDrop(event) {
@@ -288,7 +351,7 @@ export default function Inventory({ characterId, items }) {
     }
 
     resetDragState();
-    await syncAfterDrop(draggedItemBeforeMove?.itemId, result.syncAction);
+    await syncAfterDrop(result.syncAction);
   }
 
   function handleEquipmentDragOver(event, slot) {
@@ -303,6 +366,7 @@ export default function Inventory({ characterId, items }) {
       valid: isCompatibleWithEquipmentSlot(draggedItem, slot),
     });
     setBackpackPreview(null);
+    setSellPreview(false);
   }
 
   async function handleEquipmentDrop(event, slot) {
@@ -312,7 +376,6 @@ export default function Inventory({ characterId, items }) {
       return;
     }
 
-    const draggedItemBeforeMove = state.itemsByKey[dragItemKey];
     const result = actions.moveEquipment({
       itemKey: dragItemKey,
       slot,
@@ -325,7 +388,170 @@ export default function Inventory({ characterId, items }) {
     }
 
     resetDragState();
-    await syncAfterDrop(draggedItemBeforeMove?.itemId, result.syncAction);
+    await syncAfterDrop(result.syncAction);
+  }
+
+  function handleSellDragOver(event) {
+    if (!enableSellDropzone) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (!dragItemKey || isSyncing) {
+      return;
+    }
+
+    setSellPreview(true);
+    setBackpackPreview(null);
+    setEquipmentPreview(null);
+  }
+
+  async function handleSellDrop(event) {
+    if (!enableSellDropzone) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (!dragItemKey || isSyncing) {
+      return;
+    }
+
+    const dragged = state.itemsByKey[dragItemKey];
+
+    if (!dragged) {
+      resetDragState();
+      return;
+    }
+
+    let sellQuantity = 1;
+
+    if (dragged.quantity > 1) {
+      const rawInput = window.prompt(
+        `Sell quantity for ${dragged.itemName} (1-${dragged.quantity}):`,
+        "1",
+      );
+
+      if (rawInput === null) {
+        resetDragState();
+        return;
+      }
+
+      const parsedQuantity = Number.parseInt(rawInput, 10);
+
+      if (!Number.isFinite(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > dragged.quantity) {
+        setFeedback("Invalid sell quantity.");
+        resetDragState();
+        return;
+      }
+
+      sellQuantity = parsedQuantity;
+    }
+
+    try {
+      setIsSyncing(true);
+      const data = await syncMarketSellAction({
+        action: "sell",
+        itemRecordId: dragged.id,
+        quantity: sellQuantity,
+      });
+      setFeedback(data.message ?? "Item sold.");
+      router.refresh();
+    } catch (error) {
+      setFeedback(error.message ?? "Market sell failed.");
+      router.refresh();
+    } finally {
+      setIsSyncing(false);
+      resetDragState();
+    }
+  }
+
+  async function handleUseConsumable(itemKey) {
+    const item = state.itemsByKey[itemKey];
+
+    if (!item || isSyncing) {
+      return;
+    }
+
+    let useQuantity = 1;
+
+    if (item.quantity > 1) {
+      const rawInput = window.prompt(
+        `Use quantity for ${item.itemName} (1-${item.quantity}):`,
+        "1",
+      );
+
+      if (rawInput === null) {
+        return;
+      }
+
+      const parsedQuantity = Number.parseInt(rawInput, 10);
+
+      if (!Number.isFinite(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > item.quantity) {
+        setFeedback("Invalid use quantity.");
+        return;
+      }
+
+      useQuantity = parsedQuantity;
+    }
+
+    try {
+      setIsSyncing(true);
+      const data = await syncInventoryAction({
+        action: "use",
+        itemRecordId: item.id,
+        quantity: useQuantity,
+      });
+      setFeedback(data.message ?? `${item.itemName} used.`);
+      router.refresh();
+    } catch (error) {
+      setFeedback(error.message ?? "Could not use consumable.");
+      router.refresh();
+    } finally {
+      setIsSyncing(false);
+    }
+  }
+
+  async function handleSplitStack(itemKey) {
+    const item = state.itemsByKey[itemKey];
+
+    if (!item || isSyncing || item.quantity <= 1) {
+      return;
+    }
+
+    const suggested = Math.max(1, Math.floor(item.quantity / 2));
+    const rawInput = window.prompt(
+      `Split quantity for ${item.itemName} (1-${item.quantity - 1}):`,
+      String(suggested),
+    );
+
+    if (rawInput === null) {
+      return;
+    }
+
+    const parsedQuantity = Number.parseInt(rawInput, 10);
+
+    if (
+      !Number.isFinite(parsedQuantity) ||
+      parsedQuantity < 1 ||
+      parsedQuantity >= item.quantity
+    ) {
+      setFeedback("Invalid split quantity.");
+      return;
+    }
+
+    const splitResult = actions.splitStack({
+      itemKey,
+      splitQuantity: parsedQuantity,
+    });
+
+    if (!splitResult.ok) {
+      setFeedback(splitResult.reason ?? "Could not split stack.");
+      return;
+    }
+
+    await syncAfterDrop(splitResult.syncAction);
   }
 
   return (
@@ -421,10 +647,56 @@ export default function Inventory({ characterId, items }) {
             ))}
           </div>
 
+          {consumableStacks.length > 0 ? (
+            <section className={styles.consumablePanel}>
+              <p className={styles.consumableTitle}>Consumables</p>
+              <ul className={styles.consumableList}>
+                {consumableStacks.map((item) => (
+                  <li className={styles.consumableRow} key={`${item.key}-actions`}>
+                    <span className={styles.consumableName}>
+                      {item.itemName} x{item.quantity}
+                    </span>
+                    <div className={styles.consumableActions}>
+                      <button
+                        className={styles.smallActionButton}
+                        type="button"
+                        onClick={() => handleUseConsumable(item.key)}
+                        disabled={isSyncing}
+                      >
+                        Use X
+                      </button>
+                      <button
+                        className={styles.smallActionButton}
+                        type="button"
+                        onClick={() => handleSplitStack(item.key)}
+                        disabled={isSyncing || item.quantity <= 1}
+                      >
+                        Split
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
           {unplacedItems.length > 0 ? (
             <p className={styles.warningText}>
               Some items could not be placed. Free backpack space and refresh.
             </p>
+          ) : null}
+
+          {enableSellDropzone ? (
+            <section
+              className={`${styles.sellDropzone} ${sellPreview ? styles.sellDropzoneActive : ""}`}
+              onDragOver={handleSellDragOver}
+              onDrop={handleSellDrop}
+            >
+              <h4 className={styles.sellDropzoneTitle}>Sell Items</h4>
+              <p className={styles.sellDropzoneText}>
+                Drag items from inventory and drop them here to sell.
+              </p>
+            </section>
           ) : null}
         </section>
       </div>

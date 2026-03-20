@@ -80,6 +80,7 @@ model Character {
   renown            Int             @default(0)
   heat              Int             @default(0)
   level             Int             @default(1)
+  nextActivityRollBonus Int         @default(0)
   unspentStatPoints Int             @default(0)
   items             CharacterItem[]
   activityLogs      ActivityLog[]
@@ -93,11 +94,12 @@ model CharacterItem {
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
   itemId      String    @db.VarChar(64)
   itemName    String    @db.VarChar(64)
+  quantity    Int       @default(1)
   isEquipped  Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@unique([characterId, itemId])
+  @@index([characterId, itemId])
   @@index([characterId])
 }
 

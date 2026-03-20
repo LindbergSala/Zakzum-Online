@@ -12,6 +12,16 @@ function toPositiveNumber(value) {
   return numericValue;
 }
 
+function getItemQuantityValue(item) {
+  const quantity =
+    typeof item === "object" && item !== null ? Number(item.quantity) : 1;
+  if (!Number.isFinite(quantity) || quantity <= 0) {
+    return 1;
+  }
+
+  return Math.max(1, Math.floor(quantity));
+}
+
 export function getCharacterCarryCapacity(strength) {
   const safeStrength = Math.max(1, Math.floor(toPositiveNumber(strength)));
   return safeStrength * CARRY_WEIGHT_PER_STRENGTH;
@@ -30,14 +40,14 @@ export function getItemCarryCapacityBonusById(itemId) {
 export function getTotalItemWeight(items = []) {
   return items.reduce((total, item) => {
     const itemId = typeof item === "string" ? item : item?.itemId;
-    return total + getItemWeightById(itemId);
+    return total + getItemWeightById(itemId) * getItemQuantityValue(item);
   }, 0);
 }
 
 export function getTotalCarryCapacityBonus(items = []) {
   return items.reduce((total, item) => {
     const itemId = typeof item === "string" ? item : item?.itemId;
-    return total + getItemCarryCapacityBonusById(itemId);
+    return total + getItemCarryCapacityBonusById(itemId) * getItemQuantityValue(item);
   }, 0);
 }
 

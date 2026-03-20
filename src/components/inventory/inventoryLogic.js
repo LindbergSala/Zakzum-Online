@@ -252,11 +252,12 @@ function stackItemIntoTarget(state, sourceKey, targetKey) {
     return null;
   }
 
+  const movedQuantity = sourceItem.quantity;
   targetItem.quantity += sourceItem.quantity;
   delete nextState.itemsByKey[sourceKey];
   delete nextState.placements[sourceKey];
 
-  return nextState;
+  return { nextState, movedQuantity };
 }
 
 export function moveItemToBackpack({
@@ -290,10 +291,15 @@ export function moveItemToBackpack({
 
     return {
       ok: true,
-      nextState: stackedState,
+      nextState: stackedState.nextState,
       fromZone: currentPlacement.zone,
       toZone: "backpack",
-      syncAction: item.isEquipped ? "unequip" : null,
+      syncAction: {
+        type: "combine",
+        itemRecordId: item.id,
+        targetItemRecordId: state.itemsByKey[stackedTargetKey]?.id,
+        quantity: stackedState.movedQuantity,
+      },
     };
   }
 
@@ -323,7 +329,12 @@ export function moveItemToBackpack({
     nextState,
     fromZone: currentPlacement.zone,
     toZone: "backpack",
-    syncAction: item.isEquipped ? "unequip" : null,
+    syncAction: item.isEquipped
+      ? {
+          type: "unequip",
+          itemRecordId: item.id,
+        }
+      : null,
   };
 }
 
@@ -394,7 +405,93 @@ export function moveItemToEquipment({
     nextState,
     fromZone: currentPlacement.zone,
     toZone: "equipment",
-    syncAction: "equip",
+    syncAction: {
+      type: "equip",
+      itemRecordId: item.id,
+    },
+  };
+}
+
+function buildTempItemKey(itemKey) {
+  return `${itemKey}-split-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+}
+
+export function splitItemStack({
+  state,
+  itemKey,
+  splitQuantity = null,
+  columns = INVENTORY_GRID_COLUMNS,
+  rows = INVENTORY_GRID_ROWS,
+}) {
+  const sourceItem = state.itemsByKey[itemKey];
+  const sourcePlacement = state.placements[itemKey];
+
+  if (!sourceItem || !sourcePlacement) {
+    return { ok: false, reason: "Item not found." };
+  }
+
+  if (!isConsumableStackable(sourceItem)) {
+    return { ok: false, reason: "Only stackable consumables can be split." };
+  }
+
+  if (!isBackpackPlacement(sourcePlacement)) {
+    return { ok: false, reason: "Item must be in backpack to split." };
+  }
+
+  if (sourceItem.quantity <= 1) {
+    return { ok: false, reason: "Stack is too small to split." };
+  }
+
+  const resolvedSplitQuantity =
+    splitQuantity == null
+      ? Math.floor(sourceItem.quantity / 2)
+      : Math.max(1, Math.floor(splitQuantity));
+
+  if (resolvedSplitQuantity <= 0 || resolvedSplitQuantity >= sourceItem.quantity) {
+    return { ok: false, reason: "Invalid split quantity." };
+  }
+
+  const nextState = cloneInventoryState(state);
+  const nextSourceItem = nextState.itemsByKey[itemKey];
+  nextSourceItem.quantity -= resolvedSplitQuantity;
+
+  const tempKey = buildTempItemKey(itemKey);
+  const splitItem = {
+    ...nextSourceItem,
+    key: tempKey,
+    id: tempKey,
+    quantity: resolvedSplitQuantity,
+    isEquipped: false,
+  };
+  nextState.itemsByKey[tempKey] = splitItem;
+
+  const firstFit = findFirstBackpackPosition({
+    state: nextState,
+    itemKey: tempKey,
+    columns,
+    rows,
+    ignoreItemKey: tempKey,
+  });
+
+  if (!firstFit) {
+    return { ok: false, reason: "No free backpack space for split stack." };
+  }
+
+  nextState.placements[tempKey] = {
+    zone: "backpack",
+    x: firstFit.x,
+    y: firstFit.y,
+  };
+
+  return {
+    ok: true,
+    nextState,
+    createdItemKey: tempKey,
+    syncAction: {
+      type: "split",
+      itemRecordId: sourceItem.id,
+      quantity: resolvedSplitQuantity,
+    },
   };
 }
 

@@ -107,6 +107,7 @@ export default async function CharacterPage() {
           id: true,
           itemId: true,
           itemName: true,
+          quantity: true,
           isEquipped: true,
         },
         orderBy: { createdAt: "desc" },
@@ -143,7 +144,7 @@ export default async function CharacterPage() {
       : [];
   const inventoryStateKey = character
     ? `${character.id}:${items
-        .map((item) => `${item.id}-${item.isEquipped ? 1 : 0}`)
+        .map((item) => `${item.id}-${item.isEquipped ? 1 : 0}-${item.quantity}`)
         .join("|")}`
     : "inventory-empty";
 

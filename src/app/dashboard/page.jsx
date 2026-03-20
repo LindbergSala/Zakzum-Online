@@ -220,7 +220,7 @@ export default async function DashboardPage() {
   const ownedItems = activeCharacter
     ? await prisma.characterItem.findMany({
         where: { characterId: activeCharacter.id },
-        select: { itemId: true },
+        select: { itemId: true, quantity: true },
       })
     : [];
   const energyMeta = activeCharacter

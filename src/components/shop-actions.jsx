@@ -33,7 +33,7 @@ function formatDelta(delta) {
     .join(", ");
 }
 
-function formatPrice(item) {
+function formatBuyPrice(item) {
   const parts = [];
 
   if (Number(item.price) > 0) {
@@ -47,24 +47,39 @@ function formatPrice(item) {
   return parts.length > 0 ? parts.join(" + ") : "Free";
 }
 
+function formatSellPrice(sellValue) {
+  const parts = [];
+
+  if (Number(sellValue?.gold) > 0) {
+    parts.push(`${sellValue.gold} Gold`);
+  }
+
+  if (Number(sellValue?.renown) > 0) {
+    parts.push(`${sellValue.renown} Renown`);
+  }
+
+  return parts.length > 0 ? parts.join(" + ") : "No value";
+}
+
 export default function ShopActions({ items }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [activeItemId, setActiveItemId] = useState("");
+  const [activeActionKey, setActiveActionKey] = useState("");
   const [feedback, setFeedback] = useState(null);
-  const [lastPurchase, setLastPurchase] = useState(null);
+  const [lastTransaction, setLastTransaction] = useState(null);
 
   async function handleBuy(itemId) {
+    const actionKey = `buy:${itemId}`;
     setIsLoading(true);
-    setActiveItemId(itemId);
+    setActiveActionKey(actionKey);
     setFeedback(null);
-    setLastPurchase(null);
+    setLastTransaction(null);
 
     try {
       const response = await fetch("/api/game/market", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId }),
+        body: JSON.stringify({ itemId, action: "buy" }),
       });
 
       const data = await response.json();
@@ -75,7 +90,7 @@ export default function ShopActions({ items }) {
       }
 
       setFeedback({ tone: "ok", text: data.message });
-      setLastPurchase(data);
+      setLastTransaction(data);
       router.refresh();
     } catch {
       setFeedback({
@@ -84,59 +99,73 @@ export default function ShopActions({ items }) {
       });
     } finally {
       setIsLoading(false);
-      setActiveItemId("");
+      setActiveActionKey("");
     }
-  }
-
-  if (!items || items.length === 0) {
-    return <p>No market items available.</p>;
   }
 
   return (
     <>
       {isLoading ? (
         <p className="feedback loading" aria-live="polite">
-          Processing purchase...
+          Processing market transaction...
         </p>
       ) : null}
-      <ul>
-        {items.map((item) => (
-          <li key={item.id}>
-            <p>
-              <strong>{item.name}</strong>
-            </p>
-            {item.description ? <p>{item.description}</p> : null}
-            <p>
-              Slot: {item.slot} | Cost: {formatPrice(item)} | Weight: {item.weight} Wt
-            </p>
-            <p>Effects: {item.effectLabel}</p>
-            {item.owned ? (
-              item.equipped ? (
-                <em>(equipped)</em>
-              ) : (
-                <em>(owned)</em>
-              )
-            ) : null}
-            <br />
-            <button
-              type="button"
-              onClick={() => handleBuy(item.id)}
-              disabled={isLoading || item.owned}
-            >
-              {isLoading && activeItemId === item.id
-                ? "Buying..."
-                : item.owned
-                  ? "Already purchased"
-                  : `Buy ${item.name}`}
-            </button>
-          </li>
-        ))}
-      </ul>
+
+      <div>
+        <h4>Buy from this vendor</h4>
+        {!items || items.length === 0 ? (
+          <p>No market items available.</p>
+        ) : (
+          <ul>
+            {items.map((item) => {
+              const stackInfo = item.isStackable
+                ? `Stackable (max ${item.maxStack ?? 5})`
+                : "Unique equipment";
+
+              return (
+                <li key={item.id}>
+                  <p>
+                    <strong>{item.name}</strong>
+                    {Number(item.ownedQuantity) > 0 ? ` (owned x${item.ownedQuantity})` : ""}
+                  </p>
+                  {item.description ? <p>{item.description}</p> : null}
+                  <p>
+                    Slot: {item.slot} | Buy: {formatBuyPrice(item)} | Sell: {" "}
+                    {formatSellPrice(item.sellValue)} | Weight: {item.weight} Wt
+                  </p>
+                  <p>{stackInfo}</p>
+                  <p>Effects: {item.effectLabel}</p>
+                  <button
+                    type="button"
+                    onClick={() => handleBuy(item.id)}
+                    disabled={isLoading || (!item.isStackable && item.owned)}
+                  >
+                    {isLoading && activeActionKey === `buy:${item.id}`
+                      ? "Buying..."
+                      : !item.isStackable && item.owned
+                        ? "Already purchased"
+                        : `Buy ${item.name}`}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
+      <div style={{ marginTop: "0.9rem" }}>
+        <h4>Sell from inventory</h4>
+        <p>
+          Drag any owned item into the <strong>Sell Items</strong> box in the inventory panel.
+          For stackables, you can choose partial quantity at drop.
+        </p>
+      </div>
+
       {feedback ? (
         feedback.tone === "error" ? (
           <section className="action-result-card action-result-error" aria-live="polite">
             <p>
-              <strong>Purchase result:</strong> ERROR
+              <strong>Market result:</strong> ERROR
             </p>
             <p>{feedback.text}</p>
           </section>
@@ -146,22 +175,24 @@ export default function ShopActions({ items }) {
           </p>
         )
       ) : null}
-      {lastPurchase ? (
+
+      {lastTransaction ? (
         <section className="action-result-card action-result-ok" aria-live="polite">
           <p>
-            <strong>Purchase result:</strong> SUCCESS
+            <strong>Market result:</strong>{" "}
+            {String(lastTransaction.action).toUpperCase() || "SUCCESS"}
           </p>
           <p>
-            <strong>Item:</strong> {lastPurchase.item?.itemName ?? "Unknown item"}
+            <strong>Item:</strong> {lastTransaction.item?.itemName ?? "Unknown item"}
           </p>
           <p>
-            <strong>Delta:</strong> {formatDelta(lastPurchase.resources?.delta)}
+            <strong>Delta:</strong> {formatDelta(lastTransaction.resources?.delta)}
           </p>
           <p>
-            <strong>Before:</strong> {formatResourceLine(lastPurchase.resources?.before)}
+            <strong>Before:</strong> {formatResourceLine(lastTransaction.resources?.before)}
           </p>
           <p>
-            <strong>After:</strong> {formatResourceLine(lastPurchase.resources?.after)}
+            <strong>After:</strong> {formatResourceLine(lastTransaction.resources?.after)}
           </p>
         </section>
       ) : null}

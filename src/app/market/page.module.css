@@ -366,8 +366,24 @@
   font-size: 0.82rem;
 }
 
+.inventorySection {
+  margin-top: 0.75rem;
+}
+
+.sectionHeading {
+  margin: 0.88rem 0 0.55rem;
+  color: var(--ink-strong);
+  font-size: 1rem;
+}
+
 .actionsWrap {
   margin-top: 0.65rem;
+}
+
+.actionsWrap :global(h4) {
+  margin: 0 0 0.42rem;
+  color: var(--ink-strong);
+  font-size: 0.95rem;
 }
 
 .actionsWrap :global(ul) {
@@ -380,6 +396,11 @@
 
 .actionsWrap :global(li) {
   margin: 0;
+  border-radius: 10px;
+  padding: 0.66rem 0.72rem;
+  border: 1px solid rgba(95, 58, 33, 0.26);
+  background: rgba(255, 250, 241, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 251, 242, 0.52);
 }
 
 .actionsWrap :global(button) {

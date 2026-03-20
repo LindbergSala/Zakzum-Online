@@ -7,6 +7,7 @@ import {
   moveItemToBackpack,
   moveItemToEquipment,
   normalizeInventoryItems,
+  splitItemStack,
 } from "./inventoryLogic";
 import {
   EQUIPMENT_SLOT_ORDER,
@@ -165,6 +166,25 @@ export function useInventoryStore({ characterId, items }) {
     [state],
   );
 
+  const splitStack = useCallback(
+    ({ itemKey, splitQuantity }) => {
+      const result = splitItemStack({
+        state,
+        itemKey,
+        splitQuantity,
+        columns: INVENTORY_GRID_COLUMNS,
+        rows: INVENTORY_GRID_ROWS,
+      });
+
+      if (result.ok && result.nextState) {
+        setState(result.nextState);
+      }
+
+      return result;
+    },
+    [state],
+  );
+
   const zoneItems = useMemo(() => getItemsByZone(state), [state]);
 
   return {
@@ -178,6 +198,7 @@ export function useInventoryStore({ characterId, items }) {
     actions: {
       moveBackpack,
       moveEquipment,
+      splitStack,
     },
   };
 }

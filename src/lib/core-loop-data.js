@@ -395,3 +395,61 @@ export const ACTIVITY_DEFINITION_MAP = Object.fromEntries(
 export const SHOP_ITEM_DEFINITION_MAP = Object.fromEntries(
   SHOP_ITEM_DEFINITIONS.map((item) => [item.id, item]),
 );
+
+function toNonNegativeInteger(value) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? Math.max(0, Math.floor(numericValue)) : 0;
+}
+
+export function getShopItemGoldCost(itemOrId) {
+  if (!itemOrId) {
+    return 0;
+  }
+
+  const definition =
+    typeof itemOrId === "string" ? SHOP_ITEM_DEFINITION_MAP[itemOrId] : itemOrId;
+
+  return toNonNegativeInteger(definition?.price);
+}
+
+export function getShopItemRenownCost(itemOrId) {
+  if (!itemOrId) {
+    return 0;
+  }
+
+  const definition =
+    typeof itemOrId === "string" ? SHOP_ITEM_DEFINITION_MAP[itemOrId] : itemOrId;
+
+  return toNonNegativeInteger(definition?.renownPrice);
+}
+
+export function getShopItemSellValue(itemOrId) {
+  const goldCost = getShopItemGoldCost(itemOrId);
+  const renownCost = getShopItemRenownCost(itemOrId);
+  const gold = goldCost > 0 ? Math.max(1, Math.floor(goldCost * 0.6)) : 0;
+  const renown = renownCost > 0 ? Math.max(1, Math.floor(renownCost * 0.5)) : 0;
+
+  return {
+    gold,
+    renown,
+  };
+}
+
+export function isShopItemStackable(itemOrId) {
+  if (!itemOrId) {
+    return false;
+  }
+
+  const definition =
+    typeof itemOrId === "string" ? SHOP_ITEM_DEFINITION_MAP[itemOrId] : itemOrId;
+
+  return definition?.slot === "consumable";
+}
+
+export function getShopItemMaxStack(itemOrId) {
+  if (!itemOrId) {
+    return 1;
+  }
+
+  return isShopItemStackable(itemOrId) ? 5 : 1;
+}

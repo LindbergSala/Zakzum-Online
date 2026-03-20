@@ -3,9 +3,17 @@ import { notFound } from "next/navigation";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import GameNav from "@/components/game-nav";
+import InventoryHydrated from "@/components/inventory/InventoryHydrated";
 import ShopActions from "@/components/shop-actions";
 import { getActiveCharacterForUser } from "@/lib/character";
-import { SHOP_ITEM_DEFINITIONS } from "@/lib/core-loop-data";
+import {
+  getShopItemGoldCost,
+  getShopItemRenownCost,
+  getShopItemSellValue,
+  isShopItemStackable,
+  SHOP_ITEM_DEFINITION_MAP,
+  SHOP_ITEM_DEFINITIONS,
+} from "@/lib/core-loop-data";
 import { MARKET_DEFINITION_MAP } from "@/lib/market-data";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
@@ -42,21 +50,35 @@ export default async function MarketVendorPage({ params }) {
 
   const user = await requirePageUser();
   const activeCharacter = await getActiveCharacterForUser(user.id);
-  const ownedItems = activeCharacter
+  const ownedItemsSummary = activeCharacter
     ? await prisma.characterItem.findMany({
         where: { characterId: activeCharacter.id },
         select: {
           itemId: true,
           isEquipped: true,
+          quantity: true,
         },
+      })
+    : [];
+  const ownedItems = activeCharacter
+    ? await prisma.characterItem.findMany({
+        where: { characterId: activeCharacter.id },
+        select: {
+          id: true,
+          itemId: true,
+          itemName: true,
+          quantity: true,
+          isEquipped: true,
+        },
+        orderBy: { createdAt: "desc" },
       })
     : [];
 
   const ownedById = Object.fromEntries(
-    ownedItems.map((item) => [item.itemId, item]),
+    ownedItemsSummary.map((item) => [item.itemId, item]),
   );
   const carryWeightSummary = activeCharacter
-    ? getCharacterCarryWeightSummary(activeCharacter.strength, ownedItems)
+    ? getCharacterCarryWeightSummary(activeCharacter.strength, ownedItemsSummary)
     : null;
 
   const vendorItems = SHOP_ITEM_DEFINITIONS.filter(
@@ -67,15 +89,33 @@ export default async function MarketVendorPage({ params }) {
     name: item.name,
     marketId: item.marketId,
     description: item.description,
-    price: item.price,
-    renownPrice: item.renownPrice ?? 0,
+    price: getShopItemGoldCost(item),
+    renownPrice: getShopItemRenownCost(item),
     weight: item.weight,
     slot: item.slot,
     effects: item.effects,
     effectLabel: formatItemEffectLabel(item.effects),
-    owned: Boolean(ownedById[item.id]),
+    owned: (Number(ownedById[item.id]?.quantity) || 0) > 0,
+    ownedQuantity: Number(ownedById[item.id]?.quantity) || 0,
     equipped: Boolean(ownedById[item.id]?.isEquipped),
+    sellValue: getShopItemSellValue(item),
+    isStackable: isShopItemStackable(item),
   }));
+  const inventoryItems = ownedItems.map((item) => {
+    const definition = SHOP_ITEM_DEFINITION_MAP[item.itemId];
+    return {
+      ...item,
+      slot: definition?.slot ?? "unknown",
+      weight: definition?.weight ?? 0,
+      effectLabel: formatItemEffectLabel(definition?.effects),
+      sellValue: getShopItemSellValue(definition),
+    };
+  });
+  const inventoryStateKey = activeCharacter
+    ? `${activeCharacter.id}:${inventoryItems
+        .map((item) => `${item.id}-${item.isEquipped ? 1 : 0}-${item.quantity}`)
+        .join("|")}`
+    : "market-inventory-empty";
   const pageShellClassName = [
     styles.pageShell,
     bodyFont.className,
@@ -126,9 +166,21 @@ export default async function MarketVendorPage({ params }) {
                     ) : null}
                   </article>
                 </div>
+                <div className={styles.inventorySection}>
+                  <h3 className={styles.sectionHeading}>Inventory</h3>
+                  <InventoryHydrated
+                    key={inventoryStateKey}
+                    characterId={activeCharacter.id}
+                    items={inventoryItems}
+                    enableSellDropzone
+                  />
+                </div>
+                <h3 className={styles.sectionHeading}>Market offers</h3>
                 {shopItems.length > 0 ? (
                   <div className={styles.actionsWrap}>
-                    <ShopActions items={shopItems} />
+                    <ShopActions
+                      items={shopItems}
+                    />
                   </div>
                 ) : (
                   <p className={styles.emptyState}>This vendor has no stock yet.</p>
