@@ -1,81 +1,12 @@
 import Link from "next/link";
 
 import GameNav from "@/components/game-nav";
+import { formatDashboardLogEntry } from "@/lib/activity-log-format";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
 
 const LOG_ENTRY_LIMIT = 10;
-
-function formatDelta(delta) {
-  if (!delta || typeof delta !== "object") {
-    return "No delta.";
-  }
-
-  const parts = Object.entries(delta).map(([key, value]) => {
-    const numericValue = Number(value);
-    const sign = numericValue > 0 ? "+" : "";
-    return `${key}: ${sign}${numericValue}`;
-  });
-
-  return parts.join(", ");
-}
-
-function formatType(type) {
-  if (type === "ACTIVITY") {
-    return "Activity";
-  }
-
-  if (type === "SHOP") {
-    return "Market";
-  }
-
-  if (type === "EQUIP") {
-    return "Equip";
-  }
-
-  return type;
-}
-
-function formatResources(resources) {
-  if (!resources || typeof resources !== "object") {
-    return "No resource data.";
-  }
-
-  return [
-    `HP ${resources.hp}`,
-    `Energy ${resources.energy}`,
-    `Gold ${resources.gold}`,
-    `XP ${resources.xp}`,
-    `Level ${resources.level}`,
-    `Renown ${resources.renown}`,
-    `Heat ${resources.heat}`,
-  ].join(" | ");
-}
-
-function formatDetails(entry) {
-  if (!entry.details || typeof entry.details !== "object") {
-    return null;
-  }
-
-  const item = entry.details.item;
-  if (!item || typeof item !== "object") {
-    return null;
-  }
-
-  const priceParts = [];
-
-  if (typeof item.price === "number" && item.price > 0) {
-    priceParts.push(`${item.price} Gold`);
-  }
-
-  if (typeof item.renownPrice === "number" && item.renownPrice > 0) {
-    priceParts.push(`${item.renownPrice} Renown`);
-  }
-
-  const pricePart = priceParts.length > 0 ? `, cost ${priceParts.join(" + ")}` : "";
-  return `${item.name ?? entry.activityName} (${item.slot ?? "unknown slot"}${pricePart})`;
-}
 
 export default async function LogPage() {
   const user = await requirePageUser();
@@ -95,15 +26,13 @@ export default async function LogPage() {
           roll: true,
           rollTotal: true,
           successTarget: true,
-          statModifier: true,
-          chancePercent: true,
           delta: true,
-          afterResources: true,
           details: true,
           createdAt: true,
         },
       })
     : [];
+  const compactEntries = entries.map(formatDashboardLogEntry);
 
   return (
     <main>
@@ -119,34 +48,16 @@ export default async function LogPage() {
         <p>No actions logged yet.</p>
       ) : (
         <ul>
-          {entries.map((entry) => (
+          {compactEntries.map((entry) => (
             <li key={entry.id}>
-              <strong>{entry.activityName}</strong> ({formatType(entry.type)}) -{" "}
-              {entry.success ? "SUCCESS" : "FAIL"} -{" "}
-              {new Date(entry.createdAt).toLocaleString("en-US")}
-              <br />
-              {entry.type === "ACTIVITY" ? (
-                <>
-                  Roll: {entry.roll} + mod {entry.statModifier} = {entry.rollTotal}{" "}
-                  (target {entry.successTarget}, chance {entry.chancePercent}%)
-                  <br />
-                  Energy cost: {entry.energyCost}
-                </>
-              ) : (
-                <>
-                  Result: {entry.success ? "OK" : "FAIL"}
-                  {formatDetails(entry) ? (
-                    <>
-                      <br />
-                      {formatDetails(entry)}
-                    </>
-                  ) : null}
-                </>
-              )}
-              <br />
-              Delta: {formatDelta(entry.delta)}
-              <br />
-              New totals: {formatResources(entry.afterResources)}
+              <p>
+                <strong>{entry.activityName}</strong>
+              </p>
+              <p>{entry.status}</p>
+              <p>{entry.time}</p>
+              {entry.rollLine ? <p>{entry.rollLine}</p> : null}
+              {entry.detailLine ? <p>{entry.detailLine}</p> : null}
+              {entry.deltaLine ? <p>{entry.deltaLine}</p> : null}
             </li>
           ))}
         </ul>

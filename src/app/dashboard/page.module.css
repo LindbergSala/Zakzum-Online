@@ -337,6 +337,32 @@
   line-height: 1.4;
 }
 
+.logStatus {
+  margin: 0.24rem 0 0;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.logStatusSuccess {
+  color: #2f6a2d;
+}
+
+.logStatusFail {
+  color: #8a2316;
+}
+
+.logStatusNeutral {
+  color: #5a3a1f;
+}
+
+.logMetaLine {
+  margin: 0.18rem 0 0;
+  font-size: 0.86rem;
+  color: #6a4a2e;
+}
+
 .logDetail {
   margin: 0.28rem 0 0;
   font-size: 0.93rem;

@@ -5,6 +5,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import CharacterOverview from "@/components/character-overview";
 import EnergyTimer from "@/components/energy-timer";
 import GameNav from "@/components/game-nav";
+import { formatDashboardLogEntry } from "@/lib/activity-log-format";
 import { getResolvedCharacterAvatar } from "@/lib/character-avatars";
 import {
   buildBaseResourcesForCharacter,
@@ -38,76 +39,6 @@ function getNextStepTarget(currentValue, step, minimumTarget = step) {
   const safeValue = Number(currentValue) || 0;
   const steppedTarget = Math.ceil((safeValue + 1) / step) * step;
   return Math.max(minimumTarget, steppedTarget);
-}
-
-function formatType(type) {
-  if (type === "ACTIVITY") {
-    return "Activity";
-  }
-
-  if (type === "SHOP") {
-    return "Market";
-  }
-
-  if (type === "EQUIP") {
-    return "Equip";
-  }
-
-  return type;
-}
-
-function formatDelta(delta) {
-  if (!delta || typeof delta !== "object") {
-    return "No delta.";
-  }
-
-  const parts = Object.entries(delta).map(([key, value]) => {
-    const numericValue = Number(value);
-    const sign = numericValue > 0 ? "+" : "";
-    return `${key}: ${sign}${numericValue}`;
-  });
-
-  return parts.join(", ");
-}
-
-function formatResources(resources) {
-  if (!resources || typeof resources !== "object") {
-    return "No resource data.";
-  }
-
-  return [
-    `HP ${resources.hp}`,
-    `Energy ${resources.energy}`,
-    `Gold ${resources.gold}`,
-    `XP ${resources.xp}`,
-    `Level ${resources.level}`,
-    `Renown ${resources.renown}`,
-    `Heat ${resources.heat}`,
-  ].join(" | ");
-}
-
-function formatDetails(entry) {
-  if (!entry.details || typeof entry.details !== "object") {
-    return null;
-  }
-
-  const item = entry.details.item;
-  if (!item || typeof item !== "object") {
-    return null;
-  }
-
-  const priceParts = [];
-
-  if (typeof item.price === "number" && item.price > 0) {
-    priceParts.push(`${item.price} Gold`);
-  }
-
-  if (typeof item.renownPrice === "number" && item.renownPrice > 0) {
-    priceParts.push(`${item.renownPrice} Renown`);
-  }
-
-  const pricePart = priceParts.length > 0 ? `, cost ${priceParts.join(" + ")}` : "";
-  return `${item.name ?? entry.activityName} (${item.slot ?? "unknown slot"}${pricePart})`;
 }
 
 function buildDashboardGoals(character, levelProgress, logEntries) {
@@ -262,6 +193,7 @@ export default async function DashboardPage() {
           logEntries,
         )
       : [];
+  const compactLogEntries = logEntries.map(formatDashboardLogEntry);
   const maxResources = activeCharacter
     ? getCharacterMaxResources(activeCharacter)
     : null;
@@ -367,34 +299,32 @@ export default async function DashboardPage() {
                   <p>No actions logged yet.</p>
                 ) : (
                   <ul className={styles.logList}>
-                    {logEntries.map((entry) => (
+                    {compactLogEntries.map((entry) => (
                       <li className={styles.logItem} key={entry.id}>
                         <p className={styles.logTopLine}>
-                          <strong>{entry.activityName}</strong> (
-                          {formatType(entry.type)}) -{" "}
-                          {entry.success ? "SUCCESS" : "FAIL"} -{" "}
-                          {new Date(entry.createdAt).toLocaleString("en-US")}
+                          <strong>{entry.activityName}</strong>
                         </p>
-                        {entry.type === "ACTIVITY" ? (
-                          <p className={styles.logDetail}>
-                            Roll: {entry.roll} + mod {entry.statModifier} ={" "}
-                            {entry.rollTotal} (target {entry.successTarget}, chance{" "}
-                            {entry.chancePercent}%) | Energy cost: {entry.energyCost}
-                          </p>
-                        ) : (
-                          <p className={styles.logDetail}>
-                            Result: {entry.success ? "OK" : "FAIL"}
-                            {formatDetails(entry)
-                              ? ` | ${formatDetails(entry)}`
-                              : ""}
-                          </p>
-                        )}
-                        <p className={styles.logDetail}>
-                          Delta: {formatDelta(entry.delta)}
+                        <p
+                          className={`${styles.logStatus} ${
+                            entry.isSuccess
+                              ? styles.logStatusSuccess
+                              : entry.isFail
+                                ? styles.logStatusFail
+                                : styles.logStatusNeutral
+                          }`}
+                        >
+                          {entry.status}
                         </p>
-                        <p className={styles.logDetail}>
-                          New totals: {formatResources(entry.afterResources)}
-                        </p>
+                        <p className={styles.logMetaLine}>{entry.time}</p>
+                        {entry.rollLine ? (
+                          <p className={styles.logDetail}>{entry.rollLine}</p>
+                        ) : null}
+                        {entry.detailLine ? (
+                          <p className={styles.logDetail}>{entry.detailLine}</p>
+                        ) : null}
+                        {entry.deltaLine ? (
+                          <p className={styles.logDetail}>{entry.deltaLine}</p>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
