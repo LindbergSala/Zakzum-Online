@@ -1,15 +1,15 @@
 export const CHARACTER_AVATAR_COUNT = 10;
 
 const AVATAR_FILE_RULES_BY_RACE = {
-  DRAGONBORN: { folder: "player_Dragonborn", filePrefix: "dragonborn_character" },
+  DRAGONBORN: { folder: "player_Dragonborn", filePrefix: "character_Dragonborn" },
   HUMAN: { folder: "player_Humans", filePrefix: "human_character" },
   DWARF: { folder: "player_Dwarf", filePrefix: "dwarf_character" },
   ELF: { folder: "player_Elf", filePrefix: "elf_character" },
-  GNOME: { folder: "player_Gnome", filePrefix: "gnome_character" },
-  HALF_ELF: { folder: "player_HalfElf", filePrefix: "half_elf_character" },
-  HALF_ORC: { folder: "player_HalfOrc", filePrefix: "half_orc_character" },
-  HALFLING: { folder: "player_Halfling", filePrefix: "halfling_character" },
-  TIEFLING: { folder: "player_Tiefling", filePrefix: "tiefling_character" },
+  GNOME: { folder: "player_Gnome", filePrefix: "character_Gnome" },
+  HALF_ELF: { folder: "player_Half_Elf", filePrefix: "character_Half_Elf" },
+  HALF_ORC: { folder: "player_Half_Orc", filePrefix: "character_Half_Orc" },
+  HALFLING: { folder: "player_Hafling", filePrefix: "character_Hafling" },
+  TIEFLING: { folder: "player_Tiefling", filePrefix: "character_Tiefling" },
 };
 
 function buildAvatarPath(fileRule, imageIndex) {
