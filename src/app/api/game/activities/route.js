@@ -39,6 +39,7 @@ import { getLevelProgressMeta } from "@/lib/level-progression";
 import { getSessionTokenFromRequestCookies } from "@/lib/session";
 import { getItemMaxStack, isItemStackable } from "@/lib/items/helpers";
 import { activityActionSchema } from "@/lib/validators/core-loop";
+import { getCharacterCarryWeightSummary, getItemWeightById } from "@/lib/weight-rules";
 
 const HALF_ORC_RELENTLESS_COOKIE_NAME = "zakzum_half_orc_relentless";
 
@@ -83,9 +84,18 @@ function normalizePositiveQuantity(value, fallback = 1) {
   return Math.max(1, Math.floor(numericValue));
 }
 
-async function applyLootDropToInventory(tx, characterId, ownedItems, lootDrop) {
+async function applyLootDropToInventory(
+  tx,
+  characterId,
+  characterStrength,
+  ownedItems,
+  lootDrop,
+) {
   if (!lootDrop?.dropped || !lootDrop.item) {
-    return null;
+    return {
+      loot: null,
+      blockedByCarry: null,
+    };
   }
 
   const item = lootDrop.item;
@@ -97,6 +107,47 @@ async function applyLootDropToInventory(tx, characterId, ownedItems, lootDrop) {
         .filter((ownedItem) => ownedItem.itemId === item.id && ownedItem.quantity < maxStack)
         .sort((left, right) => left.quantity - right.quantity)[0] ?? null
     : null;
+  const projectedOwnedItems = ownedItems.map((ownedItem) => ({
+    itemId: ownedItem.itemId,
+    quantity: normalizePositiveQuantity(ownedItem.quantity, 1),
+  }));
+
+  const existingProjectedEntry = projectedOwnedItems.find(
+    (ownedItem) => ownedItem.itemId === item.id,
+  );
+
+  if (existingProjectedEntry) {
+    existingProjectedEntry.quantity += 1;
+  } else {
+    projectedOwnedItems.push({
+      itemId: item.id,
+      quantity: 1,
+    });
+  }
+
+  const currentCarrySummary = getCharacterCarryWeightSummary(
+    characterStrength,
+    ownedItems,
+  );
+  const projectedCarrySummary = getCharacterCarryWeightSummary(
+    characterStrength,
+    projectedOwnedItems,
+  );
+
+  if (projectedCarrySummary.currentWeight > projectedCarrySummary.maxWeight) {
+    return {
+      loot: null,
+      blockedByCarry: {
+        reason: "carry_capacity_exceeded",
+        itemId: item.id,
+        itemName: item.name,
+        itemWeight: getItemWeightById(item.id),
+        currentWeight: currentCarrySummary.currentWeight,
+        projectedWeight: projectedCarrySummary.currentWeight,
+        maxWeight: projectedCarrySummary.maxWeight,
+      },
+    };
+  }
 
   let itemRecord;
   let quantityBefore = 0;
@@ -132,24 +183,41 @@ async function applyLootDropToInventory(tx, characterId, ownedItems, lootDrop) {
   }
 
   return {
-    itemId: item.id,
-    name: item.name,
-    category: item.category,
-    rarity: item.rarity,
-    quantity: 1,
-    stackable,
-    maxStack,
-    itemRecordId: itemRecord.id,
-    quantityBefore,
-    quantityAfter: itemRecord.quantity,
+    loot: {
+      itemId: item.id,
+      name: item.name,
+      category: item.category,
+      rarity: item.rarity,
+      quantity: 1,
+      stackable,
+      maxStack,
+      itemRecordId: itemRecord.id,
+      quantityBefore,
+      quantityAfter: itemRecord.quantity,
+    },
+    blockedByCarry: null,
   };
 }
 
-function buildLootLogDetails(lootDrop, loot) {
+function buildLootLogDetails(lootDrop, loot, blockedByCarry = null) {
   if (!lootDrop) {
     return {
       dropped: false,
       reason: "loot_not_resolved",
+    };
+  }
+
+  if (blockedByCarry) {
+    return {
+      dropped: false,
+      reason: "blocked_by_carry_capacity",
+      source: lootDrop.lootSource,
+      activityTier: lootDrop.activityTier,
+      dropChance: lootDrop.dropChance,
+      dropRoll: lootDrop.dropRoll,
+      pickRoll: lootDrop.pickRoll,
+      candidateCount: lootDrop.candidateCount,
+      blockedByCarry,
     };
   }
 
@@ -412,12 +480,15 @@ export async function POST(request) {
         };
       }
 
-      const loot = await applyLootDropToInventory(
+      const lootPersistence = await applyLootDropToInventory(
         tx,
         latestCharacter.id,
+        latestCharacter.strength,
         ownedItems,
         lootDrop,
       );
+      const loot = lootPersistence.loot;
+      const lootBlockedByCarry = lootPersistence.blockedByCarry;
 
       const updatedCharacter = await tx.character.findUnique({
         where: { id: latestCharacter.id },
@@ -499,7 +570,7 @@ export async function POST(request) {
               remainingNextActivityRollBonus: 0,
             },
             stats: statSummary,
-            loot: buildLootLogDetails(lootDrop, loot),
+            loot: buildLootLogDetails(lootDrop, loot, lootBlockedByCarry),
           },
         },
         select: { id: true },
@@ -534,6 +605,7 @@ export async function POST(request) {
         activityGroupId,
         lootDrop,
         loot,
+        lootBlockedByCarry,
       };
     });
 
@@ -557,10 +629,13 @@ export async function POST(request) {
     const lootMessageSuffix = result.loot?.name
       ? ` Loot found: ${result.loot.name}.`
       : "";
+    const lootBlockedByCarryMessageSuffix = result.lootBlockedByCarry
+      ? " Loot found, but you are carrying too much to keep it."
+      : "";
 
     const response = NextResponse.json(
       {
-        message: `${baseMessage}${lootMessageSuffix}`,
+        message: `${baseMessage}${lootMessageSuffix}${lootBlockedByCarryMessageSuffix}`,
         action: {
           id: activity.id,
           groupId: result.activityGroupId,
@@ -653,6 +728,7 @@ export async function POST(request) {
             after: getCharacterResourceSnapshot(result.updatedCharacter),
           },
           loot: result.loot ?? null,
+          lootBlockedByCarry: result.lootBlockedByCarry ?? null,
           logId: result.logEntry?.id,
         },
       },

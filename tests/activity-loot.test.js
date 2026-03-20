@@ -80,6 +80,7 @@ test("loot chance miss returns deterministic no-drop payload", () => {
   assert.equal(resolution.reason, "chance_miss");
   assert.equal(resolution.item, null);
   assert.ok(typeof resolution.dropChance === "number");
+  assert.ok(resolution.candidateCount > 0);
 });
 
 test("successful roll can resolve a valid dropped item", () => {

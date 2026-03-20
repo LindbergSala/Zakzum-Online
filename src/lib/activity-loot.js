@@ -160,21 +160,6 @@ export function resolveActivityLootDrop({
     };
   }
 
-  const dropRoll = resolveRandomRoll(random);
-  if (dropRoll >= dropChance) {
-    return {
-      dropped: false,
-      reason: "chance_miss",
-      lootSource: lootProfile.source,
-      activityTier: tier,
-      dropChance,
-      dropRoll,
-      candidateCount: 0,
-      item: null,
-      pickRoll: null,
-    };
-  }
-
   const candidates = getActivityLootCandidates({
     activityGroupId,
     activityTier: tier,
@@ -187,8 +172,23 @@ export function resolveActivityLootDrop({
       lootSource: lootProfile.source,
       activityTier: tier,
       dropChance,
-      dropRoll,
+      dropRoll: null,
       candidateCount: 0,
+      item: null,
+      pickRoll: null,
+    };
+  }
+
+  const dropRoll = resolveRandomRoll(random);
+  if (dropRoll >= dropChance) {
+    return {
+      dropped: false,
+      reason: "chance_miss",
+      lootSource: lootProfile.source,
+      activityTier: tier,
+      dropChance,
+      dropRoll,
+      candidateCount: candidates.length,
       item: null,
       pickRoll: null,
     };
