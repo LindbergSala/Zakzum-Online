@@ -62,6 +62,34 @@ function formatDeltaBonus(deltaBonus) {
     : "No extra bonus on this action.";
 }
 
+function formatLoot(loot) {
+  if (!loot) {
+    return "No loot dropped.";
+  }
+
+  const rarityLabel = loot.rarity ? `, ${loot.rarity}` : "";
+  return `${loot.name} x${loot.quantity} (${loot.category}${rarityLabel})`;
+}
+
+function getLootToastClass(loot) {
+  if (!loot) {
+    return "loot-toast-empty";
+  }
+
+  const rarity = typeof loot.rarity === "string" ? loot.rarity.toLowerCase() : "common";
+  return `loot-toast-drop loot-toast-rarity-${rarity}`;
+}
+
+function getLootHeadline(loot) {
+  if (!loot) {
+    return "No item dropped this run.";
+  }
+
+  const quantity = Number(loot.quantity) || 1;
+  const quantityLabel = quantity > 1 ? ` x${quantity}` : "";
+  return `${loot.name}${quantityLabel}`;
+}
+
 export default function ActivityRunner({ activity }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -159,6 +187,17 @@ export default function ActivityRunner({ activity }) {
           }`}
           aria-live="polite"
         >
+          <div className={`loot-toast ${getLootToastClass(lastResult.loot)}`}>
+            <p className="loot-toast-kicker">{lastResult.loot ? "Loot Drop" : "Loot"}</p>
+            <p className="loot-toast-headline">{getLootHeadline(lastResult.loot)}</p>
+            {lastResult.loot ? (
+              <p className="loot-toast-meta">
+                {lastResult.loot.category} | {lastResult.loot.rarity} |{" "}
+                {lastResult.loot.stackable ? "stackable" : "unique slot item"}
+              </p>
+            ) : null}
+          </div>
+
           <p>
             <strong>Result:</strong>{" "}
             {lastResult.success ? "SUCCESS" : "FAIL"}
@@ -241,6 +280,9 @@ export default function ActivityRunner({ activity }) {
           <p>
             <strong>Reward/Penalty (delta):</strong>{" "}
             {formatDelta(lastResult.delta)}
+          </p>
+          <p>
+            <strong>Loot:</strong> {formatLoot(lastResult.loot)}
           </p>
           <p>
             <strong>New totals:</strong>{" "}

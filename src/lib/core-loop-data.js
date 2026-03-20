@@ -6,6 +6,7 @@ import {
   isItemStackable,
 } from "./items/helpers";
 import { ITEM_CATALOG, ITEM_CATALOG_MAP } from "./items/catalog";
+import { ITEM_CATEGORY, ITEM_LOOT_SOURCE, ITEM_RARITY } from "./items/constants";
 
 const QUEST_ACTIVITY_STEPS = [
   {
@@ -214,6 +215,24 @@ export const ACTIVITY_GROUPS = [
       "Tier I-V",
       "2-4 Energy",
     ],
+    lootProfile: {
+      source: ITEM_LOOT_SOURCE.QUEST,
+      dropChance: 0.32,
+      successOnly: true,
+      categoryWeights: {
+        [ITEM_CATEGORY.TRASH]: 4,
+        [ITEM_CATEGORY.MATERIAL]: 3,
+        [ITEM_CATEGORY.CONSUMABLE]: 2,
+        [ITEM_CATEGORY.EQUIPMENT]: 1,
+        [ITEM_CATEGORY.TROPHY]: 0,
+      },
+      rarityWeights: {
+        [ITEM_RARITY.TRASH]: 4,
+        [ITEM_RARITY.COMMON]: 4,
+        [ITEM_RARITY.RARE]: 1,
+        [ITEM_RARITY.EPIC]: 0.2,
+      },
+    },
     description:
       "Steady, lower-risk jobs that teach the core loop and build momentum before high danger content.",
     activities: QUEST_ACTIVITY_STEPS,
@@ -229,6 +248,24 @@ export const ACTIVITY_GROUPS = [
       "Tier I-V",
       "5-7 Energy",
     ],
+    lootProfile: {
+      source: ITEM_LOOT_SOURCE.ADVENTURE,
+      dropChance: 0.5,
+      successOnly: true,
+      categoryWeights: {
+        [ITEM_CATEGORY.TRASH]: 1,
+        [ITEM_CATEGORY.MATERIAL]: 2,
+        [ITEM_CATEGORY.CONSUMABLE]: 2,
+        [ITEM_CATEGORY.EQUIPMENT]: 4,
+        [ITEM_CATEGORY.TROPHY]: 0.6,
+      },
+      rarityWeights: {
+        [ITEM_RARITY.TRASH]: 1,
+        [ITEM_RARITY.COMMON]: 3,
+        [ITEM_RARITY.RARE]: 3,
+        [ITEM_RARITY.EPIC]: 1.4,
+      },
+    },
     description:
       "High-risk contracts outside the city walls. Adventure I starts above Quest V in both danger and payout profile.",
     activities: ADVENTURE_ACTIVITY_STEPS,
@@ -244,6 +281,24 @@ export const ACTIVITY_GROUPS = [
       "Single Track",
       "4 Energy",
     ],
+    lootProfile: {
+      source: ITEM_LOOT_SOURCE.ARENA,
+      dropChance: 0.44,
+      successOnly: true,
+      categoryWeights: {
+        [ITEM_CATEGORY.TRASH]: 0.4,
+        [ITEM_CATEGORY.MATERIAL]: 1,
+        [ITEM_CATEGORY.CONSUMABLE]: 1,
+        [ITEM_CATEGORY.EQUIPMENT]: 3,
+        [ITEM_CATEGORY.TROPHY]: 4,
+      },
+      rarityWeights: {
+        [ITEM_RARITY.TRASH]: 0.4,
+        [ITEM_RARITY.COMMON]: 2,
+        [ITEM_RARITY.RARE]: 3,
+        [ITEM_RARITY.EPIC]: 2.5,
+      },
+    },
     description:
       "Direct combat with renown-heavy rewards. Designed for aggressive builds and prestige progression.",
     activities: ARENA_ACTIVITY_STEPS,

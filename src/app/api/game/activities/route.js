@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
+import { resolveActivityLootDrop } from "@/lib/activity-loot";
 import { requireApiUser } from "@/lib/api-auth";
 import { getActiveCharacterForUser } from "@/lib/character";
 import {
@@ -36,6 +37,7 @@ import {
 } from "@/lib/stat-effects";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { getSessionTokenFromRequestCookies } from "@/lib/session";
+import { getItemMaxStack, isItemStackable } from "@/lib/items/helpers";
 import { activityActionSchema } from "@/lib/validators/core-loop";
 
 const HALF_ORC_RELENTLESS_COOKIE_NAME = "zakzum_half_orc_relentless";
@@ -63,6 +65,118 @@ const ACTIVITY_CHARACTER_SELECT = {
   unspentStatPoints: true,
   updatedAt: true,
 };
+
+const ACTIVITY_ITEM_SELECT = {
+  id: true,
+  itemId: true,
+  itemName: true,
+  quantity: true,
+  isEquipped: true,
+};
+
+function normalizePositiveQuantity(value, fallback = 1) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return fallback;
+  }
+
+  return Math.max(1, Math.floor(numericValue));
+}
+
+async function applyLootDropToInventory(tx, characterId, ownedItems, lootDrop) {
+  if (!lootDrop?.dropped || !lootDrop.item) {
+    return null;
+  }
+
+  const item = lootDrop.item;
+  const stackable = isItemStackable(item);
+  const maxStack = getItemMaxStack(item);
+
+  const existingStack = stackable
+    ? ownedItems
+        .filter((ownedItem) => ownedItem.itemId === item.id && ownedItem.quantity < maxStack)
+        .sort((left, right) => left.quantity - right.quantity)[0] ?? null
+    : null;
+
+  let itemRecord;
+  let quantityBefore = 0;
+
+  if (existingStack) {
+    quantityBefore = normalizePositiveQuantity(existingStack.quantity, 1);
+    itemRecord = await tx.characterItem.update({
+      where: { id: existingStack.id },
+      data: {
+        quantity: {
+          increment: 1,
+        },
+      },
+      select: {
+        id: true,
+        quantity: true,
+      },
+    });
+  } else {
+    itemRecord = await tx.characterItem.create({
+      data: {
+        characterId,
+        itemId: item.id,
+        itemName: item.name,
+        quantity: 1,
+        isEquipped: false,
+      },
+      select: {
+        id: true,
+        quantity: true,
+      },
+    });
+  }
+
+  return {
+    itemId: item.id,
+    name: item.name,
+    category: item.category,
+    rarity: item.rarity,
+    quantity: 1,
+    stackable,
+    maxStack,
+    itemRecordId: itemRecord.id,
+    quantityBefore,
+    quantityAfter: itemRecord.quantity,
+  };
+}
+
+function buildLootLogDetails(lootDrop, loot) {
+  if (!lootDrop) {
+    return {
+      dropped: false,
+      reason: "loot_not_resolved",
+    };
+  }
+
+  if (!lootDrop.dropped || !loot) {
+    return {
+      dropped: false,
+      reason: lootDrop.reason,
+      source: lootDrop.lootSource,
+      activityTier: lootDrop.activityTier,
+      dropChance: lootDrop.dropChance,
+      dropRoll: lootDrop.dropRoll,
+      candidateCount: lootDrop.candidateCount,
+    };
+  }
+
+  return {
+    dropped: true,
+    reason: lootDrop.reason,
+    source: lootDrop.lootSource,
+    activityTier: lootDrop.activityTier,
+    dropChance: lootDrop.dropChance,
+    dropRoll: lootDrop.dropRoll,
+    pickRoll: lootDrop.pickRoll,
+    candidateCount: lootDrop.candidateCount,
+    item: loot,
+  };
+}
 
 export async function GET() {
   const { user, error } = await requireApiUser();
@@ -181,15 +295,15 @@ export async function POST(request) {
         };
       }
 
-      const equippedItems = await tx.characterItem.findMany({
+      const ownedItems = await tx.characterItem.findMany({
         where: {
           characterId: latestCharacter.id,
-          isEquipped: true,
         },
-        select: {
-          itemId: true,
-        },
+        select: ACTIVITY_ITEM_SELECT,
       });
+      const equippedItems = ownedItems
+        .filter((item) => item.isEquipped)
+        .map((item) => ({ itemId: item.itemId }));
 
       const classPassive = getClassPassive(latestCharacter.characterClass);
       const racePassive = getRacePassive(latestCharacter.characterRace);
@@ -235,6 +349,11 @@ export async function POST(request) {
         delta: racePassiveResolvedDelta.delta,
         success: rollResult.success,
         activityId: activityGroupId,
+      });
+      const lootDrop = resolveActivityLootDrop({
+        activityGroupId,
+        activityTier: activity.tier ?? 1,
+        success: rollResult.success,
       });
 
       const calculation = calculateCharacterResourceResult(latestCharacter, {
@@ -292,6 +411,13 @@ export async function POST(request) {
           message: "Character resources changed. Please try the action again.",
         };
       }
+
+      const loot = await applyLootDropToInventory(
+        tx,
+        latestCharacter.id,
+        ownedItems,
+        lootDrop,
+      );
 
       const updatedCharacter = await tx.character.findUnique({
         where: { id: latestCharacter.id },
@@ -373,6 +499,7 @@ export async function POST(request) {
               remainingNextActivityRollBonus: 0,
             },
             stats: statSummary,
+            loot: buildLootLogDetails(lootDrop, loot),
           },
         },
         select: { id: true },
@@ -405,6 +532,8 @@ export async function POST(request) {
         characterClass: latestCharacter.characterClass,
         characterRace: latestCharacter.characterRace,
         activityGroupId,
+        lootDrop,
+        loot,
       };
     });
 
@@ -418,16 +547,20 @@ export async function POST(request) {
         { status: result.status },
       );
     }
+    const baseMessage = result.leveledUp
+      ? result.rollResult.success
+        ? `${activity.name} succeeded. Level up! You are now level ${result.calculation.after.level} and gained ${result.gainedStatPoints} stat point${result.gainedStatPoints === 1 ? "" : "s"}.`
+        : `${activity.name} failed. Level up! You are now level ${result.calculation.after.level} and gained ${result.gainedStatPoints} stat point${result.gainedStatPoints === 1 ? "" : "s"}.`
+      : result.rollResult.success
+        ? `${activity.name} succeeded.`
+        : `${activity.name} failed.`;
+    const lootMessageSuffix = result.loot?.name
+      ? ` Loot found: ${result.loot.name}.`
+      : "";
 
     const response = NextResponse.json(
       {
-        message: result.leveledUp
-          ? result.rollResult.success
-            ? `${activity.name} succeeded. Level up! You are now level ${result.calculation.after.level} and gained ${result.gainedStatPoints} stat point${result.gainedStatPoints === 1 ? "" : "s"}.`
-            : `${activity.name} failed. Level up! You are now level ${result.calculation.after.level} and gained ${result.gainedStatPoints} stat point${result.gainedStatPoints === 1 ? "" : "s"}.`
-          : result.rollResult.success
-            ? `${activity.name} succeeded.`
-            : `${activity.name} failed.`,
+        message: `${baseMessage}${lootMessageSuffix}`,
         action: {
           id: activity.id,
           groupId: result.activityGroupId,
@@ -519,6 +652,7 @@ export async function POST(request) {
             before: result.calculation.before,
             after: getCharacterResourceSnapshot(result.updatedCharacter),
           },
+          loot: result.loot ?? null,
           logId: result.logEntry?.id,
         },
       },
