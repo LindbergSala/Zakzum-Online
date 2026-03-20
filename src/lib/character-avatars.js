@@ -1,24 +1,40 @@
-const HUMAN_AVATAR_PATHS = Array.from({ length: 10 }, (_, index) => {
-  const imageIndex = index + 1;
-  return `/images/characters/player_Humans/human_character_${imageIndex}.png`;
-});
+export const CHARACTER_AVATAR_COUNT = 10;
 
-const ELF_AVATAR_PATHS = Array.from({ length: 10 }, (_, index) => {
-  const imageIndex = index + 1;
-  return `/images/characters/player_Elf/elf_character_${imageIndex}.png`;
-});
-
-const AVATAR_PATHS_BY_RACE = {
-  HUMAN: HUMAN_AVATAR_PATHS,
-  ELF: ELF_AVATAR_PATHS,
+const AVATAR_FILE_RULES_BY_RACE = {
+  DRAGONBORN: { folder: "player_Dragonborn", filePrefix: "dragonborn_character" },
+  HUMAN: { folder: "player_Humans", filePrefix: "human_character" },
+  DWARF: { folder: "player_Dwarf", filePrefix: "dwarf_character" },
+  ELF: { folder: "player_Elf", filePrefix: "elf_character" },
+  GNOME: { folder: "player_Gnome", filePrefix: "gnome_character" },
+  HALF_ELF: { folder: "player_HalfElf", filePrefix: "half_elf_character" },
+  HALF_ORC: { folder: "player_HalfOrc", filePrefix: "half_orc_character" },
+  HALFLING: { folder: "player_Halfling", filePrefix: "halfling_character" },
+  TIEFLING: { folder: "player_Tiefling", filePrefix: "tiefling_character" },
 };
 
-export function getAvatarOptionsForRace(characterRace) {
-  return AVATAR_PATHS_BY_RACE[characterRace] ?? [];
+function buildAvatarPath(fileRule, imageIndex) {
+  return `/images/characters/${fileRule.folder}/${fileRule.filePrefix}_${imageIndex}.png`;
+}
+
+export function getAvatarOptionsForRace(
+  characterRace,
+  avatarCount = CHARACTER_AVATAR_COUNT,
+) {
+  const fileRule = AVATAR_FILE_RULES_BY_RACE[characterRace];
+
+  if (!fileRule) {
+    return [];
+  }
+
+  const safeAvatarCount = Math.max(0, Math.floor(Number(avatarCount) || 0));
+
+  return Array.from({ length: safeAvatarCount }, (_, index) =>
+    buildAvatarPath(fileRule, index + 1),
+  );
 }
 
 export function hasAvatarOptionsForRace(characterRace) {
-  return getAvatarOptionsForRace(characterRace).length > 0;
+  return Boolean(AVATAR_FILE_RULES_BY_RACE[characterRace]);
 }
 
 export function getDefaultAvatarForRace(characterRace) {
@@ -43,5 +59,5 @@ export function getResolvedCharacterAvatar(character) {
     return character.avatarImage;
   }
 
-  return getDefaultAvatarForRace(character.characterRace);
+  return null;
 }

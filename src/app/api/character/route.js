@@ -10,8 +10,6 @@ import {
 } from "@/lib/character";
 import { CHARACTER_STAT_FIELDS } from "@/lib/character-data";
 import {
-  getDefaultAvatarForRace,
-  hasAvatarOptionsForRace,
   isValidAvatarForRace,
 } from "@/lib/character-avatars";
 import { prisma } from "@/lib/prisma";
@@ -87,21 +85,12 @@ export async function POST(request) {
     }
 
     const initialStats = buildInitialStats();
-    const avatarOptionsExist = hasAvatarOptionsForRace(parsed.data.characterRace);
-    let resolvedAvatarImage = null;
-
-    if (avatarOptionsExist) {
-      const requestedAvatarImage = parsed.data.avatarImage?.trim() ?? "";
-
-      if (
-        requestedAvatarImage &&
-        isValidAvatarForRace(parsed.data.characterRace, requestedAvatarImage)
-      ) {
-        resolvedAvatarImage = requestedAvatarImage;
-      } else {
-        resolvedAvatarImage = getDefaultAvatarForRace(parsed.data.characterRace);
-      }
-    }
+    const requestedAvatarImage = parsed.data.avatarImage?.trim() ?? "";
+    const resolvedAvatarImage =
+      requestedAvatarImage &&
+      isValidAvatarForRace(parsed.data.characterRace, requestedAvatarImage)
+        ? requestedAvatarImage
+        : null;
 
     const baseResources = buildBaseResourcesForCharacter(
       parsed.data.characterClass,

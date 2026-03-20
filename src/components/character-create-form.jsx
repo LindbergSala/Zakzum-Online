@@ -10,7 +10,6 @@ import {
 } from "@/lib/character-data";
 import {
   getAvatarOptionsForRace,
-  hasAvatarOptionsForRace,
 } from "@/lib/character-avatars";
 import { getClassPassive } from "@/lib/class-identity";
 import { getRacePassive } from "@/lib/race-identity";
@@ -18,31 +17,47 @@ import styles from "./character-create-form.module.css";
 
 function buildInitialFormData() {
   const initialRace = CHARACTER_RACE_OPTIONS[0].value;
-  const initialAvatar = getAvatarOptionsForRace(initialRace)[0] ?? "";
 
   return {
     name: "",
     characterRace: initialRace,
     characterClass: CHARACTER_CLASS_OPTIONS[0].value,
-    avatarImage: initialAvatar,
+    avatarImage: "",
   };
+}
+
+function probeImageExists(source) {
+  return new Promise((resolve) => {
+    const probeImage = new window.Image();
+    probeImage.onload = () => resolve(true);
+    probeImage.onerror = () => resolve(false);
+    probeImage.src = source;
+  });
 }
 
 export default function CharacterCreateForm() {
   const router = useRouter();
   const [formData, setFormData] = useState(buildInitialFormData);
   const [activeAvatarIndex, setActiveAvatarIndex] = useState(0);
+  const [availableAvatarsByRace, setAvailableAvatarsByRace] = useState({});
   const [touchStartX, setTouchStartX] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const classPassive = getClassPassive(formData.characterClass);
   const racePassive = getRacePassive(formData.characterRace);
-  const raceAvatarOptions = useMemo(
+  const raceAvatarCandidates = useMemo(
     () => getAvatarOptionsForRace(formData.characterRace),
     [formData.characterRace],
   );
-  const hasRaceAvatars = hasAvatarOptionsForRace(formData.characterRace);
+  const raceAvatarOptions = useMemo(
+    () => availableAvatarsByRace[formData.characterRace] ?? [],
+    [availableAvatarsByRace, formData.characterRace],
+  );
+  const isAvatarRaceLoading =
+    availableAvatarsByRace[formData.characterRace] === undefined &&
+    raceAvatarCandidates.length > 0;
+  const hasRaceAvatars = raceAvatarOptions.length > 0;
 
   function updateField(key, value) {
     setFormData((previous) => ({
@@ -117,6 +132,58 @@ export default function CharacterCreateForm() {
   }
 
   useEffect(() => {
+    let isDisposed = false;
+    const raceKey = formData.characterRace;
+
+    if (availableAvatarsByRace[raceKey] !== undefined) {
+      return undefined;
+    }
+
+    if (raceAvatarCandidates.length === 0) {
+      setAvailableAvatarsByRace((previous) => ({
+        ...previous,
+        [raceKey]: [],
+      }));
+      return undefined;
+    }
+
+    async function resolveAvailableAvatars() {
+      const checks = await Promise.all(
+        raceAvatarCandidates.map((candidate) => probeImageExists(candidate)),
+      );
+
+      if (isDisposed) {
+        return;
+      }
+
+      const availableCandidates = raceAvatarCandidates.filter(
+        (_, index) => checks[index],
+      );
+
+      setAvailableAvatarsByRace((previous) => {
+        if (previous[raceKey] !== undefined) {
+          return previous;
+        }
+
+        return {
+          ...previous,
+          [raceKey]: availableCandidates,
+        };
+      });
+    }
+
+    resolveAvailableAvatars();
+
+    return () => {
+      isDisposed = true;
+    };
+  }, [availableAvatarsByRace, formData.characterRace, raceAvatarCandidates]);
+
+  useEffect(() => {
+    if (isAvatarRaceLoading) {
+      return;
+    }
+
     if (!hasRaceAvatars) {
       setActiveAvatarIndex(0);
       setFormData((previous) =>
@@ -144,8 +211,8 @@ export default function CharacterCreateForm() {
     }));
   }, [
     formData.avatarImage,
-    formData.characterRace,
     hasRaceAvatars,
+    isAvatarRaceLoading,
     raceAvatarOptions,
   ]);
 
@@ -259,7 +326,9 @@ export default function CharacterCreateForm() {
       <section className={styles.avatarCard}>
         <div className={styles.avatarHeadingRow}>
           <p className={styles.avatarTitle}>Character portrait</p>
-          {hasRaceAvatars ? (
+          {isAvatarRaceLoading ? (
+            <p className={styles.avatarMeta}>Loading portraits...</p>
+          ) : hasRaceAvatars ? (
             <p className={styles.avatarMeta}>
               {activeAvatarIndex + 1}/{raceAvatarOptions.length}
             </p>
@@ -268,7 +337,9 @@ export default function CharacterCreateForm() {
           )}
         </div>
 
-        {hasRaceAvatars ? (
+        {isAvatarRaceLoading ? (
+          <p className={styles.avatarEmptyText}>Loading race portraits...</p>
+        ) : hasRaceAvatars ? (
           <>
             <div
               className={styles.avatarSwipeStage}
