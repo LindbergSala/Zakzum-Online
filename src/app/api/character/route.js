@@ -9,6 +9,11 @@ import {
   getUserWithResolvedActiveCharacter,
 } from "@/lib/character";
 import { CHARACTER_STAT_FIELDS } from "@/lib/character-data";
+import {
+  getDefaultAvatarForRace,
+  hasAvatarOptionsForRace,
+  isValidAvatarForRace,
+} from "@/lib/character-avatars";
 import { prisma } from "@/lib/prisma";
 import { logServerError } from "@/lib/server-logger";
 import {
@@ -82,6 +87,22 @@ export async function POST(request) {
     }
 
     const initialStats = buildInitialStats();
+    const avatarOptionsExist = hasAvatarOptionsForRace(parsed.data.characterRace);
+    let resolvedAvatarImage = null;
+
+    if (avatarOptionsExist) {
+      const requestedAvatarImage = parsed.data.avatarImage?.trim() ?? "";
+
+      if (
+        requestedAvatarImage &&
+        isValidAvatarForRace(parsed.data.characterRace, requestedAvatarImage)
+      ) {
+        resolvedAvatarImage = requestedAvatarImage;
+      } else {
+        resolvedAvatarImage = getDefaultAvatarForRace(parsed.data.characterRace);
+      }
+    }
+
     const baseResources = buildBaseResourcesForCharacter(
       parsed.data.characterClass,
       initialStats.constitution,
@@ -92,6 +113,7 @@ export async function POST(request) {
         data: {
           userId: user.id,
           ...parsed.data,
+          avatarImage: resolvedAvatarImage,
           ...initialStats,
           ...baseResources,
         },

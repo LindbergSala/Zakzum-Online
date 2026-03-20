@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import CharacterOverview from "@/components/character-overview";
@@ -11,6 +12,7 @@ import {
   buildBaseResourcesForCharacter,
   getUserWithResolvedActiveCharacter,
 } from "@/lib/character";
+import { getResolvedCharacterAvatar } from "@/lib/character-avatars";
 import { SHOP_ITEM_DEFINITION_MAP } from "@/lib/core-loop-data";
 import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
 import { getLevelProgressMeta } from "@/lib/level-progression";
@@ -147,6 +149,7 @@ export default async function CharacterPage() {
         .map((item) => `${item.id}-${item.isEquipped ? 1 : 0}-${item.quantity}`)
         .join("|")}`
     : "inventory-empty";
+  const characterAvatarImage = getResolvedCharacterAvatar(character);
 
   if (!character) {
     return (
@@ -188,6 +191,18 @@ export default async function CharacterPage() {
           <header className={styles.heroIntro}>
             <p className={styles.kicker}>Hero Profile</p>
             <h1 className={`${styles.title} ${headingFont.className}`}>{character.name}</h1>
+            {characterAvatarImage ? (
+              <div className={styles.headerPortraitWrap}>
+                <Image
+                  src={characterAvatarImage}
+                  alt={`${character.name} portrait`}
+                  width={230}
+                  height={230}
+                  className={styles.headerPortrait}
+                  priority
+                />
+              </div>
+            ) : null}
             <p className={styles.lead}>
               Review your class identity and manage equipment in one place.
             </p>

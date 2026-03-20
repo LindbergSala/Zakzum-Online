@@ -20,6 +20,12 @@ export const createCharacterSchema = z.object({
   characterRace: z.enum(CHARACTER_RACE_VALUES, {
     error: "Race must be a valid option.",
   }),
+  avatarImage: z
+    .string()
+    .trim()
+    .min(1, "Avatar image is required.")
+    .max(255, "Avatar image path is too long.")
+    .optional(),
 }).strict();
 
 export const allocateStatPointSchema = z.object({

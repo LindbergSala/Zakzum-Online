@@ -65,6 +65,7 @@ model Character {
   name              String          @db.VarChar(32)
   characterClass    CharacterClass
   characterRace     CharacterRace   @default(HUMAN)
+  avatarImage       String?         @db.VarChar(255)
   strength          Int
   dexterity         Int
   constitution      Int

@@ -1,32 +1,48 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   CHARACTER_CLASS_OPTIONS,
   CHARACTER_RACE_OPTIONS,
 } from "@/lib/character-data";
+import {
+  getAvatarOptionsForRace,
+  hasAvatarOptionsForRace,
+} from "@/lib/character-avatars";
 import { getClassPassive } from "@/lib/class-identity";
 import { getRacePassive } from "@/lib/race-identity";
 import styles from "./character-create-form.module.css";
 
 function buildInitialFormData() {
+  const initialRace = CHARACTER_RACE_OPTIONS[0].value;
+  const initialAvatar = getAvatarOptionsForRace(initialRace)[0] ?? "";
+
   return {
     name: "",
-    characterRace: CHARACTER_RACE_OPTIONS[0].value,
+    characterRace: initialRace,
     characterClass: CHARACTER_CLASS_OPTIONS[0].value,
+    avatarImage: initialAvatar,
   };
 }
 
 export default function CharacterCreateForm() {
   const router = useRouter();
+  const avatarCarouselRef = useRef(null);
   const [formData, setFormData] = useState(buildInitialFormData);
+  const [activeAvatarIndex, setActiveAvatarIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const classPassive = getClassPassive(formData.characterClass);
   const racePassive = getRacePassive(formData.characterRace);
+  const raceAvatarOptions = useMemo(
+    () => getAvatarOptionsForRace(formData.characterRace),
+    [formData.characterRace],
+  );
+  const hasRaceAvatars = hasAvatarOptionsForRace(formData.characterRace);
 
   function updateField(key, value) {
     setFormData((previous) => ({
@@ -35,17 +51,114 @@ export default function CharacterCreateForm() {
     }));
   }
 
+  function selectAvatarByIndex(index) {
+    const safeIndex = Math.max(
+      0,
+      Math.min(index, Math.max(0, raceAvatarOptions.length - 1)),
+    );
+    const avatarImage = raceAvatarOptions[safeIndex] ?? "";
+
+    setActiveAvatarIndex(safeIndex);
+    updateField("avatarImage", avatarImage);
+  }
+
+  function scrollAvatarIntoView(index) {
+    if (!avatarCarouselRef.current) {
+      return;
+    }
+
+    const optionElement = avatarCarouselRef.current.querySelector(
+      `[data-avatar-index="${index}"]`,
+    );
+
+    if (!optionElement) {
+      return;
+    }
+
+    optionElement.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+  }
+
+  function goToNextAvatar() {
+    if (!hasRaceAvatars) {
+      return;
+    }
+
+    const nextIndex = (activeAvatarIndex + 1) % raceAvatarOptions.length;
+    selectAvatarByIndex(nextIndex);
+    scrollAvatarIntoView(nextIndex);
+  }
+
+  function goToPreviousAvatar() {
+    if (!hasRaceAvatars) {
+      return;
+    }
+
+    const previousIndex =
+      (activeAvatarIndex - 1 + raceAvatarOptions.length) %
+      raceAvatarOptions.length;
+    selectAvatarByIndex(previousIndex);
+    scrollAvatarIntoView(previousIndex);
+  }
+
+  useEffect(() => {
+    if (!hasRaceAvatars) {
+      setActiveAvatarIndex(0);
+      setFormData((previous) =>
+        previous.avatarImage
+          ? {
+              ...previous,
+              avatarImage: "",
+            }
+          : previous,
+      );
+      return;
+    }
+
+    const selectedIndex = raceAvatarOptions.indexOf(formData.avatarImage);
+
+    if (selectedIndex >= 0) {
+      setActiveAvatarIndex(selectedIndex);
+      return;
+    }
+
+    setActiveAvatarIndex(0);
+    setFormData((previous) => ({
+      ...previous,
+      avatarImage: raceAvatarOptions[0] ?? "",
+    }));
+  }, [
+    formData.avatarImage,
+    formData.characterRace,
+    hasRaceAvatars,
+    raceAvatarOptions,
+  ]);
+
   async function onSubmit(event) {
     event.preventDefault();
     setIsLoading(true);
     setFeedback(null);
     setFieldErrors({});
 
+    const payload = {
+      name: formData.name,
+      characterRace: formData.characterRace,
+      characterClass: formData.characterClass,
+      ...(formData.avatarImage
+        ? {
+            avatarImage: formData.avatarImage,
+          }
+        : {}),
+    };
+
     try {
       const response = await fetch("/api/character", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -124,6 +237,84 @@ export default function CharacterCreateForm() {
         </label>
       </div>
 
+      <section className={styles.avatarCard}>
+        <div className={styles.avatarHeadingRow}>
+          <p className={styles.avatarTitle}>Character portrait</p>
+          {hasRaceAvatars ? (
+            <p className={styles.avatarMeta}>
+              {activeAvatarIndex + 1}/{raceAvatarOptions.length}
+            </p>
+          ) : (
+            <p className={styles.avatarMeta}>Coming soon for this race</p>
+          )}
+        </div>
+
+        {hasRaceAvatars ? (
+          <>
+            <div className={styles.avatarPreviewWrap}>
+              <Image
+                src={raceAvatarOptions[activeAvatarIndex]}
+                alt={`${formData.characterRace} portrait preview ${activeAvatarIndex + 1}`}
+                width={280}
+                height={280}
+                className={styles.avatarPreview}
+                priority
+              />
+            </div>
+
+            <div className={styles.avatarControls}>
+              <button
+                className={styles.avatarControlButton}
+                type="button"
+                onClick={goToPreviousAvatar}
+              >
+                Previous
+              </button>
+              <button
+                className={styles.avatarControlButton}
+                type="button"
+                onClick={goToNextAvatar}
+              >
+                Next
+              </button>
+            </div>
+
+            <div
+              ref={avatarCarouselRef}
+              className={styles.avatarCarousel}
+              aria-label="Swipe portraits"
+            >
+              {raceAvatarOptions.map((avatarImage, index) => (
+                <button
+                  key={avatarImage}
+                  type="button"
+                  data-avatar-index={index}
+                  className={`${styles.avatarOption} ${
+                    index === activeAvatarIndex ? styles.avatarOptionActive : ""
+                  }`}
+                  onClick={() => {
+                    selectAvatarByIndex(index);
+                    scrollAvatarIntoView(index);
+                  }}
+                >
+                  <Image
+                    src={avatarImage}
+                    alt={`${formData.characterRace} portrait option ${index + 1}`}
+                    width={110}
+                    height={110}
+                    className={styles.avatarOptionImage}
+                  />
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className={styles.avatarEmptyText}>
+            Portraits for {formData.characterRace.toLowerCase()} will be added later.
+          </p>
+        )}
+      </section>
+
       {fieldErrors.name ? (
         <p className={`${styles.feedback} ${styles.feedbackError}`}>
           {fieldErrors.name[0]}
@@ -137,6 +328,11 @@ export default function CharacterCreateForm() {
       {fieldErrors.characterClass ? (
         <p className={`${styles.feedback} ${styles.feedbackError}`}>
           {fieldErrors.characterClass[0]}
+        </p>
+      ) : null}
+      {fieldErrors.avatarImage ? (
+        <p className={`${styles.feedback} ${styles.feedbackError}`}>
+          {fieldErrors.avatarImage[0]}
         </p>
       ) : null}
 

@@ -150,6 +150,25 @@
   color: var(--ink-soft);
 }
 
+.headerPortraitWrap {
+  margin: 0.88rem auto 0;
+  display: flex;
+  justify-content: center;
+}
+
+.headerPortrait {
+  width: min(230px, 100%);
+  height: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(102, 63, 34, 0.46);
+  object-fit: cover;
+  background:
+    linear-gradient(165deg, rgba(45, 30, 18, 0.8) 0%, rgba(26, 17, 10, 0.9) 100%);
+  box-shadow:
+    0 18px 26px rgba(39, 22, 10, 0.24),
+    inset 0 1px 0 rgba(255, 240, 212, 0.26);
+}
+
 .panel {
   margin-top: 1.05rem;
   border-radius: 14px;

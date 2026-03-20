@@ -1,9 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import CharacterOverview from "@/components/character-overview";
 import EnergyTimer from "@/components/energy-timer";
 import GameNav from "@/components/game-nav";
+import { getResolvedCharacterAvatar } from "@/lib/character-avatars";
 import {
   buildBaseResourcesForCharacter,
   getUserWithResolvedActiveCharacter,
@@ -269,6 +271,7 @@ export default async function DashboardPage() {
   const energyPercent = maxResources
     ? clampPercent((activeCharacter.energy / maxResources.maxEnergy) * 100)
     : 0;
+  const characterAvatarImage = getResolvedCharacterAvatar(activeCharacter);
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -287,6 +290,18 @@ export default async function DashboardPage() {
           {activeCharacter ? (
             <div className={styles.panelGrid}>
               <section className={styles.panel}>
+                {characterAvatarImage ? (
+                  <div className={styles.characterPortraitWrap}>
+                    <Image
+                      src={characterAvatarImage}
+                      alt={`${activeCharacter.name} portrait`}
+                      width={220}
+                      height={220}
+                      className={styles.characterPortrait}
+                      priority
+                    />
+                  </div>
+                ) : null}
                 <h2>Current status</h2>
                 <p className={styles.muted}>
                   Active character loaded automatically on login.
