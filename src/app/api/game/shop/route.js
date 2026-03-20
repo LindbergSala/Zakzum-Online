@@ -3,6 +3,9 @@ import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/api-auth";
 import { getActiveCharacterForUser } from "@/lib/character";
 import {
+  canItemBePurchased,
+  canItemBeSold,
+  getItemMarketIds,
   getShopItemGoldCost,
   getShopItemMaxStack,
   getShopItemRenownCost,
@@ -10,7 +13,7 @@ import {
   isShopItemStackable,
   SHOP_ITEM_DEFINITION_MAP,
   SHOP_ITEM_DEFINITIONS,
-} from "@/lib/core-loop-data";
+} from "@/lib/items/helpers";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { prisma } from "@/lib/prisma";
 import {
@@ -90,11 +93,13 @@ function buildMarketItemResponse(item, ownedById) {
   const ownedEntry = ownedById[item.id] ?? { quantity: 0, equipped: false };
   const isStackable = isShopItemStackable(item);
   const ownedQuantity = Number(ownedEntry.quantity) || 0;
+  const marketIds = getItemMarketIds(item);
 
   return {
     id: item.id,
     name: item.name,
-    marketId: item.marketId,
+    marketId: marketIds[0] ?? null,
+    marketIds,
     description: item.description,
     price: getShopItemGoldCost(item),
     renownPrice: getShopItemRenownCost(item),
@@ -108,7 +113,7 @@ function buildMarketItemResponse(item, ownedById) {
     equipped: Boolean(ownedEntry.equipped),
     isStackable,
     maxStack: getShopItemMaxStack(item),
-    canBuy: isStackable ? true : ownedQuantity === 0,
+    canBuy: canItemBePurchased(item) && (isStackable ? true : ownedQuantity === 0),
     canSell: ownedQuantity > 0,
   };
 }
@@ -146,8 +151,7 @@ function buildSellDelta(itemDefinition, quantity) {
 }
 
 function hasAnySellValue(itemDefinition) {
-  const sellValue = getShopItemSellValue(itemDefinition);
-  return sellValue.gold > 0 || sellValue.renown > 0;
+  return canItemBeSold(itemDefinition);
 }
 
 function buildProjectedOwnedItemsForBuy(ownedItems, itemId) {
@@ -401,7 +405,7 @@ export async function POST(request) {
                 id: itemDefinition.id,
                 name: itemDefinition.name,
                 itemRecordId: sellItemRecord.id,
-                marketId: itemDefinition.marketId,
+                marketId: getItemMarketIds(itemDefinition)[0] ?? null,
                 slot: itemDefinition.slot,
                 sellValue: getShopItemSellValue(itemDefinition),
                 quantityChange: -sellQuantity,
@@ -435,6 +439,14 @@ export async function POST(request) {
           ok: false,
           status: 400,
           message: "Unknown item.",
+          resources: getCharacterResourceSnapshot(latestCharacter),
+        };
+      }
+      if (!canItemBePurchased(itemDefinition)) {
+        return {
+          ok: false,
+          status: 400,
+          message: "This item cannot be purchased from market vendors.",
           resources: getCharacterResourceSnapshot(latestCharacter),
         };
       }
@@ -593,7 +605,7 @@ export async function POST(request) {
               id: itemDefinition.id,
               name: itemDefinition.name,
               itemRecordId: itemRecord.id,
-              marketId: itemDefinition.marketId,
+              marketId: getItemMarketIds(itemDefinition)[0] ?? null,
               slot: itemDefinition.slot,
               price: goldCost,
               renownPrice: renownCost,

@@ -1,4 +1,4 @@
-import { SHOP_ITEM_DEFINITION_MAP } from "@/lib/core-loop-data";
+import { getItemById, getItemWeight } from "@/lib/items/helpers";
 
 const CARRY_WEIGHT_PER_STRENGTH = 3;
 
@@ -28,12 +28,12 @@ export function getCharacterCarryCapacity(strength) {
 }
 
 export function getItemWeightById(itemId) {
-  return toPositiveNumber(SHOP_ITEM_DEFINITION_MAP[itemId]?.weight);
+  return toPositiveNumber(getItemWeight(itemId));
 }
 
 export function getItemCarryCapacityBonusById(itemId) {
   return toPositiveNumber(
-    SHOP_ITEM_DEFINITION_MAP[itemId]?.effects?.carryCapacity,
+    getItemById(itemId)?.effects?.carryCapacity,
   );
 }
 

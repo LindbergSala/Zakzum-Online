@@ -2,11 +2,11 @@ import { z } from "zod";
 
 import {
   ACTIVITY_DEFINITIONS,
-  SHOP_ITEM_DEFINITIONS,
 } from "@/lib/core-loop-data";
+import { ITEM_CATALOG } from "@/lib/items/catalog";
 
 const ACTIVITY_IDS = ACTIVITY_DEFINITIONS.map((activity) => activity.id);
-const SHOP_ITEM_IDS = SHOP_ITEM_DEFINITIONS.map((item) => item.id);
+const SHOP_ITEM_IDS = ITEM_CATALOG.map((item) => item.id);
 
 export const activityActionSchema = z.object({
   activityId: z.enum(ACTIVITY_IDS),

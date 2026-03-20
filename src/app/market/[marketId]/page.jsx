@@ -7,13 +7,14 @@ import InventoryHydrated from "@/components/inventory/InventoryHydrated";
 import ShopActions from "@/components/shop-actions";
 import { getActiveCharacterForUser } from "@/lib/character";
 import {
+  getItemById,
+  getItemMarketIds,
+  getItemsForMarket,
   getShopItemGoldCost,
   getShopItemRenownCost,
   getShopItemSellValue,
   isShopItemStackable,
-  SHOP_ITEM_DEFINITION_MAP,
-  SHOP_ITEM_DEFINITIONS,
-} from "@/lib/core-loop-data";
+} from "@/lib/items/helpers";
 import { MARKET_DEFINITION_MAP } from "@/lib/market-data";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
@@ -81,13 +82,12 @@ export default async function MarketVendorPage({ params }) {
     ? getCharacterCarryWeightSummary(activeCharacter.strength, ownedItemsSummary)
     : null;
 
-  const vendorItems = SHOP_ITEM_DEFINITIONS.filter(
-    (item) => item.marketId === market.id,
-  );
+  const vendorItems = getItemsForMarket(market.id);
   const shopItems = vendorItems.map((item) => ({
     id: item.id,
     name: item.name,
-    marketId: item.marketId,
+    marketId: getItemMarketIds(item)[0] ?? null,
+    marketIds: getItemMarketIds(item),
     description: item.description,
     price: getShopItemGoldCost(item),
     renownPrice: getShopItemRenownCost(item),
@@ -102,7 +102,7 @@ export default async function MarketVendorPage({ params }) {
     isStackable: isShopItemStackable(item),
   }));
   const inventoryItems = ownedItems.map((item) => {
-    const definition = SHOP_ITEM_DEFINITION_MAP[item.itemId];
+    const definition = getItemById(item.itemId);
     return {
       ...item,
       slot: definition?.slot ?? "unknown",

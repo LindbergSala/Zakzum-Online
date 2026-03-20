@@ -13,8 +13,8 @@ import {
   getUserWithResolvedActiveCharacter,
 } from "@/lib/character";
 import { getResolvedCharacterAvatar } from "@/lib/character-avatars";
-import { SHOP_ITEM_DEFINITION_MAP } from "@/lib/core-loop-data";
 import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
+import { getItemById } from "@/lib/items/helpers";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
@@ -116,7 +116,7 @@ export default async function CharacterPage() {
       })
     : [];
   const items = rawItems.map((item) => {
-    const definition = SHOP_ITEM_DEFINITION_MAP[item.itemId];
+    const definition = getItemById(item.itemId);
     return {
       ...item,
       slot: definition?.slot ?? "unknown",

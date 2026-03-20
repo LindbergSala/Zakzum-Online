@@ -3,10 +3,11 @@ import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/api-auth";
 import { getActiveCharacterForUser } from "@/lib/character";
 import {
-  getShopItemMaxStack,
-  isShopItemStackable,
-  SHOP_ITEM_DEFINITION_MAP,
-} from "@/lib/core-loop-data";
+  getItemById,
+  getItemMaxStack,
+  isItemStackable,
+} from "@/lib/items/helpers";
+import { EQUIPPABLE_ITEM_SLOTS } from "@/lib/items/constants";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { prisma } from "@/lib/prisma";
 import {
@@ -21,16 +22,7 @@ import {
 } from "@/lib/stat-effects";
 import { inventoryActionSchema } from "@/lib/validators/core-loop";
 
-const EQUIPPABLE_SLOTS = new Set([
-  "weapon",
-  "armor",
-  "shield",
-  "helmet",
-  "gloves",
-  "boots",
-  "belt",
-  "ring",
-]);
+const EQUIPPABLE_SLOTS = new Set(EQUIPPABLE_ITEM_SLOTS);
 
 const CHARACTER_SELECT = {
   id: true,
@@ -64,15 +56,15 @@ const INVENTORY_ITEM_SELECT = {
 
 function enrichInventoryItems(items) {
   return items.map((item) => {
-    const definition = SHOP_ITEM_DEFINITION_MAP[item.itemId];
+    const definition = getItemById(item.itemId);
 
     return {
       ...item,
       slot: definition?.slot ?? "unknown",
       effects: definition?.effects ?? { stats: {} },
       effectLabel: formatItemEffectLabel(definition?.effects),
-      isStackable: isShopItemStackable(item.itemId),
-      maxStack: getShopItemMaxStack(item.itemId),
+      isStackable: isItemStackable(item.itemId),
+      maxStack: getItemMaxStack(item.itemId),
     };
   });
 }
@@ -263,7 +255,7 @@ export async function POST(request) {
           };
         }
 
-        if (!isShopItemStackable(sourceItem.itemId)) {
+        if (!isItemStackable(sourceItem.itemId)) {
           return {
             ok: false,
             status: 400,
@@ -271,7 +263,7 @@ export async function POST(request) {
           };
         }
 
-        const maxStack = getShopItemMaxStack(sourceItem.itemId);
+        const maxStack = getItemMaxStack(sourceItem.itemId);
         const requestedQuantity = normalizePositiveQuantity(
           parsed.data.quantity,
           Number(sourceItem.quantity) || 1,
@@ -377,9 +369,9 @@ export async function POST(request) {
       }
 
       if (action === "split") {
-        const itemDefinition = SHOP_ITEM_DEFINITION_MAP[selectedItem.itemId];
+        const itemDefinition = getItemById(selectedItem.itemId);
 
-        if (!isShopItemStackable(selectedItem.itemId)) {
+        if (!isItemStackable(selectedItem.itemId)) {
           return {
             ok: false,
             status: 400,
@@ -446,7 +438,7 @@ export async function POST(request) {
                 quantityBefore: selectedItem.quantity,
                 quantityAfter: sourceAfter,
                 createdStackQuantity: splitQuantity,
-                maxStack: getShopItemMaxStack(itemDefinition),
+                maxStack: getItemMaxStack(itemDefinition),
               },
             },
           },
@@ -468,9 +460,9 @@ export async function POST(request) {
       }
 
       if (action === "use") {
-        const itemDefinition = SHOP_ITEM_DEFINITION_MAP[selectedItem.itemId];
+        const itemDefinition = getItemById(selectedItem.itemId);
 
-        if (!isShopItemStackable(selectedItem.itemId)) {
+        if (!isItemStackable(selectedItem.itemId)) {
           return {
             ok: false,
             status: 400,
@@ -594,7 +586,7 @@ export async function POST(request) {
         };
       }
 
-      const itemDefinition = SHOP_ITEM_DEFINITION_MAP[selectedItem.itemId];
+      const itemDefinition = getItemById(selectedItem.itemId);
 
       if (!itemDefinition) {
         return {
@@ -618,7 +610,7 @@ export async function POST(request) {
         const sameSlotItemIds = ownedItems
           .filter(
             (item) =>
-              SHOP_ITEM_DEFINITION_MAP[item.itemId]?.slot === itemDefinition.slot &&
+              getItemById(item.itemId)?.slot === itemDefinition.slot &&
               item.isEquipped,
           )
           .map((item) => item.id);

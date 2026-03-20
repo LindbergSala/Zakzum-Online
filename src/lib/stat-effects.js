@@ -1,4 +1,5 @@
-import { resolveActivityGroupId, SHOP_ITEM_DEFINITION_MAP } from "@/lib/core-loop-data";
+import { resolveActivityGroupId } from "@/lib/core-loop-data";
+import { getItemById } from "@/lib/items/helpers";
 
 export const CHARACTER_STAT_KEYS = [
   "strength",
@@ -102,7 +103,7 @@ export function addStatObjects(baseStats, bonusStats) {
 }
 
 export function getItemStatBonuses(itemId) {
-  const definition = SHOP_ITEM_DEFINITION_MAP[itemId];
+  const definition = getItemById(itemId);
   return normalizeStatBonuses(definition?.effects?.stats);
 }
 
@@ -121,7 +122,7 @@ export function getEquippedItemStatBonuses(equippedItems) {
 }
 
 export function getItemActivityRollModifier(itemId, activityId) {
-  const effects = SHOP_ITEM_DEFINITION_MAP[itemId]?.effects ?? {};
+  const effects = getItemById(itemId)?.effects ?? {};
   const activityGroupId = resolveActivityGroupId(activityId) ?? activityId;
   const globalModifier = toNumericStatValue(effects.activityRollModifier);
   const byActivityMap = effects.activityRollModifierByActivity ?? {};
@@ -142,7 +143,7 @@ export function getEquippedItemRollModifier(equippedItems, activityId) {
 }
 
 function getItemActivityDelta(itemId, { success, activityId }) {
-  const effects = SHOP_ITEM_DEFINITION_MAP[itemId]?.effects ?? {};
+  const effects = getItemById(itemId)?.effects ?? {};
   const activityGroupId = resolveActivityGroupId(activityId) ?? activityId;
   const resolvedDelta = buildZeroResourceDelta();
   const activityDeltaByActivity = effects.activityDeltaByActivity ?? {};
