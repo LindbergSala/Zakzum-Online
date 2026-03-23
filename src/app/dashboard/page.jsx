@@ -153,9 +153,10 @@ export default async function DashboardPage() {
   const ownedItems = activeCharacter
     ? await prisma.characterItem.findMany({
         where: { characterId: activeCharacter.id },
-        select: { itemId: true, quantity: true },
+        select: { itemId: true, quantity: true, isEquipped: true },
       })
     : [];
+  const equippedItems = ownedItems.filter((item) => item.isEquipped);
   const energyMeta = activeCharacter
     ? getEnergyRegenerationMeta(activeCharacter)
     : null;
@@ -285,7 +286,11 @@ export default async function DashboardPage() {
                 </p>
                 <hr className={styles.sectionDivider} />
                 <h3 className={styles.panelSubheading}>Character overview</h3>
-                <CharacterOverview character={activeCharacter} showResources={false} />
+                <CharacterOverview
+                  character={activeCharacter}
+                  showResources={false}
+                  equippedItems={equippedItems}
+                />
               </section>
 
               <section className={styles.panel}>

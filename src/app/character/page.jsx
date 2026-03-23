@@ -280,7 +280,11 @@ export default async function CharacterPage() {
 
             <hr className={styles.sectionDivider} />
             <h2>Character overview</h2>
-            <CharacterOverview character={character} showResources={false} />
+            <CharacterOverview
+              character={character}
+              showResources={false}
+              equippedItems={items.filter((item) => item.isEquipped)}
+            />
             <p className={styles.backLink}>
               <Link href="/dashboard">Back to dashboard</Link>
             </p>
