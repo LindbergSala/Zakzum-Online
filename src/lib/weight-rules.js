@@ -1,5 +1,6 @@
-import { getItemById, getItemWeight } from "@/lib/items/helpers";
+import { getItemById, getItemWeight } from "./items/helpers";
 
+const BASE_CARRY_CAPACITY = 10;
 const CARRY_WEIGHT_PER_STRENGTH = 3;
 
 function toPositiveNumber(value) {
@@ -24,7 +25,7 @@ function getItemQuantityValue(item) {
 
 export function getCharacterCarryCapacity(strength) {
   const safeStrength = Math.max(1, Math.floor(toPositiveNumber(strength)));
-  return safeStrength * CARRY_WEIGHT_PER_STRENGTH;
+  return BASE_CARRY_CAPACITY + (safeStrength - 1) * CARRY_WEIGHT_PER_STRENGTH;
 }
 
 export function getItemWeightById(itemId) {
