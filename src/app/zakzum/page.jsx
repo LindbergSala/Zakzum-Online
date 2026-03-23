@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import GameNav from "@/components/game-nav";
+import ZakzumMapExplorer from "@/components/zakzum-map-explorer";
 import { requirePageUser } from "@/lib/page-auth";
 import styles from "./page.module.css";
 
@@ -33,16 +33,7 @@ export default async function ZakzumPage() {
           </header>
 
           <section className={styles.panel}>
-            <div className={styles.mapFrame}>
-              <Image
-                src="/images/game/worldmap.png"
-                alt="Map of Zakzum"
-                width={1920}
-                height={1080}
-                className={styles.mapImage}
-                priority
-              />
-            </div>
+            <ZakzumMapExplorer />
             <p className={styles.backLink}>
               <Link href="/dashboard">Back to dashboard</Link>
             </p>

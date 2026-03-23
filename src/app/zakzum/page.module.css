@@ -168,32 +168,6 @@
     inset 0 -10px 16px rgba(96, 59, 33, 0.14);
 }
 
-.mapFrame {
-  margin: 0 auto;
-  width: min(1120px, 100%);
-  border-radius: 16px;
-  border: 1px solid rgba(93, 57, 30, 0.56);
-  background:
-    radial-gradient(circle at 30% 15%, rgba(255, 242, 214, 0.56) 0%, transparent 38%),
-    linear-gradient(165deg, rgba(42, 28, 16, 0.8) 0%, rgba(24, 16, 9, 0.92) 100%);
-  box-shadow:
-    0 22px 46px rgba(37, 22, 11, 0.28),
-    inset 0 1px 0 rgba(255, 247, 225, 0.25),
-    inset 0 0 0 1px rgba(255, 218, 168, 0.22);
-  padding: clamp(0.5rem, 1.7vw, 0.9rem);
-}
-
-.mapImage {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 220, 168, 0.28);
-  box-shadow:
-    0 14px 26px rgba(13, 10, 8, 0.24),
-    inset 0 1px 0 rgba(255, 247, 231, 0.18);
-}
-
 .backLink {
   margin: 0.85rem 0 0;
 }
@@ -233,11 +207,6 @@
   .heroCard {
     border-radius: 16px;
     padding: 1rem;
-  }
-
-  .mapFrame {
-    border-radius: 12px;
-    padding: 0.5rem;
   }
 }
 
