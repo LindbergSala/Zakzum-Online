@@ -1,7 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { getItemImagePath } from "@/lib/items/helpers";
+import styles from "./shop-actions.module.css";
 
 function formatResourceLine(resources) {
   if (!resources || typeof resources !== "object") {
@@ -121,20 +124,36 @@ export default function ShopActions({ items }) {
               const stackInfo = item.isStackable
                 ? `Stackable (max ${item.maxStack ?? 5})`
                 : "Unique equipment";
+              const imagePath = getItemImagePath(item.id);
 
               return (
-                <li key={item.id}>
-                  <p>
-                    <strong>{item.name}</strong>
-                    {Number(item.ownedQuantity) > 0 ? ` (owned x${item.ownedQuantity})` : ""}
-                  </p>
-                  {item.description ? <p>{item.description}</p> : null}
-                  <p>
-                    Slot: {item.slot} | Buy: {formatBuyPrice(item)} | Sell: {" "}
-                    {formatSellPrice(item.sellValue)} | Weight: {item.weight} Wt
-                  </p>
-                  <p>{stackInfo}</p>
-                  <p>Effects: {item.effectLabel}</p>
+                <li key={item.id} className={styles.marketItemRow}>
+                  <div className={styles.itemVisualWrap} aria-hidden="true">
+                    {imagePath ? (
+                      <Image
+                        src={imagePath}
+                        alt=""
+                        width={88}
+                        height={88}
+                        className={styles.itemVisual}
+                      />
+                    ) : (
+                      <span className={styles.itemVisualFallback}>No image</span>
+                    )}
+                  </div>
+                  <div className={styles.itemInfo}>
+                    <p>
+                      <strong>{item.name}</strong>
+                      {Number(item.ownedQuantity) > 0 ? ` (owned x${item.ownedQuantity})` : ""}
+                    </p>
+                    {item.description ? <p>{item.description}</p> : null}
+                    <p>
+                      Slot: {item.slot} | Buy: {formatBuyPrice(item)} | Sell: {" "}
+                      {formatSellPrice(item.sellValue)} | Weight: {item.weight} Wt
+                    </p>
+                    <p>{stackInfo}</p>
+                    <p>Effects: {item.effectLabel}</p>
+                  </div>
                   <button
                     type="button"
                     onClick={() => handleBuy(item.id)}

@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 
+import { getItemImagePath } from "@/lib/items/helpers";
 import {
   canDropToBackpack,
   isCompatibleWithEquipmentSlot,
@@ -66,6 +68,7 @@ function ItemCard({ item, draggable, onDragStart, onDragEnd, className, compact 
   const compactClass = compact ? styles.itemCardCompact : "";
   const nameClass = compact ? styles.itemNameCompact : styles.itemName;
   const metaClass = compact ? styles.itemMetaCompact : styles.itemMeta;
+  const imagePath = !compact ? getItemImagePath(item.itemId) : null;
 
   return (
     <button
@@ -76,13 +79,28 @@ function ItemCard({ item, draggable, onDragStart, onDragEnd, className, compact 
       onDragEnd={onDragEnd}
       title={`${item.itemName} (${item.width}x${item.height})`}
     >
-      <p className={nameClass}>{item.itemName}</p>
+      {imagePath ? (
+        <span className={styles.itemArtworkWrap} aria-hidden="true">
+          <Image
+            src={imagePath}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 44px, 54px"
+            className={styles.itemArtwork}
+          />
+        </span>
+      ) : null}
+      <span className={styles.itemTextLayer}>
+        <p className={nameClass}>{item.itemName}</p>
+      </span>
       {!compact ? (
         <>
-          <p className={metaClass}>{item.effectLabel}</p>
-          <p className={metaClass}>
-            {item.width}x{item.height} | {item.weight} Wt
-          </p>
+          <span className={styles.itemTextLayer}>
+            <p className={metaClass}>{item.effectLabel}</p>
+            <p className={metaClass}>
+              {item.width}x{item.height} | {item.weight} Wt
+            </p>
+          </span>
         </>
       ) : (
         <p className={metaClass}>

@@ -1,6 +1,21 @@
 import { ITEM_CATALOG, ITEM_CATALOG_MAP } from "./catalog";
 import { ITEM_CATEGORY } from "./constants";
 
+const ITEM_IMAGE_IDS = new Set([
+  "apprentice-staff",
+  "archmage-staff",
+  "battle-axe",
+  "iron-sword",
+  "knight-blade",
+  "raider-axe",
+  "rune-staff",
+  "scout-dagger",
+  "shadow-dagger",
+  "thief-stiletto",
+  "training-axe",
+  "warlord-greatsword",
+]);
+
 function resolveItem(itemOrId) {
   if (!itemOrId) {
     return null;
@@ -20,6 +35,16 @@ function toNonNegativeInteger(value) {
 
 export function getItemById(itemId) {
   return ITEM_CATALOG_MAP[itemId] ?? null;
+}
+
+export function getItemImagePath(itemOrId) {
+  const item = resolveItem(itemOrId);
+
+  if (!item?.id || !ITEM_IMAGE_IDS.has(item.id)) {
+    return null;
+  }
+
+  return `/images/items/${item.id}.png`;
 }
 
 export function getAllItems() {
