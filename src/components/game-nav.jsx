@@ -7,6 +7,7 @@ import styles from "./game-nav.module.css";
 const gameLinks = [
   { href: "/character", label: "Character" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/zakzum", label: "Zakzum" },
   { href: "/activities", label: "Activities" },
   { href: "/market", label: "Market" },
   { href: "/log", label: "Log" },
