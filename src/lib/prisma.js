@@ -1,11 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis;
+const isDevelopment = process.env.NODE_ENV === "development";
+const shouldLogPrismaQueries =
+  process.env.PRISMA_LOG_QUERIES === "1" ||
+  process.env.PRISMA_LOG_QUERIES === "true";
 
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["query", "error"] : ["error"],
+    log: isDevelopment && shouldLogPrismaQueries ? ["query", "error"] : ["error"],
   });
 
 if (process.env.NODE_ENV !== "production") {
