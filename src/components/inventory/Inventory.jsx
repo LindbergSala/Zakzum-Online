@@ -67,8 +67,8 @@ async function syncMarketSellAction(payload) {
 function ItemCard({ item, draggable, onDragStart, onDragEnd, className, compact = false }) {
   const compactClass = compact ? styles.itemCardCompact : "";
   const nameClass = compact ? styles.itemNameCompact : styles.itemName;
-  const metaClass = compact ? styles.itemMetaCompact : styles.itemMeta;
   const imagePath = !compact ? getItemImagePath(item.itemId) : null;
+  const statLabel = item.effectLabel || "No stats";
 
   return (
     <button
@@ -77,39 +77,51 @@ function ItemCard({ item, draggable, onDragStart, onDragEnd, className, compact 
       draggable={draggable}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      title={`${item.itemName} (${item.width}x${item.height})`}
+      title={item.itemName}
     >
-      {imagePath ? (
-        <span className={styles.itemArtworkWrap} aria-hidden="true">
-          <Image
-            src={imagePath}
-            alt=""
-            fill
-            sizes="(max-width: 640px) 44px, 54px"
-            className={styles.itemArtwork}
-          />
+      {!compact ? (
+        <span className={styles.itemInlineArtworkWrap} aria-hidden="true">
+          {imagePath ? (
+            <Image
+              src={imagePath}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 44px, 64px"
+              className={styles.itemInlineArtwork}
+            />
+          ) : (
+            <span className={styles.itemInlineArtworkFallback}>No image</span>
+          )}
         </span>
       ) : null}
-      <span className={styles.itemTextLayer}>
-        <p className={nameClass}>{item.itemName}</p>
-      </span>
-      {!compact ? (
-        <>
-          <span className={styles.itemTextLayer}>
-            <p className={metaClass}>{item.effectLabel}</p>
-            <p className={metaClass}>
-              {item.width}x{item.height} | {item.weight} Wt
-            </p>
-          </span>
-        </>
-      ) : (
-        <p className={metaClass}>
-          {item.width}x{item.height}
-          {item.quantity > 1 ? ` | x${item.quantity}` : ""}
-        </p>
-      )}
+      <p className={nameClass} title={item.itemName}>
+        {item.itemName}
+      </p>
       {!compact && item.quantity > 1 ? (
         <span className={styles.stackBadge}>x{item.quantity}</span>
+      ) : null}
+      {!compact ? (
+        <span className={styles.itemHoverOverlay} aria-hidden="true">
+          <span className={styles.itemHoverCard}>
+            <span className={styles.itemHoverImageWrap}>
+              {imagePath ? (
+                <Image
+                  src={imagePath}
+                  alt=""
+                  width={320}
+                  height={320}
+                  className={styles.itemHoverImage}
+                />
+              ) : (
+                <span className={styles.itemHoverImageFallback}>No image</span>
+              )}
+            </span>
+            <span className={styles.itemHoverInfo}>
+              <span className={styles.itemHoverName}>{item.itemName}</span>
+              <span className={styles.itemHoverStatLine}>{statLabel}</span>
+            </span>
+          </span>
+        </span>
       ) : null}
     </button>
   );
