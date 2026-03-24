@@ -44,7 +44,7 @@ export function getItemImagePath(itemOrId) {
     return null;
   }
 
-  return `/images/items/${item.id}.png`;
+  return `/images/items/weapons/${item.id}.png`;
 }
 
 export function getAllItems() {
