@@ -1,20 +1,30 @@
 import { ITEM_CATALOG, ITEM_CATALOG_MAP } from "./catalog";
 import { ITEM_CATEGORY } from "./constants";
 
-const ITEM_IMAGE_IDS = new Set([
-  "apprentice-staff",
-  "archmage-staff",
-  "battle-axe",
-  "iron-sword",
-  "knight-blade",
-  "raider-axe",
-  "rune-staff",
-  "scout-dagger",
-  "shadow-dagger",
-  "thief-stiletto",
-  "training-axe",
-  "warlord-greatsword",
-]);
+const ITEM_IMAGE_DIRECTORY_BY_ID = {
+  "apprentice-staff": "weapons",
+  "archmage-staff": "weapons",
+  "battle-axe": "weapons",
+  "iron-sword": "weapons",
+  "knight-blade": "weapons",
+  "raider-axe": "weapons",
+  "rune-staff": "weapons",
+  "scout-dagger": "weapons",
+  "shadow-dagger": "weapons",
+  "thief-stiletto": "weapons",
+  "training-axe": "weapons",
+  "warlord-greatsword": "weapons",
+  "chain-hauberk": "armors",
+  "chain-shirt": "armors",
+  "chain-vest": "armors",
+  "fortress-plate": "armors",
+  "leather-armor": "armors",
+  "plate-cuirass": "armors",
+  "recruit-plate": "armors",
+  "reinforced-leather-armor": "armors",
+  "shadow-leather-coat": "armors",
+  "soft-leather-armor": "armors",
+};
 
 function resolveItem(itemOrId) {
   if (!itemOrId) {
@@ -39,12 +49,13 @@ export function getItemById(itemId) {
 
 export function getItemImagePath(itemOrId) {
   const item = resolveItem(itemOrId);
+  const imageDirectory = item?.id ? ITEM_IMAGE_DIRECTORY_BY_ID[item.id] : null;
 
-  if (!item?.id || !ITEM_IMAGE_IDS.has(item.id)) {
+  if (!item?.id || !imageDirectory) {
     return null;
   }
 
-  return `/images/items/weapons/${item.id}.png`;
+  return `/images/items/${imageDirectory}/${item.id}.png`;
 }
 
 export function getAllItems() {
