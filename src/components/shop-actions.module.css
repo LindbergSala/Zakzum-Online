@@ -5,6 +5,10 @@
   align-items: start;
 }
 
+.topFeedback {
+  margin: 0 0 0.9rem;
+}
+
 .itemVisualWrap {
   width: 88px;
   height: 88px;

@@ -114,6 +114,41 @@ export default function ShopActions({ items }) {
         </p>
       ) : null}
 
+      {feedback ? (
+        feedback.tone === "error" ? (
+          <section
+            className={`action-result-card action-result-error ${styles.topFeedback}`}
+            aria-live="polite"
+          >
+            <p>{feedback.text}</p>
+          </section>
+        ) : (
+          <p className={`feedback ${feedback.tone} ${styles.topFeedback}`} aria-live="polite">
+            {feedback.text}
+          </p>
+        )
+      ) : null}
+
+      {lastTransaction ? (
+        <section
+          className={`action-result-card action-result-ok ${styles.topFeedback}`}
+          aria-live="polite"
+        >
+          <p>
+            <strong>Item:</strong> {lastTransaction.item?.itemName ?? "Unknown item"}
+          </p>
+          <p>
+            <strong>Delta:</strong> {formatDelta(lastTransaction.resources?.delta)}
+          </p>
+          <p>
+            <strong>Before:</strong> {formatResourceLine(lastTransaction.resources?.before)}
+          </p>
+          <p>
+            <strong>After:</strong> {formatResourceLine(lastTransaction.resources?.after)}
+          </p>
+        </section>
+      ) : null}
+
       <div>
         <h4>Buy from this vendor</h4>
         {!items || items.length === 0 ? (
@@ -179,42 +214,6 @@ export default function ShopActions({ items }) {
           For stackables, you can choose partial quantity at drop.
         </p>
       </div>
-
-      {feedback ? (
-        feedback.tone === "error" ? (
-          <section className="action-result-card action-result-error" aria-live="polite">
-            <p>
-              <strong>Market result:</strong> ERROR
-            </p>
-            <p>{feedback.text}</p>
-          </section>
-        ) : (
-          <p className={`feedback ${feedback.tone}`} aria-live="polite">
-            {feedback.text}
-          </p>
-        )
-      ) : null}
-
-      {lastTransaction ? (
-        <section className="action-result-card action-result-ok" aria-live="polite">
-          <p>
-            <strong>Market result:</strong>{" "}
-            {String(lastTransaction.action).toUpperCase() || "SUCCESS"}
-          </p>
-          <p>
-            <strong>Item:</strong> {lastTransaction.item?.itemName ?? "Unknown item"}
-          </p>
-          <p>
-            <strong>Delta:</strong> {formatDelta(lastTransaction.resources?.delta)}
-          </p>
-          <p>
-            <strong>Before:</strong> {formatResourceLine(lastTransaction.resources?.before)}
-          </p>
-          <p>
-            <strong>After:</strong> {formatResourceLine(lastTransaction.resources?.after)}
-          </p>
-        </section>
-      ) : null}
     </>
   );
 }
