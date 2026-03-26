@@ -49,7 +49,7 @@ async function syncInventoryAction(payload) {
 }
 
 async function syncMarketSellAction(payload) {
-  const response = await fetch("/api/game/market", {
+  const response = await fetch("/api/game/shop", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

@@ -44,14 +44,14 @@ export default async function MarketPage() {
                   <h3 className={styles.marketName}>{market.name}</h3>
                   <p className={styles.marketSummary}>{market.summary}</p>
                   <p className={styles.marketMeta}>
-                    {market.status === "open" ? "Open now" : "Coming soon"}
+                    {market.status === "open" ? "Trading now" : "Route currently closed"}
                   </p>
                   {market.status === "open" ? (
                     <Link className={styles.marketLink} href={`/market/${market.id}`}>
                       Enter {market.name}
                     </Link>
                   ) : (
-                    <span className={styles.marketSoon}>Coming soon</span>
+                    <span className={styles.marketSoon}>Unavailable</span>
                   )}
                 </li>
               ))}

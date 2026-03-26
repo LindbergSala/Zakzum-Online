@@ -5,7 +5,48 @@ import Image from "next/image";
 import styles from "./zakzum-map-explorer.module.css";
 
 const LORE_COMING_SOON_TEXT =
-  "Information coming soon! The Scribes are working on it";
+  "Scouts have confirmed roads, traders, and encounter hooks for this region.";
+
+const LOCATION_LORE_TEXT_BY_ID = {
+  kingston:
+    "Kingston is the Crown Port of Zakzum, where tax fleets, guild envoys, and mercenary captains negotiate power at the same table.",
+  elarion:
+    "Elarion sits on high crystal terraces and trains battle-magi who protect the eastern passes with wards and sky-lantern beacons.",
+  "stormwatch-keep":
+    "Stormwatch Keep guards the northern sea wall and signals raider movement with mirrored towers visible for leagues.",
+  grimholt:
+    "Grimholt is a hard frontier town built around iron mines, caravan stables, and a watch bell that never fully cools.",
+  "gorak-hold":
+    "Gorak Hold forges siege steel and oathbound shields, drawing veterans who value discipline above titles.",
+  "frozen-bay":
+    "Frozen Bay is a wind-cut harbor where ice trawlers hunt deepwater beasts and smuggle rare reagents in winter fog.",
+  bayside:
+    "Bayside thrives on river trade and repair docks, making it the safest place to restock before inland expeditions.",
+  "shattered-isles":
+    "The Shattered Isles are broken volcanic ridges rumored to hide pre-empire vaults and tide-locked shrines.",
+  windmere:
+    "Windmere is a grain basin with veteran militias, known for mounted couriers and fast muster calls.",
+  hearthollow:
+    "Hearthollow shelters pilgrims and scholars in geothermal halls carved into old basalt cliffs.",
+  dunwich:
+    "Dunwich controls toll bridges into the interior and is infamous for contracts that bind whole companies at once.",
+  "khazad-krag":
+    "Khazad-Krag is an ancient stone-city of deep forges, where master smiths trade runed alloys for rare ore rights.",
+  glimmerdeep:
+    "Glimmerdeep tunnels glow with alchemical fungi and feed apothecaries across the central provinces.",
+  mirkvale:
+    "Mirkvale is a fogbound wood of hunter lodges, beast spoor routes, and hidden druid circles.",
+  "ashen-hills":
+    "The Ashen Hills are scarred badlands dotted with war ruins, ember vents, and salvage camps.",
+  stonebrook:
+    "Stonebrook anchors the southern roads with bridge forts, tanneries, and disciplined civic guards.",
+  "blackroot-bog":
+    "Blackroot Bog is a poison marsh where trackers move by raised planks and lantern code after dusk.",
+  drakonfyr:
+    "Drakonfyr rises from obsidian ridges and hosts the dragon cult arenas that test fame against fire.",
+  "silverwood-forest":
+    "Silverwood Forest is an old-growth realm of moonlit canopies, hidden paths, and oathstones older than the kingdom.",
+};
 
 const LOCATION_ENTRIES = [
   {
@@ -245,6 +286,9 @@ export default function ZakzumMapExplorer() {
     () => LOCATION_ENTRIES.find((entry) => entry.id === activeLocationId) ?? null,
     [activeLocationId],
   );
+  const activeLoreText = activeLocation
+    ? LOCATION_LORE_TEXT_BY_ID[activeLocation.id] ?? activeLocation.loreText
+    : "";
 
   return (
     <>
@@ -305,7 +349,7 @@ export default function ZakzumMapExplorer() {
                 <h2 id="location-overlay-title" className={styles.loreTitle}>
                   {activeLocation.name}
                 </h2>
-                <p className={styles.loreText}>{activeLocation.loreText}</p>
+                <p className={styles.loreText}>{activeLoreText}</p>
               </article>
             </div>
           </div>

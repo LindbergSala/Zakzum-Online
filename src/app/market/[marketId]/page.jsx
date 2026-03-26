@@ -140,7 +140,7 @@ export default async function MarketVendorPage({ params }) {
             <p className={styles.muted}>
               {market.status === "open"
                 ? "Browse available items and optimize your loadout."
-                : "This vendor is not open yet."}
+                : "This vendor is temporarily closed while caravans restock routes."}
             </p>
             {!activeCharacter ? (
               <p>
@@ -187,7 +187,7 @@ export default async function MarketVendorPage({ params }) {
                 )}
               </>
             ) : (
-              <p>This vendor is coming soon.</p>
+              <p>This vendor is currently unavailable. Check back after restock rotation.</p>
             )}
             <p className={styles.backLink}>
               <Link href="/market">Back to market</Link>

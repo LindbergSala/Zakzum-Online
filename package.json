@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "tsx --tsconfig jsconfig.json --test \"tests/*.test.js\"",
     "test:inventory": "tsx --test tests/inventory-placement.test.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",

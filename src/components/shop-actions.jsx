@@ -79,7 +79,7 @@ export default function ShopActions({ items }) {
     setLastTransaction(null);
 
     try {
-      const response = await fetch("/api/game/market", {
+      const response = await fetch("/api/game/shop", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId, action: "buy" }),

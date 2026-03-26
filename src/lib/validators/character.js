@@ -7,13 +7,27 @@ import {
 } from "@/lib/character-data";
 
 const CHARACTER_STAT_KEYS = CHARACTER_STAT_FIELDS.map((field) => field.key);
+const CHARACTER_NAME_PATTERN = /^[\p{L}\p{N}]+(?:[ '-][\p{L}\p{N}]+)*$/u;
+
+function normalizeCharacterName(value) {
+  return value.replace(/\s+/g, " ");
+}
 
 export const createCharacterSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Name must be at least 2 characters.")
-    .max(32, "Name can be at most 32 characters."),
+    .transform(normalizeCharacterName)
+    .pipe(
+      z
+        .string()
+        .min(2, "Name must be at least 2 characters.")
+        .max(32, "Name can be at most 32 characters.")
+        .refine(
+          (value) => CHARACTER_NAME_PATTERN.test(value),
+          "Name can only contain letters, numbers, spaces, apostrophes, and hyphens.",
+        ),
+    ),
   characterClass: z.enum(CHARACTER_CLASS_VALUES, {
     error: "Class must be a valid option.",
   }),
