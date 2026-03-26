@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { createHash } from "crypto";
 
 import { resolveActivityLootDrop } from "@/lib/activity-loot";
 import { requireApiUser } from "@/lib/api-auth";
@@ -16,6 +17,7 @@ import {
   ACTIVITY_DEFINITIONS,
   ACTIVITY_GROUPS,
 } from "@/lib/core-loop-data";
+import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { resolveActivityRoll } from "@/lib/roll-engine";
 import {
@@ -74,6 +76,10 @@ const ACTIVITY_ITEM_SELECT = {
   quantity: true,
   isEquipped: true,
 };
+
+function hashSessionToken(token) {
+  return createHash("sha256").update(token).digest("hex");
+}
 
 function normalizePositiveQuantity(value, fallback = 1) {
   const numericValue = Number(value);
@@ -294,6 +300,11 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const originError = validateWriteRequestOrigin(request);
+  if (originError) {
+    return originError;
+  }
+
   const { user, error } = await requireApiUser();
 
   if (error) {
@@ -332,11 +343,12 @@ export async function POST(request) {
   }
 
   const sessionToken = await getSessionTokenFromRequestCookies();
+  const sessionTokenHash = sessionToken ? hashSessionToken(sessionToken) : null;
   const cookieStore = await cookies();
   const halfOrcRelentlessCookieValue =
     cookieStore.get(HALF_ORC_RELENTLESS_COOKIE_NAME)?.value ?? "";
   const halfOrcRelentlessUsedThisSession = Boolean(
-    sessionToken && halfOrcRelentlessCookieValue === sessionToken,
+    sessionTokenHash && halfOrcRelentlessCookieValue === sessionTokenHash,
   );
 
   try {
@@ -735,10 +747,10 @@ export async function POST(request) {
       { status: 200 },
     );
 
-    if (result.halfOrcRelentlessTriggered && sessionToken) {
-      response.cookies.set(HALF_ORC_RELENTLESS_COOKIE_NAME, sessionToken, {
+    if (result.halfOrcRelentlessTriggered && sessionTokenHash) {
+      response.cookies.set(HALF_ORC_RELENTLESS_COOKIE_NAME, sessionTokenHash, {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "strict",
         secure: process.env.NODE_ENV === "production",
         path: "/",
       });

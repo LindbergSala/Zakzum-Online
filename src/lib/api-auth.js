@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getActiveSessionUser } from "@/lib/session";
 
 export async function requireApiUser() {
-  const user = await getActiveSessionUser();
+  const user = await getActiveSessionUser({ renewSession: true });
 
   if (!user) {
     return {

@@ -2,11 +2,17 @@ import { Prisma } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
+import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { prisma } from "@/lib/prisma";
 import { logServerError } from "@/lib/server-logger";
 import { registerSchema } from "@/lib/validators/auth";
 
 export async function POST(request) {
+  const originError = validateWriteRequestOrigin(request);
+  if (originError) {
+    return originError;
+  }
+
   try {
     let body;
     try {

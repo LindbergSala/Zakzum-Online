@@ -10,6 +10,7 @@ import {
 import { EQUIPPABLE_ITEM_SLOTS } from "@/lib/items/constants";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { prisma } from "@/lib/prisma";
+import { validateWriteRequestOrigin } from "@/lib/csrf";
 import {
   buildCharacterResourceUpdateInput,
   calculateCharacterResourceResult,
@@ -151,6 +152,11 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const originError = validateWriteRequestOrigin(request);
+  if (originError) {
+    return originError;
+  }
+
   const { user, error } = await requireApiUser();
 
   if (error) {

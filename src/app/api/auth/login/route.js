@@ -2,6 +2,7 @@ import { compare } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { logServerError } from "@/lib/server-logger";
 import {
   createSession,
@@ -13,6 +14,11 @@ import { loginSchema } from "@/lib/validators/auth";
 const INVALID_CREDENTIALS_MESSAGE = "Incorrect email or password.";
 
 export async function POST(request) {
+  const originError = validateWriteRequestOrigin(request);
+  if (originError) {
+    return originError;
+  }
+
   try {
     let body;
     try {

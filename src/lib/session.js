@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { cookies } from "next/headers";
 
 import { prisma } from "@/lib/prisma";
@@ -6,6 +6,11 @@ import { prisma } from "@/lib/prisma";
 export const SESSION_COOKIE_NAME = "zakzum_session";
 
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
+const SESSION_RENEWAL_WINDOW_MS = 1000 * 60 * 60 * 24;
+
+function hashSessionToken(token) {
+  return createHash("sha256").update(token).digest("hex");
+}
 
 function getSessionExpirationDate() {
   return new Date(Date.now() + SESSION_DURATION_MS);
@@ -13,11 +18,12 @@ function getSessionExpirationDate() {
 
 export async function createSession(userId) {
   const token = randomBytes(32).toString("hex");
+  const tokenHash = hashSessionToken(token);
   const expiresAt = getSessionExpirationDate();
 
   await prisma.session.create({
     data: {
-      token,
+      token: tokenHash,
       userId,
       expiresAt,
     },
@@ -29,7 +35,7 @@ export async function createSession(userId) {
 export function getSessionCookieOptions(expiresAt) {
   return {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     expires: expiresAt,
@@ -39,7 +45,7 @@ export function getSessionCookieOptions(expiresAt) {
 export function getExpiredSessionCookieOptions() {
   return {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     expires: new Date(0),
@@ -56,20 +62,45 @@ export async function invalidateSessionByToken(token) {
     return;
   }
 
+  const tokenHash = hashSessionToken(token);
+
   await prisma.session.deleteMany({
-    where: { token },
+    where: { token: tokenHash },
   });
 }
 
-export async function getActiveSessionUser() {
+async function maybeRenewSessionIfNeeded(sessionId, token, expiresAt) {
+  if (expiresAt.getTime() - Date.now() > SESSION_RENEWAL_WINDOW_MS) {
+    return;
+  }
+
+  const renewedExpiresAt = getSessionExpirationDate();
+
+  await prisma.session.update({
+    where: { id: sessionId },
+    data: { expiresAt: renewedExpiresAt },
+  });
+
+  const cookieStore = await cookies();
+  cookieStore.set(
+    SESSION_COOKIE_NAME,
+    token,
+    getSessionCookieOptions(renewedExpiresAt),
+  );
+}
+
+export async function getActiveSessionUser(options = {}) {
+  const { renewSession = false } = options;
   const token = await getSessionTokenFromRequestCookies();
 
   if (!token) {
     return null;
   }
 
+  const tokenHash = hashSessionToken(token);
+
   const session = await prisma.session.findUnique({
-    where: { token },
+    where: { token: tokenHash },
     select: {
       id: true,
       expiresAt: true,
@@ -89,6 +120,10 @@ export async function getActiveSessionUser() {
   if (session.expiresAt <= new Date()) {
     await prisma.session.delete({ where: { id: session.id } });
     return null;
+  }
+
+  if (renewSession) {
+    await maybeRenewSessionIfNeeded(session.id, token, session.expiresAt);
   }
 
   return session.user;

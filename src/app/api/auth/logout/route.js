@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { logServerError } from "@/lib/server-logger";
 import {
   getExpiredSessionCookieOptions,
@@ -10,7 +11,12 @@ import {
 
 const HALF_ORC_RELENTLESS_COOKIE_NAME = "zakzum_half_orc_relentless";
 
-export async function POST() {
+export async function POST(request) {
+  const originError = validateWriteRequestOrigin(request);
+  if (originError) {
+    return originError;
+  }
+
   try {
     const token = await getSessionTokenFromRequestCookies();
     await invalidateSessionByToken(token);

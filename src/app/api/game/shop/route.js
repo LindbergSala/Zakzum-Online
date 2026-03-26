@@ -14,6 +14,7 @@ import {
   SHOP_ITEM_DEFINITION_MAP,
   SHOP_ITEM_DEFINITIONS,
 } from "@/lib/items/helpers";
+import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { prisma } from "@/lib/prisma";
 import {
@@ -225,6 +226,11 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const originError = validateWriteRequestOrigin(request);
+  if (originError) {
+    return originError;
+  }
+
   const { user, error } = await requireApiUser();
 
   if (error) {

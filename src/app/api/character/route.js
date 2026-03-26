@@ -12,6 +12,7 @@ import { CHARACTER_STAT_FIELDS } from "@/lib/character-data";
 import {
   isValidAvatarForRace,
 } from "@/lib/character-avatars";
+import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { prisma } from "@/lib/prisma";
 import { logServerError } from "@/lib/server-logger";
 import {
@@ -43,6 +44,11 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const originError = validateWriteRequestOrigin(request);
+  if (originError) {
+    return originError;
+  }
+
   const { user, error } = await requireApiUser();
 
   if (error) {
@@ -144,6 +150,11 @@ export async function POST(request) {
 }
 
 export async function PATCH(request) {
+  const originError = validateWriteRequestOrigin(request);
+  if (originError) {
+    return originError;
+  }
+
   const { user, error } = await requireApiUser();
 
   if (error) {
@@ -251,6 +262,11 @@ export async function PATCH(request) {
 }
 
 export async function DELETE(request) {
+  const originError = validateWriteRequestOrigin(request);
+  if (originError) {
+    return originError;
+  }
+
   const { user, error } = await requireApiUser();
 
   if (error) {
