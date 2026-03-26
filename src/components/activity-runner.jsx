@@ -19,6 +19,22 @@ function formatDelta(delta) {
     .join(", ");
 }
 
+function formatReadableOutcomeDelta(delta) {
+  if (!delta || typeof delta !== "object") {
+    return "No resource changes.";
+  }
+
+  const parts = Object.entries(delta)
+    .filter(([, value]) => Number(value) !== 0)
+    .map(([key, value]) => {
+      const numericValue = Number(value);
+      const sign = numericValue > 0 ? "+" : "";
+      return `${key.toUpperCase()} ${sign}${numericValue}`;
+    });
+
+  return parts.length > 0 ? parts.join(" | ") : "No resource changes.";
+}
+
 function formatStatWithBonus(statKey, stats) {
   const label = CHARACTER_STAT_LABELS[statKey] ?? statKey.toUpperCase();
   if (!stats) {
@@ -88,6 +104,22 @@ function getLootHeadline(loot) {
   const quantity = Number(loot.quantity) || 1;
   const quantityLabel = quantity > 1 ? ` x${quantity}` : "";
   return `${loot.name}${quantityLabel}`;
+}
+
+function getNextStepHint(lastResult) {
+  if (!lastResult) {
+    return "";
+  }
+
+  if (!lastResult.success) {
+    return "Try one more low-risk Quest run to stabilize momentum, then reassess HP and Energy.";
+  }
+
+  if (lastResult.loot) {
+    return "Open Inventory to review your drop, then run another activity to chain rewards.";
+  }
+
+  return "Run another activity to build momentum toward your next level and market purchase.";
 }
 
 export default function ActivityRunner({ activity }) {
@@ -187,6 +219,27 @@ export default function ActivityRunner({ activity }) {
           }`}
           aria-live="polite"
         >
+          <div className="activity-outcome-summary">
+            <p className="activity-outcome-line">
+              <strong>Action:</strong> {activity.name}
+            </p>
+            <p className="activity-outcome-line">
+              <strong>Outcome:</strong>{" "}
+              {lastResult.success ? "Success" : "Failure"}
+            </p>
+            <p className="activity-outcome-line">
+              <strong>Why:</strong> Roll {lastResult.roll.total} vs target{" "}
+              {lastResult.roll.target}.
+            </p>
+            <p className="activity-outcome-line">
+              <strong>Reward/Penalty:</strong>{" "}
+              {formatReadableOutcomeDelta(lastResult.delta)}
+            </p>
+            <p className="activity-outcome-line">
+              <strong>Next step:</strong> {getNextStepHint(lastResult)}
+            </p>
+          </div>
+
           <div className={`loot-toast ${getLootToastClass(lastResult.loot)}`}>
             <p className="loot-toast-kicker">{lastResult.loot ? "Loot Drop" : "Loot"}</p>
             <p className="loot-toast-headline">{getLootHeadline(lastResult.loot)}</p>

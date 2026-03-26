@@ -218,7 +218,7 @@ export function useCharacterCreateForm() {
       }
 
       setFeedback({ tone: "ok", text: "Character created. Redirecting..." });
-      router.push("/dashboard");
+      router.push("/dashboard?onboarding=character_created");
       router.refresh();
     } catch {
       setFeedback({

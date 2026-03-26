@@ -5,6 +5,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import CharacterOverview from "@/components/character-overview";
 import EnergyTimer from "@/components/energy-timer";
 import GameNav from "@/components/game-nav";
+import OnboardingPanel from "@/components/onboarding-panel";
 import { formatDashboardLogEntry } from "@/lib/activity-log-format";
 import { getResolvedCharacterAvatar } from "@/lib/character-avatars";
 import {
@@ -13,6 +14,13 @@ import {
 } from "@/lib/character";
 import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
 import { getLevelProgressMeta } from "@/lib/level-progression";
+import {
+  buildOnboardingViewModel,
+  ONBOARDING_STATUS,
+} from "@/lib/onboarding";
+import {
+  ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
+} from "@/lib/onboarding-reward";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
 import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
@@ -146,10 +154,59 @@ function getCharacterMaxResources(character) {
   };
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }) {
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const wasCharacterJustCreated =
+    resolvedSearchParams?.onboarding === "character_created";
   const user = await requirePageUser();
   const userWithCharacter = await getUserWithResolvedActiveCharacter(user.id);
   const activeCharacter = userWithCharacter?.activeCharacter ?? null;
+  const [
+    activityRunCount,
+    successfulActivityCount,
+    shopActionCount,
+    equipActionCount,
+    onboardingRewardClaimCount,
+  ] = activeCharacter
+    ? await Promise.all([
+        prisma.activityLog.count({
+          where: { characterId: activeCharacter.id, type: "ACTIVITY" },
+        }),
+        prisma.activityLog.count({
+          where: {
+            characterId: activeCharacter.id,
+            type: "ACTIVITY",
+            success: true,
+          },
+        }),
+        prisma.activityLog.count({
+          where: { characterId: activeCharacter.id, type: "SHOP" },
+        }),
+        prisma.activityLog.count({
+          where: { characterId: activeCharacter.id, type: "EQUIP" },
+        }),
+        prisma.activityLog.count({
+          where: {
+            characterId: activeCharacter.id,
+            activityId: ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
+          },
+        }),
+      ])
+    : [0, 0, 0, 0, 0];
+  const hasClaimedOnboardingReward = onboardingRewardClaimCount > 0;
+  const onboardingModel = buildOnboardingViewModel({
+    hasCharacter: Boolean(activeCharacter),
+    activityRunCount,
+    successfulActivityCount,
+    shopActionCount,
+    equipActionCount,
+    hasClaimedOnboardingReward,
+    wasCharacterJustCreated,
+  });
+  const shouldShowOnboardingPanel =
+    onboardingModel.status !== ONBOARDING_STATUS.ONBOARDING_COMPLETE ||
+    onboardingModel.allowRewardClaim;
+  const effectiveCharacter = activeCharacter;
   const ownedItems = activeCharacter
     ? await prisma.characterItem.findMany({
         where: { characterId: activeCharacter.id },
@@ -157,11 +214,11 @@ export default async function DashboardPage() {
       })
     : [];
   const equippedItems = ownedItems.filter((item) => item.isEquipped);
-  const energyMeta = activeCharacter
-    ? getEnergyRegenerationMeta(activeCharacter)
+  const energyMeta = effectiveCharacter
+    ? getEnergyRegenerationMeta(effectiveCharacter)
     : null;
-  const levelProgress = activeCharacter
-    ? getLevelProgressMeta(activeCharacter.level, activeCharacter.xp)
+  const levelProgress = effectiveCharacter
+    ? getLevelProgressMeta(effectiveCharacter.level, effectiveCharacter.xp)
     : null;
   const logEntries = activeCharacter
     ? await prisma.activityLog.findMany({
@@ -187,24 +244,24 @@ export default async function DashboardPage() {
       })
     : [];
   const dashboardGoals =
-    activeCharacter && levelProgress
+    effectiveCharacter && levelProgress
       ? buildDashboardGoals(
-          { ...activeCharacter, items: ownedItems },
+          { ...effectiveCharacter, items: ownedItems },
           levelProgress,
           logEntries,
         )
       : [];
   const compactLogEntries = logEntries.map(formatDashboardLogEntry);
-  const maxResources = activeCharacter
-    ? getCharacterMaxResources(activeCharacter)
+  const maxResources = effectiveCharacter
+    ? getCharacterMaxResources(effectiveCharacter)
     : null;
   const hpPercent = maxResources
-    ? clampPercent((activeCharacter.hp / maxResources.maxHp) * 100)
+    ? clampPercent((effectiveCharacter.hp / maxResources.maxHp) * 100)
     : 0;
   const energyPercent = maxResources
-    ? clampPercent((activeCharacter.energy / maxResources.maxEnergy) * 100)
+    ? clampPercent((effectiveCharacter.energy / maxResources.maxEnergy) * 100)
     : 0;
-  const characterAvatarImage = getResolvedCharacterAvatar(activeCharacter);
+  const characterAvatarImage = getResolvedCharacterAvatar(effectiveCharacter);
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -219,15 +276,16 @@ export default async function DashboardPage() {
               going and push your character forward.
             </p>
           </header>
+          {shouldShowOnboardingPanel ? <OnboardingPanel model={onboardingModel} /> : null}
 
-          {activeCharacter ? (
+          {effectiveCharacter ? (
             <div className={styles.panelGrid}>
               <section className={styles.panel}>
                 {characterAvatarImage ? (
                   <div className={styles.characterPortraitWrap}>
                     <Image
                       src={characterAvatarImage}
-                      alt={`${activeCharacter.name} portrait`}
+                      alt={`${effectiveCharacter.name} portrait`}
                       width={220}
                       height={220}
                       className={styles.characterPortrait}
@@ -244,7 +302,7 @@ export default async function DashboardPage() {
                     <div className={styles.resourceTop}>
                       <p className={styles.resourceLabel}>HP</p>
                       <p className={styles.resourceValue}>
-                        {activeCharacter.hp}/{maxResources.maxHp}
+                        {effectiveCharacter.hp}/{maxResources.maxHp}
                       </p>
                     </div>
                     <div className={styles.goalTrack} aria-hidden="true">
@@ -267,7 +325,7 @@ export default async function DashboardPage() {
                         />
                       </p>
                       <p className={styles.resourceValue}>
-                        {activeCharacter.energy}/{maxResources.maxEnergy}
+                        {effectiveCharacter.energy}/{maxResources.maxEnergy}
                       </p>
                     </div>
                     <div className={styles.goalTrack} aria-hidden="true">
@@ -287,7 +345,7 @@ export default async function DashboardPage() {
                 <hr className={styles.sectionDivider} />
                 <h3 className={styles.panelSubheading}>Character overview</h3>
                 <CharacterOverview
-                  character={activeCharacter}
+                  character={effectiveCharacter}
                   showResources={false}
                   equippedItems={equippedItems}
                 />

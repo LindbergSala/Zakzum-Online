@@ -121,6 +121,22 @@ button:disabled {
   background: linear-gradient(180deg, #fff3ef 0%, #f7e1db 100%);
 }
 
+.activity-outcome-summary {
+  margin: 0 0 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(134, 96, 62, 0.34);
+  background: rgba(255, 252, 244, 0.74);
+  padding: 0.58rem 0.68rem;
+}
+
+.activity-outcome-line {
+  margin: 0.2rem 0 0;
+}
+
+.activity-outcome-line:first-child {
+  margin-top: 0;
+}
+
 .loot-toast {
   margin: 0 0 0.75rem;
   border-radius: 10px;

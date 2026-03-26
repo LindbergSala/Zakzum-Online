@@ -6,6 +6,7 @@ import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { getActivitiesForGroup, getActivityGroup } from "@/lib/core-loop-data";
+import { getRecommendedStarterActivity } from "@/lib/onboarding";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import styles from "./page.module.css";
@@ -57,6 +58,7 @@ export default async function ActivityGroupPage({ params }) {
   const activities = getActivitiesForGroup(group.id);
   const user = await requirePageUser();
   const activeCharacter = await getActiveCharacterForUser(user.id);
+  const starterActivity = getRecommendedStarterActivity();
   const groupThemeClass = styles[GROUP_THEME_CLASS[group.id] ?? ""];
   const pageShellClassName = [
     styles.pageShell,
@@ -104,6 +106,9 @@ export default async function ActivityGroupPage({ params }) {
                     >
                       <header className={styles.activityHeader}>
                         <p className={styles.activityTier}>Tier {activity.tier ?? 1}</p>
+                        {starterActivity?.id === activity.id ? (
+                          <p className={styles.recommendedBadge}>Recommended first run</p>
+                        ) : null}
                         <h3>{activity.name}</h3>
                       </header>
                       <p className={styles.activityIntro}>{activity.pageIntro}</p>
