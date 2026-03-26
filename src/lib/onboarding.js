@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { ACTIVITY_DEFINITIONS } from "@/lib/core-loop-data";
 
 export const ONBOARDING_STATUS = {
@@ -9,6 +10,9 @@ export const ONBOARDING_STATUS = {
 };
 
 export const ONBOARDING_COMPLETION_REWARD_GOLD = 50;
+export const ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID =
+  "onboarding-complete-bonus";
+export const ONBOARDING_REWARD_LOG_DETAIL_ACTION = "onboarding_reward";
 
 function getStarterActivityFallback() {
   return ACTIVITY_DEFINITIONS[0] ?? null;
@@ -35,7 +39,24 @@ export function getRecommendedStarterActivity() {
   return sortedCandidates[0];
 }
 
+export function createEmptyOnboardingMetrics() {
+  return {
+    hasCharacter: false,
+    activityRunCount: 0,
+    successfulActivityCount: 0,
+    shopActionCount: 0,
+    equipActionCount: 0,
+    onboardingRewardClaimCount: 0,
+    hasClaimedOnboardingReward: false,
+  };
+}
+
 function normalizeOnboardingMetrics(metrics = {}) {
+  const onboardingRewardClaimCount = Math.max(
+    0,
+    Number(metrics.onboardingRewardClaimCount) || 0,
+  );
+
   return {
     hasCharacter: Boolean(metrics.hasCharacter),
     activityRunCount: Math.max(0, Number(metrics.activityRunCount) || 0),
@@ -45,9 +66,83 @@ function normalizeOnboardingMetrics(metrics = {}) {
     ),
     shopActionCount: Math.max(0, Number(metrics.shopActionCount) || 0),
     equipActionCount: Math.max(0, Number(metrics.equipActionCount) || 0),
-    hasClaimedOnboardingReward: Boolean(metrics.hasClaimedOnboardingReward),
-    wasCharacterJustCreated: Boolean(metrics.wasCharacterJustCreated),
+    onboardingRewardClaimCount,
+    hasClaimedOnboardingReward:
+      Boolean(metrics.hasClaimedOnboardingReward) ||
+      onboardingRewardClaimCount > 0,
   };
+}
+
+function getGroupCount(logGroup) {
+  return Math.max(0, Number(logGroup?._count?._all) || 0);
+}
+
+export function summarizeOnboardingLogGroups(logGroups = []) {
+  const summary = {
+    activityRunCount: 0,
+    successfulActivityCount: 0,
+    shopActionCount: 0,
+    equipActionCount: 0,
+    onboardingRewardClaimCount: 0,
+  };
+
+  for (const logGroup of logGroups) {
+    const groupCount = getGroupCount(logGroup);
+    if (groupCount <= 0) {
+      continue;
+    }
+
+    const isOnboardingRewardLog =
+      logGroup.activityId === ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID;
+
+    if (isOnboardingRewardLog) {
+      summary.onboardingRewardClaimCount += groupCount;
+      continue;
+    }
+
+    if (logGroup.type === "ACTIVITY") {
+      summary.activityRunCount += groupCount;
+      if (logGroup.success) {
+        summary.successfulActivityCount += groupCount;
+      }
+      continue;
+    }
+
+    if (logGroup.type === "SHOP") {
+      summary.shopActionCount += groupCount;
+      continue;
+    }
+
+    if (logGroup.type === "EQUIP") {
+      summary.equipActionCount += groupCount;
+    }
+  }
+
+  return {
+    ...summary,
+    hasClaimedOnboardingReward: summary.onboardingRewardClaimCount > 0,
+  };
+}
+
+export async function getOnboardingMetricsForCharacter(
+  characterId,
+  options = {},
+) {
+  if (!characterId) {
+    return createEmptyOnboardingMetrics();
+  }
+
+  const prismaClient = options.prismaClient ?? prisma;
+  const groupedLogs = await prismaClient.activityLog.groupBy({
+    by: ["type", "success", "activityId"],
+    where: { characterId },
+    _count: { _all: true },
+  });
+
+  return normalizeOnboardingMetrics({
+    ...summarizeOnboardingLogGroups(groupedLogs),
+    hasCharacter: true,
+  });
 }
 
 export function deriveOnboardingStatus(rawMetrics = {}) {
@@ -57,12 +152,8 @@ export function deriveOnboardingStatus(rawMetrics = {}) {
     return ONBOARDING_STATUS.NO_CHARACTER;
   }
 
-  if (metrics.activityRunCount <= 0 && metrics.wasCharacterJustCreated) {
-    return ONBOARDING_STATUS.CHARACTER_CREATED;
-  }
-
   if (metrics.activityRunCount <= 0) {
-    return ONBOARDING_STATUS.FIRST_ACTIVITY_PENDING;
+    return ONBOARDING_STATUS.CHARACTER_CREATED;
   }
 
   const hasLoopInteraction =
@@ -142,9 +233,22 @@ function buildNextStepForCompletedFirstActivity(metrics) {
   };
 }
 
+function buildOnboardingUiFlags(metrics, status) {
+  const isComplete = status === ONBOARDING_STATUS.ONBOARDING_COMPLETE;
+  const showRewardClaim = isComplete && !metrics.hasClaimedOnboardingReward;
+  const showPanel = !isComplete || showRewardClaim;
+
+  return {
+    isComplete,
+    showPanel,
+    showRewardClaim,
+  };
+}
+
 export function buildOnboardingViewModel(rawMetrics = {}) {
   const metrics = normalizeOnboardingMetrics(rawMetrics);
   const status = deriveOnboardingStatus(metrics);
+  const uiFlags = buildOnboardingUiFlags(metrics, status);
   const starterActivity = getRecommendedStarterActivity();
   const starterHref = starterActivity
     ? `/activities/run/${starterActivity.id}`
@@ -155,9 +259,12 @@ export function buildOnboardingViewModel(rawMetrics = {}) {
 
   const base = {
     status,
+    isComplete: uiFlags.isComplete,
+    showPanel: uiFlags.showPanel,
+    showRewardClaim: uiFlags.showRewardClaim,
+    allowRewardClaim: uiFlags.showRewardClaim,
     steps: buildStepItems(metrics),
     compact: false,
-    allowRewardClaim: false,
     rewardGold: ONBOARDING_COMPLETION_REWARD_GOLD,
     title: "Quick Start",
     intro:
@@ -183,25 +290,15 @@ export function buildOnboardingViewModel(rawMetrics = {}) {
     };
   }
 
-  if (status === ONBOARDING_STATUS.CHARACTER_CREATED) {
+  if (
+    status === ONBOARDING_STATUS.CHARACTER_CREATED ||
+    status === ONBOARDING_STATUS.FIRST_ACTIVITY_PENDING
+  ) {
     return {
       ...base,
       title: "Character Is Ready",
       currentStep: "Character created",
       nextStep: "Next step: run your first activity.",
-      primaryAction: {
-        href: starterHref,
-        label: starterLabel,
-      },
-    };
-  }
-
-  if (status === ONBOARDING_STATUS.FIRST_ACTIVITY_PENDING) {
-    return {
-      ...base,
-      title: "Time For Your First Run",
-      currentStep: "Character ready",
-      nextStep: "Pick an easy low-risk activity to earn your first clear reward.",
       primaryAction: {
         href: starterHref,
         label: starterLabel,
@@ -220,12 +317,29 @@ export function buildOnboardingViewModel(rawMetrics = {}) {
     };
   }
 
+  if (uiFlags.showRewardClaim) {
+    return {
+      ...base,
+      title: "Onboarding Complete",
+      intro: "You completed your first full loop. Claim your starter reward.",
+      currentStep: "Core steps completed",
+      nextStep: `Claim ${ONBOARDING_COMPLETION_REWARD_GOLD} Gold, then continue your progression.`,
+      primaryAction: {
+        href: "/activities",
+        label: "Continue adventures",
+      },
+    };
+  }
+
   return {
     ...base,
     title: "Onboarding Complete",
-    intro: "You completed your first full loop. Claim your starter reward.",
-    currentStep: "Core steps completed",
-    nextStep: `Claim ${ONBOARDING_COMPLETION_REWARD_GOLD} Gold, then continue your progression.`,
-    allowRewardClaim: !metrics.hasClaimedOnboardingReward,
+    intro: "You completed the onboarding loop and claimed your starter reward.",
+    currentStep: "Starter loop completed",
+    nextStep: "Continue with activities, market, and inventory progression.",
+    primaryAction: {
+      href: "/activities",
+      label: "Continue adventures",
+    },
   };
 }

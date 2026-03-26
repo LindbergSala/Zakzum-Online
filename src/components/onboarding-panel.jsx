@@ -54,6 +54,8 @@ export default function OnboardingPanel({ model }) {
     return null;
   }
 
+  const showRewardClaim = model.showRewardClaim ?? model.allowRewardClaim;
+
   async function handleClaimReward() {
     setIsClaiming(true);
     setClaimError("");
@@ -104,7 +106,7 @@ export default function OnboardingPanel({ model }) {
         <div className={styles.nextStepCard}>
           <p className={styles.stepLabel}>Next recommended action</p>
           <p className={styles.stepValue}>{model.nextStep}</p>
-          {model.allowRewardClaim ? (
+          {showRewardClaim ? (
             <button
               type="button"
               className={styles.primaryActionButton}

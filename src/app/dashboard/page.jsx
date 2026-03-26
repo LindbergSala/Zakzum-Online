@@ -16,11 +16,8 @@ import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import {
   buildOnboardingViewModel,
-  ONBOARDING_STATUS,
+  getOnboardingMetricsForCharacter,
 } from "@/lib/onboarding";
-import {
-  ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
-} from "@/lib/onboarding-reward";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
 import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
@@ -154,58 +151,15 @@ function getCharacterMaxResources(character) {
   };
 }
 
-export default async function DashboardPage({ searchParams }) {
-  const resolvedSearchParams = (await searchParams) ?? {};
-  const wasCharacterJustCreated =
-    resolvedSearchParams?.onboarding === "character_created";
+export default async function DashboardPage() {
   const user = await requirePageUser();
   const userWithCharacter = await getUserWithResolvedActiveCharacter(user.id);
   const activeCharacter = userWithCharacter?.activeCharacter ?? null;
-  const [
-    activityRunCount,
-    successfulActivityCount,
-    shopActionCount,
-    equipActionCount,
-    onboardingRewardClaimCount,
-  ] = activeCharacter
-    ? await Promise.all([
-        prisma.activityLog.count({
-          where: { characterId: activeCharacter.id, type: "ACTIVITY" },
-        }),
-        prisma.activityLog.count({
-          where: {
-            characterId: activeCharacter.id,
-            type: "ACTIVITY",
-            success: true,
-          },
-        }),
-        prisma.activityLog.count({
-          where: { characterId: activeCharacter.id, type: "SHOP" },
-        }),
-        prisma.activityLog.count({
-          where: { characterId: activeCharacter.id, type: "EQUIP" },
-        }),
-        prisma.activityLog.count({
-          where: {
-            characterId: activeCharacter.id,
-            activityId: ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
-          },
-        }),
-      ])
-    : [0, 0, 0, 0, 0];
-  const hasClaimedOnboardingReward = onboardingRewardClaimCount > 0;
-  const onboardingModel = buildOnboardingViewModel({
-    hasCharacter: Boolean(activeCharacter),
-    activityRunCount,
-    successfulActivityCount,
-    shopActionCount,
-    equipActionCount,
-    hasClaimedOnboardingReward,
-    wasCharacterJustCreated,
-  });
-  const shouldShowOnboardingPanel =
-    onboardingModel.status !== ONBOARDING_STATUS.ONBOARDING_COMPLETE ||
-    onboardingModel.allowRewardClaim;
+  const onboardingMetrics = activeCharacter
+    ? await getOnboardingMetricsForCharacter(activeCharacter.id)
+    : { hasCharacter: false };
+  const onboardingModel = buildOnboardingViewModel(onboardingMetrics);
+  const shouldShowOnboardingPanel = onboardingModel.showPanel;
   const effectiveCharacter = activeCharacter;
   const ownedItems = activeCharacter
     ? await prisma.characterItem.findMany({

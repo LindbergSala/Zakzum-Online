@@ -1,8 +1,14 @@
 import { runSerializableTransaction } from "@/lib/db-transaction";
+import {
+  ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
+  ONBOARDING_COMPLETION_REWARD_GOLD,
+  ONBOARDING_REWARD_LOG_DETAIL_ACTION,
+} from "@/lib/onboarding";
 
-export const ONBOARDING_COMPLETION_REWARD_GOLD = 50;
-export const ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID =
-  "onboarding-complete-bonus";
+export {
+  ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
+  ONBOARDING_COMPLETION_REWARD_GOLD,
+};
 
 const CHARACTER_REWARD_SELECT = {
   id: true,
@@ -29,12 +35,17 @@ function buildCharacterResourceSnapshot(character) {
   };
 }
 
-export async function maybeGrantOnboardingCompletionReward(characterId) {
+export async function maybeGrantOnboardingCompletionReward(
+  characterId,
+  options = {},
+) {
   if (!characterId) {
     return { granted: false };
   }
 
-  return runSerializableTransaction(async (tx) => {
+  const runTransaction = options.runTransaction ?? runSerializableTransaction;
+
+  return runTransaction(async (tx) => {
     const existingRewardLog = await tx.activityLog.findFirst({
       where: {
         characterId,
@@ -85,12 +96,10 @@ export async function maybeGrantOnboardingCompletionReward(characterId) {
         beforeResources,
         afterResources,
         details: {
-          action: "onboarding_reward",
+          action: ONBOARDING_REWARD_LOG_DETAIL_ACTION,
+          category: "ONBOARDING_REWARD",
+          isSystemReward: true,
           rewardGold: ONBOARDING_COMPLETION_REWARD_GOLD,
-          item: {
-            name: "Starter Bonus",
-            slot: "reward",
-          },
         },
       },
       select: { id: true },
