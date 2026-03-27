@@ -51,14 +51,15 @@
 
 .itemHoverOverlay {
   position: absolute;
-  left: 50%;
+  left: 0;
   bottom: calc(100% + 8px);
-  transform: translateX(-50%);
-  width: clamp(220px, 28vw, 300px);
+  transform: none;
+  width: min(300px, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  z-index: 35;
+  z-index: 80;
   transition:
     opacity 110ms ease,
     visibility 110ms ease;
@@ -73,12 +74,7 @@
   display: block;
   border-radius: 10px;
   border: 1px solid rgba(192, 150, 103, 0.62);
-  background:
-    linear-gradient(
-      162deg,
-      rgba(53, 35, 20, 0.96) 0%,
-      rgba(31, 20, 12, 0.98) 100%
-    );
+  background: linear-gradient(162deg, #352314 0%, #1f140c 100%);
   box-shadow:
     0 10px 24px rgba(0, 0, 0, 0.36),
     inset 0 1px 0 rgba(255, 240, 213, 0.14);
@@ -90,12 +86,7 @@
   width: 100%;
   height: clamp(220px, 32vh, 320px);
   border-bottom: 1px solid rgba(191, 149, 103, 0.4);
-  background:
-    linear-gradient(
-      160deg,
-      rgba(76, 50, 29, 0.95) 0%,
-      rgba(46, 31, 19, 0.98) 100%
-    );
+  background: linear-gradient(160deg, #4c321d 0%, #2e1f13 100%);
 }
 
 .itemHoverImage {
@@ -119,6 +110,7 @@
 .itemHoverInfo {
   display: block;
   padding: 0.5rem 0.55rem 0.58rem;
+  background: linear-gradient(168deg, #2d1d12 0%, #21150d 100%);
 }
 
 .itemHoverName {
