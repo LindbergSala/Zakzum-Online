@@ -54,7 +54,9 @@ export default async function CharacterCreatePage() {
                 | Level: <strong>{existingCharacter.level}</strong>
               </p>
               <p className={styles.backLink}>
-                <Link href="/dashboard">Back to dashboard</Link>
+                <Link href="/dashboard" aria-label="Back to dashboard">
+                  &larr;
+                </Link>
               </p>
               <p className={styles.backLink}>
                 <Link href="/character">Back to character overview</Link>
@@ -91,7 +93,9 @@ export default async function CharacterCreatePage() {
             </p>
             <CharacterCreateForm />
             <p className={styles.backLink}>
-              <Link href="/dashboard">Back to dashboard</Link>
+              <Link href="/dashboard" aria-label="Back to dashboard">
+                &larr;
+              </Link>
             </p>
           </section>
         </section>

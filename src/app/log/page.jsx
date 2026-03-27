@@ -63,7 +63,9 @@ export default async function LogPage() {
         </ul>
       )}
       <p>
-        <Link href="/dashboard">Back to dashboard</Link>
+        <Link href="/dashboard" aria-label="Back to dashboard">
+          &larr;
+        </Link>
       </p>
     </main>
   );

@@ -35,7 +35,9 @@ export default async function ZakzumPage() {
           <section className={styles.panel}>
             <ZakzumMapExplorer />
             <p className={styles.backLink}>
-              <Link href="/dashboard">Back to dashboard</Link>
+              <Link href="/dashboard" aria-label="Back to dashboard">
+                &larr;
+              </Link>
             </p>
           </section>
         </section>

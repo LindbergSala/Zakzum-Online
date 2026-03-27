@@ -39,6 +39,16 @@ a {
   color: #8d5b10;
 }
 
+a[aria-label="Back to dashboard"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2em;
+  font-size: clamp(1.7rem, 1.5rem + 0.4vw, 2.2rem);
+  line-height: 1;
+  text-decoration: none;
+}
+
 form {
   display: grid;
   gap: 0.9rem;

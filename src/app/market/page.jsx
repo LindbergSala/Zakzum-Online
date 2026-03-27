@@ -57,7 +57,9 @@ export default async function MarketPage() {
               ))}
             </ul>
             <p className={styles.backLink}>
-              <Link href="/dashboard">Back to dashboard</Link>
+              <Link href="/dashboard" aria-label="Back to dashboard">
+                &larr;
+              </Link>
             </p>
           </section>
         </section>

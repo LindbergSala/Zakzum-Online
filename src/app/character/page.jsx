@@ -285,7 +285,9 @@ export default async function CharacterPage() {
               equippedItems={items.filter((item) => item.isEquipped)}
             />
             <p className={styles.backLink}>
-              <Link href="/dashboard">Back to dashboard</Link>
+              <Link href="/dashboard" aria-label="Back to dashboard">
+                &larr;
+              </Link>
             </p>
             <p className={styles.backLink}>
               <Link href="/account#account">Manage account and character deletion</Link>
