@@ -1,0 +1,421 @@
+.shell {
+  margin-top: 0.5rem;
+}
+
+.nav {
+  padding: 0.58rem;
+  border-radius: 12px;
+  border: 1px solid rgba(104, 65, 36, 0.38);
+  background:
+    linear-gradient(
+      155deg,
+      rgba(252, 245, 230, 0.5) 0%,
+      rgba(229, 205, 166, 0.5) 100%
+    );
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.44rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 238, 0.5),
+    0 8px 18px rgba(84, 49, 26, 0.13);
+}
+
+.navButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  border-radius: 999px;
+  padding: 0.34rem 0.84rem;
+  border: 1px solid rgba(126, 81, 45, 0.36);
+  font: inherit;
+  font-weight: 700;
+  color: #5b3518;
+  background: rgba(255, 247, 230, 0.62);
+  cursor: pointer;
+  transition:
+    transform 130ms ease,
+    box-shadow 130ms ease,
+    border-color 130ms ease;
+}
+
+.navButton:hover {
+  transform: translateY(-1px);
+  border-color: rgba(139, 82, 34, 0.62);
+  box-shadow: 0 8px 14px rgba(95, 55, 28, 0.18);
+}
+
+.navButtonActive {
+  border-color: rgba(139, 82, 34, 0.78);
+  background: linear-gradient(145deg, #d49353 0%, #b9703c 100%);
+  color: #fff5e5;
+}
+
+.helperText {
+  margin: 0.55rem 0 0;
+  color: #6a4a2e;
+  font-size: 0.9rem;
+}
+
+.overlayRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 1040;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.overlayBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 11, 7, 0.58);
+  backdrop-filter: blur(3px);
+}
+
+.overlayCard {
+  position: relative;
+  z-index: 1;
+  width: min(960px, calc(100vw - 2rem));
+  max-height: min(92vh, 940px);
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(129, 69, 51, 0.7);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(244, 228, 196, 0.97) 0%,
+      rgba(232, 201, 154, 0.95) 100%
+    );
+  box-shadow:
+    0 24px 40px rgba(19, 10, 6, 0.44),
+    inset 0 1px 0 rgba(255, 249, 235, 0.58);
+  padding: 0.92rem 1rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.overlayCardWide {
+  width: min(1240px, calc(100vw - 2rem));
+}
+
+.overlayCardMedium {
+  width: min(980px, calc(100vw - 2rem));
+}
+
+.overlayCardNarrow {
+  width: min(760px, calc(100vw - 2rem));
+}
+
+.overlayHeader {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.22rem 0.66rem;
+  align-items: start;
+}
+
+.overlayKicker {
+  margin: 0;
+  grid-column: 1 / -1;
+  color: #7a4e2f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.overlayTitle {
+  margin: 0;
+  color: #3a2512;
+  font-size: 1.14rem;
+}
+
+.overlayClose {
+  min-height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(112, 76, 44, 0.46);
+  background: rgba(247, 233, 206, 0.85);
+  color: #5c381d;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.28rem 0.8rem;
+  cursor: pointer;
+}
+
+.overlayBody {
+  margin-top: 0.72rem;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 0.18rem;
+}
+
+.overlayBodyCompact {
+  max-height: min(70vh, 680px);
+}
+
+.overlayBodyTall {
+  max-height: min(78vh, 760px);
+}
+
+.emptyStateText {
+  margin: 0;
+  color: #6a4a2e;
+}
+
+.logWrap {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.dayNav {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.62rem;
+  align-items: center;
+}
+
+.dayButton {
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 0.34rem 0.82rem;
+  border: 1px solid rgba(118, 76, 42, 0.38);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #6a3f20;
+  background: rgba(255, 247, 229, 0.76);
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.dayButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 14px rgba(94, 54, 28, 0.18);
+}
+
+.dayButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
+  box-shadow: none;
+}
+
+.dayLabel {
+  margin: 0;
+  color: #5a3a1f;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.dayMeta {
+  margin: 0;
+  color: #7a5637;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.logList {
+  list-style: none;
+  margin: 0.2rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.62rem;
+}
+
+.logItem {
+  margin: 0;
+  border-radius: 10px;
+  padding: 0.68rem 0.75rem;
+  border: 1px solid rgba(95, 58, 33, 0.23);
+  background: rgba(255, 249, 237, 0.72);
+  position: relative;
+  overflow: hidden;
+}
+
+.logItem::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #cd7a34 0%, #9f5627 100%);
+  opacity: 0.8;
+}
+
+.logTopRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.62rem;
+}
+
+.logTopLine {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.logStatus {
+  margin: 0;
+  font-size: 0.77rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 0.2rem 0.52rem;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.logStatusSuccess {
+  color: #245f27;
+  border-color: rgba(41, 111, 47, 0.34);
+  background: rgba(96, 169, 98, 0.14);
+}
+
+.logStatusFail {
+  color: #8a2316;
+  border-color: rgba(138, 35, 22, 0.32);
+  background: rgba(177, 66, 48, 0.12);
+}
+
+.logStatusNeutral {
+  color: #5a3a1f;
+  border-color: rgba(90, 58, 31, 0.3);
+  background: rgba(111, 83, 54, 0.1);
+}
+
+.logMetaLine {
+  margin: 0.22rem 0 0;
+  font-size: 0.86rem;
+  color: #6a4a2e;
+}
+
+.logDetail {
+  margin: 0.25rem 0 0;
+  font-size: 0.93rem;
+  line-height: 1.4;
+  color: #4e3720;
+}
+
+.statsGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.62rem;
+}
+
+.statCard {
+  border-radius: 10px;
+  padding: 0.72rem 0.78rem;
+  border: 1px solid rgba(95, 58, 33, 0.24);
+  background: rgba(255, 249, 237, 0.74);
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease;
+}
+
+.statCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0) 45%
+  );
+  pointer-events: none;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(134, 82, 40, 0.44);
+  box-shadow: 0 10px 17px rgba(70, 41, 21, 0.16);
+}
+
+.statIndex {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #8f6645;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+}
+
+.statLabel {
+  margin: 0.15rem 0 0;
+  color: #2f1f0e;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.statValue {
+  margin: 0.25rem 0 0;
+  color: #2f1f0e;
+  font-size: 1.03rem;
+  font-weight: 700;
+}
+
+.statHint {
+  margin: 0.22rem 0 0;
+  color: #4e3720;
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 900px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overlayHeader {
+    grid-template-columns: 1fr;
+  }
+
+  .overlayClose {
+    justify-self: start;
+  }
+
+  .overlayCard,
+  .overlayCardWide,
+  .overlayCardMedium,
+  .overlayCardNarrow {
+    width: calc(100vw - 1rem);
+    max-height: calc(100vh - 1rem);
+  }
+
+  .logTopRow {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dayNav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+}

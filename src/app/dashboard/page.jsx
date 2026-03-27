@@ -308,7 +308,7 @@ export default async function DashboardPage() {
               <section className={styles.panel}>
                 <div className={styles.panelHeadingRow}>
                   <h2>Recent activity log</h2>
-                  <Link className={styles.inlineLink} href="/log">
+                  <Link className={styles.inlineLink} href="/account#log">
                     Open full log
                   </Link>
                 </div>
