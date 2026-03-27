@@ -341,6 +341,15 @@
   overflow-wrap: anywhere;
 }
 
+.itemHoverValueLine {
+  display: block;
+  margin-top: 0.26rem;
+  color: #f0d8b4;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .dropPreview {
   border-radius: 8px;
   z-index: 2;

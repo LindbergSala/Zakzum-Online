@@ -160,21 +160,48 @@ export default function ShopActions({ items }) {
                 ? `Stackable (max ${item.maxStack ?? 5})`
                 : "Unique equipment";
               const imagePath = getItemImagePath(item.id);
+              const overlayTradeLine = `Buy: ${formatBuyPrice(item)} | Sell: ${formatSellPrice(item.sellValue)}`;
 
               return (
                 <li key={item.id} className={styles.marketItemRow}>
-                  <div className={styles.itemVisualWrap} aria-hidden="true">
-                    {imagePath ? (
-                      <Image
-                        src={imagePath}
-                        alt=""
-                        width={88}
-                        height={88}
-                        className={styles.itemVisual}
-                      />
-                    ) : (
-                      <span className={styles.itemVisualFallback}>No image</span>
-                    )}
+                  <div className={styles.itemVisualWrap}>
+                    <div className={styles.itemVisualFrame} aria-hidden="true">
+                      {imagePath ? (
+                        <Image
+                          src={imagePath}
+                          alt=""
+                          width={88}
+                          height={88}
+                          className={styles.itemVisual}
+                        />
+                      ) : (
+                        <span className={styles.itemVisualFallback}>No image</span>
+                      )}
+                    </div>
+                    <span className={styles.itemHoverOverlay} aria-hidden="true">
+                      <span className={styles.itemHoverCard}>
+                        <span className={styles.itemHoverImageWrap}>
+                          {imagePath ? (
+                            <Image
+                              src={imagePath}
+                              alt=""
+                              width={320}
+                              height={320}
+                              className={styles.itemHoverImage}
+                            />
+                          ) : (
+                            <span className={styles.itemHoverImageFallback}>No image</span>
+                          )}
+                        </span>
+                        <span className={styles.itemHoverInfo}>
+                          <span className={styles.itemHoverName}>{item.name}</span>
+                          <span className={styles.itemHoverStatLine}>
+                            {item.effectLabel || "No stats"}
+                          </span>
+                          <span className={styles.itemHoverValueLine}>{overlayTradeLine}</span>
+                        </span>
+                      </span>
+                    </span>
                   </div>
                   <div className={styles.itemInfo}>
                     <p>

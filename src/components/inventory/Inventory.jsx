@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 
-import { getItemImagePath } from "@/lib/items/helpers";
+import { getItemImagePath, getItemSellValue } from "@/lib/items/helpers";
 import {
   canDropToBackpack,
   isCompatibleWithEquipmentSlot,
@@ -30,6 +30,37 @@ function clamp(value, min, max) {
   }
 
   return value;
+}
+
+function formatSellValueLabel(sellValue) {
+  const parts = [];
+
+  if (Number(sellValue?.gold) > 0) {
+    parts.push(`${sellValue.gold} Gold`);
+  }
+
+  if (Number(sellValue?.renown) > 0) {
+    parts.push(`${sellValue.renown} Renown`);
+  }
+
+  return parts.length > 0 ? parts.join(" + ") : "No value";
+}
+
+function formatInventoryValueLabel(item) {
+  const quantity = Math.max(1, Number(item.quantity) || 1);
+  const sellValue = item.sellValue ?? getItemSellValue(item.itemId);
+  const perItemLabel = formatSellValueLabel(sellValue);
+
+  if (quantity <= 1 || perItemLabel === "No value") {
+    return `Value: ${perItemLabel}`;
+  }
+
+  const stackValue = {
+    gold: (Number(sellValue?.gold) || 0) * quantity,
+    renown: (Number(sellValue?.renown) || 0) * quantity,
+  };
+
+  return `Value: ${perItemLabel} each (${formatSellValueLabel(stackValue)} total)`;
 }
 
 async function syncInventoryAction(payload) {
@@ -69,6 +100,7 @@ function ItemCard({ item, draggable, onDragStart, onDragEnd, className, compact 
   const nameClass = compact ? styles.itemNameCompact : styles.itemName;
   const imagePath = !compact ? getItemImagePath(item.itemId) : null;
   const statLabel = item.effectLabel || "No stats";
+  const valueLabel = formatInventoryValueLabel(item);
 
   return (
     <button
@@ -119,6 +151,7 @@ function ItemCard({ item, draggable, onDragStart, onDragEnd, className, compact 
             <span className={styles.itemHoverInfo}>
               <span className={styles.itemHoverName}>{item.itemName}</span>
               <span className={styles.itemHoverStatLine}>{statLabel}</span>
+              <span className={styles.itemHoverValueLine}>{valueLabel}</span>
             </span>
           </span>
         </span>
