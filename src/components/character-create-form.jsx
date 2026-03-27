@@ -3,6 +3,7 @@
 import CharacterAvatarSelector from "@/components/character-avatar-selector";
 import { useCharacterCreateForm } from "@/components/use-character-create-form";
 import {
+  CHARACTER_BACKGROUND_LORE_MAX_LENGTH,
   CHARACTER_BACKGROUND_OPTIONS,
   CHARACTER_CLASS_OPTIONS,
   CHARACTER_RACE_OPTIONS,
@@ -44,6 +45,7 @@ export default function CharacterCreateForm() {
     handleSwipeEnd,
     onSubmit,
   } = useCharacterCreateForm();
+  const backgroundLoreLength = formData.backgroundLore.length;
 
   return (
     <form className={styles.form} onSubmit={onSubmit}>
@@ -141,11 +143,15 @@ export default function CharacterCreateForm() {
             id="backgroundLore"
             name="backgroundLore"
             aria-label="Background lore"
+            maxLength={CHARACTER_BACKGROUND_LORE_MAX_LENGTH}
             value={formData.backgroundLore}
             onChange={(event) => updateField("backgroundLore", event.target.value)}
             rows={8}
           />
         </label>
+        <p className={styles.backgroundLoreCounter}>
+          {backgroundLoreLength} / {CHARACTER_BACKGROUND_LORE_MAX_LENGTH}
+        </p>
       </section>
 
       {FIELD_ERROR_KEYS.map((fieldKey) =>

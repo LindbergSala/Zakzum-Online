@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  CHARACTER_BACKGROUND_LORE_MAX_LENGTH,
   CHARACTER_BACKGROUND_VALUES,
   CHARACTER_CLASS_VALUES,
   CHARACTER_RACE_VALUES,
@@ -42,7 +43,10 @@ export const createCharacterSchema = z.object({
     .string()
     .trim()
     .min(1, "Background lore is required.")
-    .max(2500, "Background lore can be at most 2500 characters."),
+    .max(
+      CHARACTER_BACKGROUND_LORE_MAX_LENGTH,
+      `Background lore can be at most ${CHARACTER_BACKGROUND_LORE_MAX_LENGTH} characters.`,
+    ),
   avatarImage: z
     .string()
     .trim()
