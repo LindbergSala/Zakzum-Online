@@ -3,6 +3,7 @@ import { compare } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
+import { applyBackgroundStartBonuses } from "@/lib/background-identity";
 import {
   buildBaseResourcesForCharacter,
   CHARACTER_OVERVIEW_SELECT,
@@ -90,7 +91,10 @@ export async function POST(request) {
       );
     }
 
-    const initialStats = buildInitialStats();
+    const initialStats = applyBackgroundStartBonuses(
+      buildInitialStats(),
+      parsed.data.characterBackground,
+    );
     const requestedAvatarImage = parsed.data.avatarImage?.trim() ?? "";
     const resolvedAvatarImage =
       requestedAvatarImage &&

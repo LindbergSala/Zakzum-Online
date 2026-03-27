@@ -24,6 +24,8 @@ export const CHARACTER_OVERVIEW_SELECT = {
   name: true,
   characterClass: true,
   characterRace: true,
+  characterBackground: true,
+  backgroundLore: true,
   avatarImage: true,
   strength: true,
   dexterity: true,

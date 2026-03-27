@@ -7,6 +7,11 @@
   gap: 0.32rem 0.9rem;
 }
 
+.backgroundLoreBlock {
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
 @media (max-width: 640px) {
   .statGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

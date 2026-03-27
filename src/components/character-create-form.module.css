@@ -6,7 +6,7 @@
 
 .identityGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.72rem;
 }
 
@@ -39,6 +39,36 @@
   padding: 0.7rem 0.74rem;
   border: 1px solid rgba(103, 64, 35, 0.26);
   background: rgba(255, 248, 232, 0.66);
+}
+
+.backgroundLoreCard {
+  border-radius: 10px;
+  padding: 0.7rem 0.74rem;
+  border: 1px solid rgba(103, 64, 35, 0.26);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.backgroundLoreKicker {
+  margin: 0;
+  color: #6a4a2e;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.backgroundLoreTitle {
+  margin: 0.2rem 0 0.55rem;
+  color: #3a2512;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.backgroundLoreInput {
+  width: 100%;
+  min-height: 170px;
+  resize: vertical;
+  line-height: 1.42;
 }
 
 .avatarCard {

@@ -1,4 +1,8 @@
 import {
+  getBackgroundLoreTemplate,
+} from "@/lib/background-identity";
+import {
+  getCharacterBackgroundLabel,
   getCharacterClassLabel,
   getCharacterRaceLabel,
 } from "@/lib/character-data";
@@ -39,6 +43,9 @@ export default function CharacterOverview({
   const classPassive = getClassPassive(character.characterClass);
   const racePassive = getRacePassive(character.characterRace);
   const statSummary = getCharacterEffectiveStats(character, equippedItems);
+  const backgroundLore =
+    (typeof character.backgroundLore === "string" ? character.backgroundLore : "")
+      .trim() || getBackgroundLoreTemplate(character.characterBackground);
 
   return (
     <>
@@ -52,12 +59,19 @@ export default function CharacterOverview({
         <strong>Race:</strong> {getCharacterRaceLabel(character.characterRace)}
       </p>
       <p>
+        <strong>Background:</strong>{" "}
+        {getCharacterBackgroundLabel(character.characterBackground)}
+      </p>
+      <p>
         <strong>Class passive:</strong> {classPassive.name} -{" "}
         {classPassive.description}
       </p>
       <p>
         <strong>Racial passive:</strong> {racePassive.name} -{" "}
         {racePassive.description}
+      </p>
+      <p className={styles.backgroundLoreBlock}>
+        <strong>Background lore:</strong> {backgroundLore}
       </p>
       <p>
         <strong>Base stats</strong>

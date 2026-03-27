@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  CHARACTER_BACKGROUND_VALUES,
   CHARACTER_CLASS_VALUES,
   CHARACTER_RACE_VALUES,
   CHARACTER_STAT_FIELDS,
@@ -34,6 +35,14 @@ export const createCharacterSchema = z.object({
   characterRace: z.enum(CHARACTER_RACE_VALUES, {
     error: "Race must be a valid option.",
   }),
+  characterBackground: z.enum(CHARACTER_BACKGROUND_VALUES, {
+    error: "Background must be a valid option.",
+  }),
+  backgroundLore: z
+    .string()
+    .trim()
+    .min(1, "Background lore is required.")
+    .max(2500, "Background lore can be at most 2500 characters."),
   avatarImage: z
     .string()
     .trim()

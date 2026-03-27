@@ -25,11 +25,31 @@ export const CHARACTER_RACE_OPTIONS = [
   { value: "TIEFLING", label: "Tiefling" },
 ];
 
+export const CHARACTER_BACKGROUND_OPTIONS = [
+  { value: "ACOLYTE", label: "Acolyte" },
+  { value: "CHARLATAN", label: "Charlatan" },
+  { value: "CRIMINAL", label: "Criminal" },
+  { value: "ENTERTAINER", label: "Entertainer" },
+  { value: "FOLK_HERO", label: "Folk Hero" },
+  { value: "GUILD_ARTISAN", label: "Guild Artisan" },
+  { value: "HERMIT", label: "Hermit" },
+  { value: "NOBLE", label: "Noble" },
+  { value: "OUTLANDER", label: "Outlander" },
+  { value: "SAGE", label: "Sage" },
+  { value: "SAILOR", label: "Sailor" },
+  { value: "SOLDIER", label: "Soldier" },
+  { value: "URCHIN", label: "Urchin" },
+];
+
 export const CHARACTER_CLASS_VALUES = CHARACTER_CLASS_OPTIONS.map(
   (option) => option.value,
 );
 
 export const CHARACTER_RACE_VALUES = CHARACTER_RACE_OPTIONS.map(
+  (option) => option.value,
+);
+
+export const CHARACTER_BACKGROUND_VALUES = CHARACTER_BACKGROUND_OPTIONS.map(
   (option) => option.value,
 );
 
@@ -39,6 +59,10 @@ const CHARACTER_CLASS_LABELS = Object.fromEntries(
 
 const CHARACTER_RACE_LABELS = Object.fromEntries(
   CHARACTER_RACE_OPTIONS.map((option) => [option.value, option.label]),
+);
+
+const CHARACTER_BACKGROUND_LABELS = Object.fromEntries(
+  CHARACTER_BACKGROUND_OPTIONS.map((option) => [option.value, option.label]),
 );
 
 export const CHARACTER_STAT_FIELDS = [
@@ -104,4 +128,10 @@ export function getCharacterClassLabel(characterClassValue) {
 
 export function getCharacterRaceLabel(characterRaceValue) {
   return CHARACTER_RACE_LABELS[characterRaceValue] ?? characterRaceValue;
+}
+
+export function getCharacterBackgroundLabel(characterBackgroundValue) {
+  return (
+    CHARACTER_BACKGROUND_LABELS[characterBackgroundValue] ?? characterBackgroundValue
+  );
 }

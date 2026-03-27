@@ -72,6 +72,22 @@ enum CharacterRace {
   TIEFLING
 }
 
+enum CharacterBackground {
+  ACOLYTE
+  CHARLATAN
+  CRIMINAL
+  ENTERTAINER
+  FOLK_HERO
+  GUILD_ARTISAN
+  HERMIT
+  NOBLE
+  OUTLANDER
+  SAGE
+  SAILOR
+  SOLDIER
+  URCHIN
+}
+
 model Character {
   id                String          @id @default(cuid())
   userId            String          @unique
@@ -80,6 +96,8 @@ model Character {
   name              String          @db.VarChar(32)
   characterClass    CharacterClass
   characterRace     CharacterRace   @default(HUMAN)
+  characterBackground CharacterBackground @default(ACOLYTE)
+  backgroundLore    String          @default("") @db.Text
   avatarImage       String?         @db.VarChar(255)
   strength          Int
   dexterity         Int

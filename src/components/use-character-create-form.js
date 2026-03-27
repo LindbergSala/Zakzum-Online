@@ -4,10 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  CHARACTER_BACKGROUND_OPTIONS,
   CHARACTER_CLASS_OPTIONS,
   CHARACTER_RACE_OPTIONS,
 } from "@/lib/character-data";
 import { getAvatarOptionsForRace } from "@/lib/character-avatars";
+import {
+  formatBackgroundStartBonusLabel,
+  getBackgroundLoreTemplate,
+  getBackgroundProfile,
+} from "@/lib/background-identity";
 import { getClassPassive } from "@/lib/class-identity";
 import { getRacePassive } from "@/lib/race-identity";
 
@@ -15,11 +21,14 @@ const SWIPE_THRESHOLD_PX = 40;
 
 function buildInitialFormData() {
   const initialRace = CHARACTER_RACE_OPTIONS[0].value;
+  const initialBackground = CHARACTER_BACKGROUND_OPTIONS[0].value;
 
   return {
     name: "",
     characterRace: initialRace,
     characterClass: CHARACTER_CLASS_OPTIONS[0].value,
+    characterBackground: initialBackground,
+    backgroundLore: getBackgroundLoreTemplate(initialBackground),
     avatarImage: "",
   };
 }
@@ -51,6 +60,10 @@ export function useCharacterCreateForm() {
 
   const classPassive = getClassPassive(formData.characterClass);
   const racePassive = getRacePassive(formData.characterRace);
+  const backgroundProfile = getBackgroundProfile(formData.characterBackground);
+  const backgroundStartBonusLabel = formatBackgroundStartBonusLabel(
+    formData.characterBackground,
+  );
   const raceAvatarOptions = useMemo(
     () => getAvatarOptionsForRace(formData.characterRace),
     [formData.characterRace],
@@ -60,7 +73,14 @@ export function useCharacterCreateForm() {
   function updateField(key, value) {
     setFormData((previous) => ({
       ...previous,
-      [key]: value,
+      ...(key === "characterBackground"
+        ? {
+            characterBackground: value,
+            backgroundLore: getBackgroundLoreTemplate(value),
+          }
+        : {
+            [key]: value,
+          }),
     }));
   }
 
@@ -193,6 +213,8 @@ export function useCharacterCreateForm() {
       name: formData.name,
       characterRace: formData.characterRace,
       characterClass: formData.characterClass,
+      characterBackground: formData.characterBackground,
+      backgroundLore: formData.backgroundLore,
       ...(formData.avatarImage
         ? {
             avatarImage: formData.avatarImage,
@@ -238,6 +260,8 @@ export function useCharacterCreateForm() {
     fieldErrors,
     classPassive,
     racePassive,
+    backgroundProfile,
+    backgroundStartBonusLabel,
     raceAvatarOptions,
     hasRaceAvatars,
     activeAvatarIndex,

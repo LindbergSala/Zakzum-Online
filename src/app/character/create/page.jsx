@@ -4,6 +4,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import CharacterCreateForm from "@/components/character-create-form";
 import GameNav from "@/components/game-nav";
 import {
+  getCharacterBackgroundLabel,
   getCharacterClassLabel,
   getCharacterRaceLabel,
 } from "@/lib/character-data";
@@ -46,6 +47,10 @@ export default async function CharacterCreatePage() {
                 <strong>{getCharacterClassLabel(existingCharacter.characterClass)}</strong>{" "}
                 | Race:{" "}
                 <strong>{getCharacterRaceLabel(existingCharacter.characterRace)}</strong>{" "}
+                | Background:{" "}
+                <strong>
+                  {getCharacterBackgroundLabel(existingCharacter.characterBackground)}
+                </strong>{" "}
                 | Level: <strong>{existingCharacter.level}</strong>
               </p>
               <p className={styles.backLink}>
@@ -72,7 +77,7 @@ export default async function CharacterCreatePage() {
               Create Character
             </h1>
             <p className={styles.lead}>
-              Class selection and base stats come from your character base.
+              Class, race, and background shape your hero identity.
             </p>
           </header>
 
