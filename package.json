@@ -9,9 +9,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "tsx --tsconfig jsconfig.json --test \"tests/*.test.js\"",
-    "test:smoke": "tsx --tsconfig jsconfig.json --test tests/account-validation.test.js tests/character-validation.test.js tests/core-loop-validation.test.js tests/onboarding-claim-route.test.js tests/inventory-placement.test.js",
-    "test:inventory": "tsx --test tests/inventory-placement.test.js",
+    "test": "node --env-file-if-exists=.env ./node_modules/tsx/dist/cli.mjs --tsconfig jsconfig.json --test \"tests/*.test.js\"",
+    "test:smoke": "node --env-file-if-exists=.env ./node_modules/tsx/dist/cli.mjs --tsconfig jsconfig.json --test tests/account-validation.test.js tests/character-validation.test.js tests/core-loop-validation.test.js tests/onboarding-claim-route.test.js tests/inventory-placement.test.js",
+    "test:inventory": "node --env-file-if-exists=.env ./node_modules/tsx/dist/cli.mjs --test tests/inventory-placement.test.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "postinstall": "prisma generate"
@@ -28,17 +28,20 @@
   },
   "homepage": "https://github.com/LindbergSala/Zakzum-Online#readme",
   "dependencies": {
-    "@prisma/client": "^6.19.2",
+    "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/client": "^7.6.0",
     "bcryptjs": "^3.0.3",
     "next": "^16.2.1",
+    "pg": "^8.20.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "dotenv": "^17.3.1",
     "eslint": "^9.39.3",
     "eslint-config-next": "^16.2.1",
-    "prisma": "^6.19.2",
+    "prisma": "^7.6.0",
     "tsx": "^4.21.0"
   }
 }
