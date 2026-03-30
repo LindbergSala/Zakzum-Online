@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getItemImagePath, getItemSellValue } from "@/lib/items/helpers";
 import {
@@ -221,6 +221,8 @@ export default function Inventory({
   const [dragAnchor, setDragAnchor] = useState({ x: 0, y: 0 });
   const [feedback, setFeedback] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
+  const [quantityModal, setQuantityModal] = useState(null);
+  const [quantityInput, setQuantityInput] = useState("1");
 
   const cells = useMemo(
     () =>
@@ -237,6 +239,39 @@ export default function Inventory({
     () => backpackItems.filter((item) => item.stackable),
     [backpackItems],
   );
+
+  useEffect(() => {
+    if (!quantityModal) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [quantityModal]);
+
+  useEffect(() => {
+    if (!quantityModal) {
+      return undefined;
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape" && !isSyncing) {
+        event.preventDefault();
+        setQuantityModal(null);
+        setQuantityInput("1");
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isSyncing, quantityModal]);
 
   async function syncAfterDrop(syncAction) {
     const payload = toInventorySyncPayload(syncAction);
@@ -264,6 +299,124 @@ export default function Inventory({
     setEquipmentPreview(null);
     setSellPreview(false);
     setDragAnchor({ x: 0, y: 0 });
+  }
+
+  function openQuantityModal(modalConfig) {
+    setQuantityModal(modalConfig);
+    setQuantityInput(String(modalConfig.defaultQuantity));
+    setFeedback("");
+  }
+
+  function closeQuantityModal() {
+    if (isSyncing) {
+      return;
+    }
+
+    setQuantityModal(null);
+    setQuantityInput("1");
+  }
+
+  async function executeSellItem(item, sellQuantity) {
+    try {
+      setIsSyncing(true);
+      const data = await syncMarketSellAction({
+        action: "sell",
+        itemRecordId: item.id,
+        quantity: sellQuantity,
+      });
+      setFeedback(data.message ?? "Item sold.");
+      router.refresh();
+    } catch (error) {
+      setFeedback(error.message ?? "Market sell failed.");
+      router.refresh();
+    } finally {
+      setIsSyncing(false);
+    }
+  }
+
+  async function executeUseConsumable(item, useQuantity) {
+    try {
+      setIsSyncing(true);
+      const data = await syncInventoryAction({
+        action: "use",
+        itemRecordId: item.id,
+        quantity: useQuantity,
+      });
+      setFeedback(data.message ?? `${item.itemName} used.`);
+      router.refresh();
+    } catch (error) {
+      setFeedback(error.message ?? "Could not use consumable.");
+      router.refresh();
+    } finally {
+      setIsSyncing(false);
+    }
+  }
+
+  async function executeSplitStack(itemKey, splitQuantity) {
+    const splitResult = actions.splitStack({
+      itemKey,
+      splitQuantity,
+    });
+
+    if (!splitResult.ok) {
+      setFeedback(splitResult.reason ?? "Could not split stack.");
+      return;
+    }
+
+    await syncAfterDrop(splitResult.syncAction);
+  }
+
+  async function handleQuantityModalSubmit(event) {
+    event.preventDefault();
+
+    if (!quantityModal || isSyncing) {
+      return;
+    }
+
+    const item = state.itemsByKey[quantityModal.itemKey];
+
+    if (!item) {
+      setFeedback("Item is no longer available.");
+      setQuantityModal(null);
+      setQuantityInput("1");
+      return;
+    }
+
+    const parsedQuantity = Number.parseInt(quantityInput, 10);
+
+    if (!Number.isFinite(parsedQuantity)) {
+      setFeedback("Enter a valid quantity.");
+      return;
+    }
+
+    const maxByAction =
+      quantityModal.actionType === "split"
+        ? Math.max(1, item.quantity - 1)
+        : Math.max(1, item.quantity);
+
+    if (parsedQuantity < 1 || parsedQuantity > maxByAction) {
+      setFeedback(`Quantity must be between 1 and ${maxByAction}.`);
+      return;
+    }
+
+    const resolvedQuantity = parsedQuantity;
+
+    setQuantityModal(null);
+    setQuantityInput("1");
+
+    if (quantityModal.actionType === "sell") {
+      await executeSellItem(item, resolvedQuantity);
+      return;
+    }
+
+    if (quantityModal.actionType === "use") {
+      await executeUseConsumable(item, resolvedQuantity);
+      return;
+    }
+
+    if (quantityModal.actionType === "split") {
+      await executeSplitStack(item.key, resolvedQuantity);
+    }
   }
 
   function getBackpackDropTarget(event, item) {
@@ -488,46 +641,21 @@ export default function Inventory({
       return;
     }
 
-    let sellQuantity = 1;
-
     if (dragged.quantity > 1) {
-      const rawInput = window.prompt(
-        `Sell quantity for ${dragged.itemName} (1-${dragged.quantity}):`,
-        "1",
-      );
-
-      if (rawInput === null) {
-        resetDragState();
-        return;
-      }
-
-      const parsedQuantity = Number.parseInt(rawInput, 10);
-
-      if (!Number.isFinite(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > dragged.quantity) {
-        setFeedback("Invalid sell quantity.");
-        resetDragState();
-        return;
-      }
-
-      sellQuantity = parsedQuantity;
-    }
-
-    try {
-      setIsSyncing(true);
-      const data = await syncMarketSellAction({
-        action: "sell",
-        itemRecordId: dragged.id,
-        quantity: sellQuantity,
+      openQuantityModal({
+        actionType: "sell",
+        itemKey: dragged.key,
+        title: `Sell ${dragged.itemName}`,
+        description: `Choose how many to sell (1-${dragged.quantity}).`,
+        confirmLabel: "Sell",
+        defaultQuantity: 1,
       });
-      setFeedback(data.message ?? "Item sold.");
-      router.refresh();
-    } catch (error) {
-      setFeedback(error.message ?? "Market sell failed.");
-      router.refresh();
-    } finally {
-      setIsSyncing(false);
       resetDragState();
+      return;
     }
+
+    resetDragState();
+    await executeSellItem(dragged, 1);
   }
 
   async function handleUseConsumable(itemKey) {
@@ -537,43 +665,19 @@ export default function Inventory({
       return;
     }
 
-    let useQuantity = 1;
-
     if (item.quantity > 1) {
-      const rawInput = window.prompt(
-        `Use quantity for ${item.itemName} (1-${item.quantity}):`,
-        "1",
-      );
-
-      if (rawInput === null) {
-        return;
-      }
-
-      const parsedQuantity = Number.parseInt(rawInput, 10);
-
-      if (!Number.isFinite(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > item.quantity) {
-        setFeedback("Invalid use quantity.");
-        return;
-      }
-
-      useQuantity = parsedQuantity;
-    }
-
-    try {
-      setIsSyncing(true);
-      const data = await syncInventoryAction({
-        action: "use",
-        itemRecordId: item.id,
-        quantity: useQuantity,
+      openQuantityModal({
+        actionType: "use",
+        itemKey: item.key,
+        title: `Use ${item.itemName}`,
+        description: `Choose how many to use (1-${item.quantity}).`,
+        confirmLabel: "Use",
+        defaultQuantity: 1,
       });
-      setFeedback(data.message ?? `${item.itemName} used.`);
-      router.refresh();
-    } catch (error) {
-      setFeedback(error.message ?? "Could not use consumable.");
-      router.refresh();
-    } finally {
-      setIsSyncing(false);
+      return;
     }
+
+    await executeUseConsumable(item, 1);
   }
 
   async function handleSplitStack(itemKey) {
@@ -583,38 +687,22 @@ export default function Inventory({
       return;
     }
 
+    const maxSplitQuantity = Math.max(1, item.quantity - 1);
     const suggested = Math.max(1, Math.floor(item.quantity / 2));
-    const rawInput = window.prompt(
-      `Split quantity for ${item.itemName} (1-${item.quantity - 1}):`,
-      String(suggested),
-    );
 
-    if (rawInput === null) {
+    if (maxSplitQuantity === 1) {
+      await executeSplitStack(item.key, 1);
       return;
     }
 
-    const parsedQuantity = Number.parseInt(rawInput, 10);
-
-    if (
-      !Number.isFinite(parsedQuantity) ||
-      parsedQuantity < 1 ||
-      parsedQuantity >= item.quantity
-    ) {
-      setFeedback("Invalid split quantity.");
-      return;
-    }
-
-    const splitResult = actions.splitStack({
-      itemKey,
-      splitQuantity: parsedQuantity,
+    openQuantityModal({
+      actionType: "split",
+      itemKey: item.key,
+      title: `Split ${item.itemName}`,
+      description: `Choose split quantity (1-${maxSplitQuantity}).`,
+      confirmLabel: "Split",
+      defaultQuantity: suggested,
     });
-
-    if (!splitResult.ok) {
-      setFeedback(splitResult.reason ?? "Could not split stack.");
-      return;
-    }
-
-    await syncAfterDrop(splitResult.syncAction);
   }
 
   return (
@@ -766,6 +854,57 @@ export default function Inventory({
 
       {isSyncing ? <p className={styles.syncText}>Syncing inventory...</p> : null}
       {feedback ? <p className={styles.feedbackError}>{feedback}</p> : null}
+
+      {quantityModal ? (
+        <div
+          className={styles.quantityModalRoot}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="inventory-quantity-title"
+          onClick={closeQuantityModal}
+        >
+          <div className={styles.quantityModalBackdrop} />
+          <section
+            className={styles.quantityModalCard}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <p className={styles.quantityModalKicker}>Inventory action</p>
+            <h3 className={styles.quantityModalTitle} id="inventory-quantity-title">
+              {quantityModal.title}
+            </h3>
+            <p className={styles.quantityModalText}>{quantityModal.description}</p>
+            <form className={styles.quantityModalForm} onSubmit={handleQuantityModalSubmit}>
+              <label className={styles.quantityModalLabel} htmlFor="inventory-quantity-input">
+                Quantity
+              </label>
+              <input
+                id="inventory-quantity-input"
+                className={styles.quantityModalInput}
+                type="number"
+                min={1}
+                max={
+                  quantityModal.actionType === "split"
+                    ? Math.max(1, (state.itemsByKey[quantityModal.itemKey]?.quantity ?? 1) - 1)
+                    : Math.max(1, state.itemsByKey[quantityModal.itemKey]?.quantity ?? 1)
+                }
+                step={1}
+                value={quantityInput}
+                onChange={(event) => setQuantityInput(event.target.value)}
+                inputMode="numeric"
+                autoFocus
+              />
+              <div className={styles.quantityModalActions}>
+                <button type="submit" disabled={isSyncing}>
+                  {isSyncing ? "Processing..." : quantityModal.confirmLabel}
+                </button>
+                <button type="button" onClick={closeQuantityModal} disabled={isSyncing}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      ) : null}
     </section>
   );
 }

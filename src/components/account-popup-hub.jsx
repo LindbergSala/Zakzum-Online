@@ -40,6 +40,9 @@ export default function AccountPopupHub({
   hasCharacter,
   logDays = [],
   statisticsCards = [],
+  isLogTruncated = false,
+  totalLogCount = 0,
+  logEntryLimit = 0,
 }) {
   const [activeModal, setActiveModal] = useState("");
   const [activeLogIndex, setActiveLogIndex] = useState(0);
@@ -164,6 +167,11 @@ export default function AccountPopupHub({
         <p className={styles.dayMeta}>
           Day {activeLogIndex + 1} of {logDays.length}
         </p>
+        {isLogTruncated ? (
+          <p className={styles.dayMeta}>
+            Showing latest {logEntryLimit} entries ({totalLogCount} total).
+          </p>
+        ) : null}
         <ul className={styles.logList}>
           {(currentLogDay?.entries ?? []).map((entry) => (
             <li className={styles.logItem} key={entry.id}>

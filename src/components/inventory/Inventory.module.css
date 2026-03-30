@@ -476,6 +476,88 @@
   font-size: 0.8rem;
 }
 
+.quantityModalRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.quantityModalBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 6, 4, 0.68);
+}
+
+.quantityModalCard {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(194, 148, 101, 0.65);
+  background:
+    linear-gradient(
+      162deg,
+      rgba(53, 35, 20, 0.98) 0%,
+      rgba(31, 20, 12, 0.99) 100%
+    );
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 241, 217, 0.16);
+  padding: 0.9rem;
+}
+
+.quantityModalKicker {
+  margin: 0;
+  color: #d7b98f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quantityModalTitle {
+  margin: 0.2rem 0 0;
+  color: #f3dfc0;
+  font-size: 1.12rem;
+}
+
+.quantityModalText {
+  margin: 0.35rem 0 0;
+  color: #e4c8a2;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.quantityModalForm {
+  margin-top: 0.7rem;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.quantityModalLabel {
+  color: #f1ddbe;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.quantityModalInput {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(201, 160, 114, 0.46);
+  background: rgba(24, 15, 9, 0.8);
+  color: #f8ead2;
+  padding: 0.52rem 0.6rem;
+}
+
+.quantityModalActions {
+  margin-top: 0.2rem;
+  display: flex;
+  gap: 0.42rem;
+}
+
 @media (max-width: 980px) {
   .layout {
     grid-template-columns: 1fr;

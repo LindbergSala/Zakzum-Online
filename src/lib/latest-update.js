@@ -1,7 +1,6 @@
-import { execSync } from "node:child_process";
-
 const FALLBACK_UPDATE_MESSAGE = "No update message available yet.";
 const MAX_UPDATE_MESSAGE_LENGTH = 140;
+let cachedUpdateMessage = null;
 
 function sanitizeUpdateMessage(message) {
   const normalized = String(message ?? "")
@@ -30,20 +29,12 @@ function getMessageFromEnvironment() {
   return sanitizeUpdateMessage(envMessage);
 }
 
-function getMessageFromGit() {
-  try {
-    const latestCommitMessage = execSync("git log -1 --pretty=%s", {
-      stdio: ["ignore", "pipe", "ignore"],
-    })
-      .toString("utf8")
-      .trim();
-
-    return sanitizeUpdateMessage(latestCommitMessage);
-  } catch {
-    return "";
-  }
-}
-
 export function getLatestUpdateMessage() {
-  return getMessageFromEnvironment() || getMessageFromGit() || FALLBACK_UPDATE_MESSAGE;
+  if (cachedUpdateMessage !== null) {
+    return cachedUpdateMessage;
+  }
+
+  cachedUpdateMessage = getMessageFromEnvironment() || FALLBACK_UPDATE_MESSAGE;
+
+  return cachedUpdateMessage;
 }

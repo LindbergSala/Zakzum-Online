@@ -86,7 +86,7 @@ function resolveClientIp(request) {
     return realIp.trim();
   }
 
-  return "unknown";
+  return null;
 }
 
 function normalizeEmail(email) {
@@ -96,21 +96,25 @@ function normalizeEmail(email) {
 function buildIdentifierSet(request, email) {
   const ip = resolveClientIp(request);
   const normalizedEmail = normalizeEmail(email);
-  const ipHash = hashIdentifier(ip);
   const emailHash = hashIdentifier(normalizedEmail);
-
-  return [
-    {
-      id: buildRateLimitId(RATE_LIMIT_SCOPE.IP, ipHash),
-      scope: RATE_LIMIT_SCOPE.IP,
-      identifierHash: ipHash,
-    },
+  const identifierSet = [
     {
       id: buildRateLimitId(RATE_LIMIT_SCOPE.EMAIL, emailHash),
       scope: RATE_LIMIT_SCOPE.EMAIL,
       identifierHash: emailHash,
     },
   ];
+
+  if (ip) {
+    const ipHash = hashIdentifier(ip);
+    identifierSet.unshift({
+      id: buildRateLimitId(RATE_LIMIT_SCOPE.IP, ipHash),
+      scope: RATE_LIMIT_SCOPE.IP,
+      identifierHash: ipHash,
+    });
+  }
+
+  return identifierSet;
 }
 
 function resolveActiveBlock(records, config, now) {
@@ -207,6 +211,14 @@ export async function checkLoginRateLimit(request, email) {
   const identifierSet = buildIdentifierSet(request, email);
   const ids = identifierSet.map((entry) => entry.id);
   const now = new Date();
+
+  if (ids.length === 0) {
+    return {
+      blocked: false,
+      retryAfterSeconds: 0,
+      identifierSet: [],
+    };
+  }
 
   await clearExpiredBlocks(ids, now);
 

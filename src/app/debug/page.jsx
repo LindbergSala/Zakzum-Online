@@ -47,7 +47,11 @@ function buildTopActions(entries) {
 }
 
 export default async function DebugPage() {
-  if (process.env.NODE_ENV === "production") {
+  const isDebugPageEnabled =
+    process.env.NODE_ENV === "development" &&
+    process.env.DEBUG_PAGE_ENABLED === "1";
+
+  if (!isDebugPageEnabled) {
     notFound();
   }
 

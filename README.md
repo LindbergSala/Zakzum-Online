@@ -29,6 +29,7 @@ Open `http://localhost:3000`.
 - `npm run dev`: start development server.
 - `npm run lint`: run ESLint.
 - `npm test`: run full test suite.
+- `npm run test:smoke`: run fast pre-demo smoke tests for core flows.
 - `npm run build`: production build check.
 - `npm run prisma:generate`: regenerate Prisma client.
 - `npm run prisma:push`: push schema changes to your database.
@@ -51,6 +52,8 @@ Optional:
 
 - `PRISMA_LOG_QUERIES`: set to `1` or `true` in development to log SQL.
 - `APP_ORIGIN`: allowed origin(s) for write-request origin checks (comma-separated).
+- `DEBUG_PAGE_ENABLED`: set to `1` to enable `/debug` in development.
+- `LATEST_COMMIT_MESSAGE`: optional home page update message shown under “Latest update”.
 - `LOGIN_RATE_LIMIT_WINDOW_MS`
 - `LOGIN_RATE_LIMIT_IP_MAX_FAILURES`
 - `LOGIN_RATE_LIMIT_EMAIL_MAX_FAILURES`

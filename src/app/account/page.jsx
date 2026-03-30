@@ -18,6 +18,7 @@ const bodyFont = Source_Sans_3({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 });
+const ACCOUNT_LOG_ENTRY_LIMIT = 300;
 
 const DAY_KEY_FORMATTER = new Intl.DateTimeFormat("sv-SE", {
   timeZone: "Europe/Stockholm",
@@ -235,28 +236,35 @@ export default async function AccountPage() {
   const userWithCharacter = await getUserWithResolvedActiveCharacter(user.id);
   const character = userWithCharacter?.activeCharacter ?? null;
 
-  const allEntries = character
-    ? await prisma.activityLog.findMany({
-        where: { characterId: character.id },
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          type: true,
-          activityName: true,
-          success: true,
-          energyCost: true,
-          roll: true,
-          rollTotal: true,
-          successTarget: true,
-          delta: true,
-          details: true,
-          createdAt: true,
-        },
-      })
-    : [];
+  const [logEntryCount, allEntries] = character
+    ? await Promise.all([
+        prisma.activityLog.count({
+          where: { characterId: character.id },
+        }),
+        prisma.activityLog.findMany({
+          where: { characterId: character.id },
+          orderBy: { createdAt: "desc" },
+          take: ACCOUNT_LOG_ENTRY_LIMIT,
+          select: {
+            id: true,
+            type: true,
+            activityName: true,
+            success: true,
+            energyCost: true,
+            roll: true,
+            rollTotal: true,
+            successTarget: true,
+            delta: true,
+            details: true,
+            createdAt: true,
+          },
+        }),
+      ])
+    : [0, []];
 
   const logDays = buildLogDays(allEntries);
   const statisticsCards = buildStatisticsCards(allEntries, character);
+  const isLogTruncated = logEntryCount > ACCOUNT_LOG_ENTRY_LIMIT;
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -278,6 +286,9 @@ export default async function AccountPage() {
               hasCharacter={Boolean(character)}
               logDays={logDays}
               statisticsCards={statisticsCards}
+              isLogTruncated={isLogTruncated}
+              totalLogCount={logEntryCount}
+              logEntryLimit={ACCOUNT_LOG_ENTRY_LIMIT}
             />
           </section>
 
