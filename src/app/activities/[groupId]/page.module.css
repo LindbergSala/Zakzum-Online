@@ -13,7 +13,7 @@
       rgba(42, 27, 12, 0.5) 45%,
       rgba(31, 20, 9, 0.64) 100%
     ),
-    url("/images/game/worldmap.png");
+    url("/images/backgrounds/Zakzum.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -28,7 +28,7 @@
       rgba(55, 33, 16, 0.48) 46%,
       rgba(31, 20, 10, 0.62) 100%
     ),
-    url("/images/game/Tavern.png");
+    url("/images/backgrounds/Tavern.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -43,7 +43,7 @@
       rgba(35, 43, 30, 0.52) 50%,
       rgba(18, 23, 16, 0.66) 100%
     ),
-    url("/images/game/Adventure.png");
+    url("/images/backgrounds/Adventure.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -58,7 +58,7 @@
       rgba(59, 20, 17, 0.54) 44%,
       rgba(28, 9, 8, 0.68) 100%
     ),
-    url("/images/game/Arena.png");
+    url("/images/backgrounds/Arena.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -482,3 +482,4 @@
     transform: none;
   }
 }
+

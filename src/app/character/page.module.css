@@ -13,7 +13,7 @@
       rgba(42, 27, 12, 0.5) 45%,
       rgba(31, 20, 9, 0.64) 100%
     ),
-    url("/images/game/Character.png");
+    url("/images/backgrounds/Character.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -601,3 +601,4 @@
     transform: none;
   }
 }
+

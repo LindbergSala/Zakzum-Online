@@ -17,7 +17,7 @@
       rgba(42, 27, 12, 0.5) 45%,
       rgba(31, 20, 9, 0.64) 100%
     ),
-    url("/images/game/worldmap.png");
+    url("/images/backgrounds/Zakzum.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -36,7 +36,7 @@
       rgba(38, 27, 18, 0.56) 45%,
       rgba(24, 17, 11, 0.66) 100%
     ),
-    url("/images/game/market.jpg");
+    url("/images/backgrounds/market.jpg");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -55,7 +55,7 @@
       rgba(34, 24, 18, 0.56) 45%,
       rgba(22, 15, 11, 0.68) 100%
     ),
-    url("/images/game/Blacksmith.png");
+    url("/images/backgrounds/Blacksmith.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -74,7 +74,7 @@
       rgba(30, 24, 34, 0.58) 45%,
       rgba(18, 14, 19, 0.68) 100%
     ),
-    url("/images/game/Alchemist.png");
+    url("/images/backgrounds/Alchemist.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -93,7 +93,7 @@
       rgba(28, 25, 39, 0.6) 45%,
       rgba(16, 15, 25, 0.7) 100%
     ),
-    url("/images/game/Arcanist.png");
+    url("/images/backgrounds/Arcanist.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -112,7 +112,7 @@
       rgba(34, 22, 17, 0.62) 45%,
       rgba(18, 12, 10, 0.72) 100%
     ),
-    url("/images/game/Bazaar.png");
+    url("/images/backgrounds/Bazaar.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -131,7 +131,7 @@
       rgba(30, 25, 20, 0.62) 45%,
       rgba(18, 16, 12, 0.7) 100%
     ),
-    url("/images/game/Trophy.png");
+    url("/images/backgrounds/Trophy.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -150,7 +150,7 @@
       rgba(31, 24, 19, 0.58) 45%,
       rgba(20, 15, 12, 0.7) 100%
     ),
-    url("/images/game/Leathermaker.jpg");
+    url("/images/backgrounds/Leathermaker.jpg");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -537,3 +537,4 @@
     transform: none;
   }
 }
+
