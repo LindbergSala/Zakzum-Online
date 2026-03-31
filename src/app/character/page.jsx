@@ -12,7 +12,10 @@ import {
   getUserWithResolvedActiveCharacter,
 } from "@/lib/character";
 import { getResolvedCharacterAvatar } from "@/lib/character-avatars";
-import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
+import {
+  getEnergyRegenerationMeta,
+  getHpRegenerationMeta,
+} from "@/lib/energy-regeneration";
 import { getItemById } from "@/lib/items/helpers";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
@@ -132,6 +135,9 @@ export default async function CharacterPage() {
   const energyMeta = character
     ? getEnergyRegenerationMeta(character)
     : null;
+  const hpMeta = character
+    ? getHpRegenerationMeta(character)
+    : null;
   const maxResources = character ? getCharacterMaxResources(character) : null;
   const hpPercent = maxResources
     ? clampPercent((character.hp / maxResources.maxHp) * 100)
@@ -216,7 +222,17 @@ export default async function CharacterPage() {
             <div className={styles.resourceMeters}>
               <article className={styles.resourceCard}>
                 <div className={styles.resourceTop}>
-                  <p className={styles.resourceLabel}>HP</p>
+                  <p className={styles.resourceLabel}>
+                    HP{" "}
+                    <EnergyTimer
+                      key={hpMeta?.nextHpAt ?? "hp-full-inline-character"}
+                      resourceMeta={hpMeta}
+                      resourceLabel="HP"
+                      showDepletedNotice
+                      variant="inline"
+                      className={styles.resourceLabelMeta}
+                    />
+                  </p>
                   <p className={styles.resourceValue}>
                     {character.hp}/{maxResources.maxHp}
                   </p>

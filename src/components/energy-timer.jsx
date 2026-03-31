@@ -10,15 +10,67 @@ function formatCountdown(secondsLeft) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-export default function EnergyTimer({ energyMeta, variant = "block", className = "" }) {
+function getSecondsUntilNext(meta) {
+  if (!meta || typeof meta !== "object") {
+    return 0;
+  }
+
+  if (typeof meta.secondsUntilNext === "number") {
+    return meta.secondsUntilNext;
+  }
+
+  if (typeof meta.secondsUntilNextEnergy === "number") {
+    return meta.secondsUntilNextEnergy;
+  }
+
+  if (typeof meta.secondsUntilNextHp === "number") {
+    return meta.secondsUntilNextHp;
+  }
+
+  return 0;
+}
+
+function getCurrentValue(meta) {
+  if (!meta || typeof meta !== "object") {
+    return 0;
+  }
+
+  if (typeof meta.currentValue === "number") {
+    return meta.currentValue;
+  }
+
+  if (typeof meta.currentEnergy === "number") {
+    return meta.currentEnergy;
+  }
+
+  if (typeof meta.currentHp === "number") {
+    return meta.currentHp;
+  }
+
+  return 0;
+}
+
+export default function EnergyTimer({
+  energyMeta,
+  resourceMeta = null,
+  resourceLabel = "Energy",
+  showDepletedNotice = false,
+  variant = "block",
+  className = "",
+}) {
+  const meta = resourceMeta ?? energyMeta;
   const router = useRouter();
   const refreshTriggeredRef = useRef(false);
   const [secondsLeft, setSecondsLeft] = useState(() =>
-    energyMeta?.secondsUntilNextEnergy ?? 0,
+    getSecondsUntilNext(meta),
   );
 
   useEffect(() => {
-    if (energyMeta?.isFull) {
+    setSecondsLeft(getSecondsUntilNext(meta));
+  }, [meta]);
+
+  useEffect(() => {
+    if (meta?.isFull) {
       return undefined;
     }
 
@@ -27,7 +79,7 @@ export default function EnergyTimer({ energyMeta, variant = "block", className =
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [energyMeta?.isFull]);
+  }, [meta?.isFull]);
 
   useEffect(() => {
     if (secondsLeft > 0) {
@@ -36,37 +88,47 @@ export default function EnergyTimer({ energyMeta, variant = "block", className =
   }, [secondsLeft]);
 
   useEffect(() => {
-    if (energyMeta?.isFull || secondsLeft > 0 || refreshTriggeredRef.current) {
+    if (meta?.isFull || secondsLeft > 0 || refreshTriggeredRef.current) {
       return;
     }
 
     refreshTriggeredRef.current = true;
     router.refresh();
-  }, [energyMeta?.isFull, secondsLeft, router]);
+  }, [meta?.isFull, secondsLeft, router]);
 
-  if (!energyMeta) {
+  if (!meta) {
     return null;
   }
 
-  const timerText = energyMeta.isFull
-    ? "Next Energy: Full"
-    : `Next Energy: in ${formatCountdown(secondsLeft)}`;
+  const timerText = meta.isFull
+    ? `Next ${resourceLabel}: Full`
+    : `Next ${resourceLabel}: in ${formatCountdown(secondsLeft)}`;
+  const isDepleted = !meta.isFull && getCurrentValue(meta) <= 0;
+  const depletedNotice = `${resourceLabel} is at 0 and recovering.`;
 
   if (variant === "inline") {
-    return <span className={className}>{timerText}</span>;
+    return (
+      <span className={className}>
+        {timerText}
+        {showDepletedNotice && isDepleted ? ` | ${depletedNotice}` : ""}
+      </span>
+    );
   }
 
-  if (energyMeta.isFull) {
+  if (meta.isFull) {
     return (
       <p>
-        <strong>Next Energy:</strong> Full
+        <strong>Next {resourceLabel}:</strong> Full
       </p>
     );
   }
 
   return (
-    <p>
-      <strong>Next Energy:</strong> in {formatCountdown(secondsLeft)}
-    </p>
+    <>
+      <p>
+        <strong>Next {resourceLabel}:</strong> in {formatCountdown(secondsLeft)}
+      </p>
+      {showDepletedNotice && isDepleted ? <p>{depletedNotice}</p> : null}
+    </>
   );
 }

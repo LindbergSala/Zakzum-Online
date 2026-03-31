@@ -12,7 +12,10 @@ import {
   buildBaseResourcesForCharacter,
   getUserWithResolvedActiveCharacter,
 } from "@/lib/character";
-import { getEnergyRegenerationMeta } from "@/lib/energy-regeneration";
+import {
+  getEnergyRegenerationMeta,
+  getHpRegenerationMeta,
+} from "@/lib/energy-regeneration";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import {
   buildOnboardingViewModel,
@@ -171,6 +174,9 @@ export default async function DashboardPage() {
   const energyMeta = effectiveCharacter
     ? getEnergyRegenerationMeta(effectiveCharacter)
     : null;
+  const hpMeta = effectiveCharacter
+    ? getHpRegenerationMeta(effectiveCharacter)
+    : null;
   const levelProgress = effectiveCharacter
     ? getLevelProgressMeta(effectiveCharacter.level, effectiveCharacter.xp)
     : null;
@@ -254,7 +260,17 @@ export default async function DashboardPage() {
                 <div className={styles.resourceMeters}>
                   <article className={styles.resourceCard}>
                     <div className={styles.resourceTop}>
-                      <p className={styles.resourceLabel}>HP</p>
+                      <p className={styles.resourceLabel}>
+                        HP{" "}
+                        <EnergyTimer
+                          key={hpMeta?.nextHpAt ?? "hp-full-inline-dashboard"}
+                          resourceMeta={hpMeta}
+                          resourceLabel="HP"
+                          showDepletedNotice
+                          variant="inline"
+                          className={styles.resourceLabelMeta}
+                        />
+                      </p>
                       <p className={styles.resourceValue}>
                         {effectiveCharacter.hp}/{maxResources.maxHp}
                       </p>

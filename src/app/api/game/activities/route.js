@@ -416,6 +416,17 @@ export async function POST(request) {
         };
       }
 
+      if ((Number(latestCharacter.hp) || 0) <= 0) {
+        return {
+          ok: false,
+          status: 400,
+          message: "Not enough HP. Required at least 1, you have 0.",
+          requiredHp: 1,
+          currentHp: Number(latestCharacter.hp) || 0,
+          resources: getCharacterResourceSnapshot(latestCharacter),
+        };
+      }
+
       const ownedItems = await tx.characterItem.findMany({
         where: {
           characterId: latestCharacter.id,
@@ -668,6 +679,9 @@ export async function POST(request) {
         {
           message: result.message,
           requiredEnergy: result.requiredEnergy,
+          currentEnergy: result.currentEnergy,
+          requiredHp: result.requiredHp,
+          currentHp: result.currentHp,
           resources: result.resources,
         },
         { status: result.status },
