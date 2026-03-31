@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
@@ -21,6 +22,22 @@ const bodyFont = Source_Sans_3({
   weight: ["400", "600", "700"],
 });
 
+const QUEST_ACTIVITY_IMAGE_BY_TIER = {
+  1: "/images/activities/quest/heartlands/Quest_I.png",
+  2: "/images/activities/quest/heartlands/Quest_II.png",
+  3: "/images/activities/quest/heartlands/Quest_III.png",
+  4: "/images/activities/quest/heartlands/Quest_IV.png",
+  5: "/images/activities/quest/heartlands/Quest_V.png",
+};
+
+function getActivityIllustrationSrc(activity) {
+  if (!activity || activity.groupId !== "quest") {
+    return null;
+  }
+
+  return QUEST_ACTIVITY_IMAGE_BY_TIER[activity.tier] ?? null;
+}
+
 export default async function ActivityRunPage({ params }) {
   const resolvedParams = await params;
   const activity = ACTIVITY_DEFINITION_MAP[resolvedParams.activityId];
@@ -41,6 +58,7 @@ export default async function ActivityRunPage({ params }) {
       : activity.groupId === "adventure"
         ? "/adventure"
         : `/activities/${activity.groupId ?? activity.id}`;
+  const activityIllustrationSrc = getActivityIllustrationSrc(activity);
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -62,6 +80,19 @@ export default async function ActivityRunPage({ params }) {
               </p>
             ) : null}
           </header>
+
+          {activityIllustrationSrc ? (
+            <div className={styles.activityIllustrationFrame}>
+              <Image
+                src={activityIllustrationSrc}
+                alt={`${activity.name} illustration`}
+                width={1600}
+                height={900}
+                className={styles.activityIllustrationImage}
+                priority
+              />
+            </div>
+          ) : null}
 
           <section className={styles.panel}>
             {activeCharacter ? (

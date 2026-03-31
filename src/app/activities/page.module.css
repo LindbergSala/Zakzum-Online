@@ -150,6 +150,27 @@
   color: var(--ink-soft);
 }
 
+.activityIllustrationFrame {
+  margin-top: 0.95rem;
+  border-radius: 14px;
+  border: 1px solid rgba(103, 64, 35, 0.32);
+  background:
+    linear-gradient(165deg, rgba(45, 30, 18, 0.84) 0%, rgba(26, 17, 10, 0.92) 100%);
+  overflow: hidden;
+  box-shadow:
+    0 14px 24px rgba(31, 18, 8, 0.22),
+    inset 0 1px 0 rgba(255, 245, 218, 0.18);
+}
+
+.activityIllustrationImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: min(44dvh, 420px);
+  object-fit: cover;
+  border-radius: inherit;
+}
+
 .panel {
   margin-top: 1.05rem;
   border-radius: 14px;
