@@ -12,6 +12,11 @@ import { usePathname } from "next/navigation";
 
 const StartPageMusicContext = createContext(null);
 const MARKET_MUSIC_PATH = "/audio/music/Market.wav";
+const DEFAULT_MUSIC_VOLUME = 0.62;
+
+function clampVolume(value) {
+  return Math.min(1, Math.max(0, value));
+}
 
 function resolveTrackByPathname(pathname, fallbackSrc) {
   if (typeof pathname === "string" && pathname.startsWith("/market")) {
@@ -26,6 +31,7 @@ export default function StartPageMusic({ src, children }) {
   const audioRef = useRef(null);
   const [enabled, setEnabled] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(DEFAULT_MUSIC_VOLUME);
   const [trackOverride, setTrackOverride] = useState(null);
   const routeTrack = resolveTrackByPathname(pathname, src);
   const activeSrc = trackOverride ?? routeTrack;
@@ -42,6 +48,27 @@ export default function StartPageMusic({ src, children }) {
   const clearMusicTrackOverride = useCallback(() => {
     setTrackOverride(null);
   }, []);
+
+  const setMusicVolume = useCallback((nextVolume) => {
+    const numericVolume = Number(nextVolume);
+    if (!Number.isFinite(numericVolume)) {
+      return;
+    }
+
+    setVolume(clampVolume(numericVolume));
+  }, []);
+
+  const setMusicVolumePercent = useCallback(
+    (nextPercent) => {
+      const numericPercent = Number(nextPercent);
+      if (!Number.isFinite(numericPercent)) {
+        return;
+      }
+
+      setMusicVolume(clampVolume(numericPercent / 100));
+    },
+    [setMusicVolume],
+  );
 
   const tryPlay = useCallback(async () => {
     const audio = audioRef.current;
@@ -92,6 +119,15 @@ export default function StartPageMusic({ src, children }) {
 
   useEffect(() => {
     const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+
+    audio.volume = clampVolume(volume);
+  }, [volume]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
 
     if (!audio || !enabled) {
       return;
@@ -137,10 +173,15 @@ export default function StartPageMusic({ src, children }) {
 
   const isActive = enabled && isPlaying;
   const buttonLabel = isActive ? "Stang av musik" : "Starta musik";
+  const volumePercent = Math.round(clampVolume(volume) * 100);
   const contextValue = {
     isActive,
     buttonLabel,
+    volume,
+    volumePercent,
     toggleMusic,
+    setVolume: setMusicVolume,
+    setVolumePercent: setMusicVolumePercent,
     setTrackOverride: setMusicTrackOverride,
     clearTrackOverride: clearMusicTrackOverride,
   };
@@ -171,6 +212,37 @@ export function MusicToggleButton({ className }) {
     >
       🎻
     </button>
+  );
+}
+
+export function MusicVolumeControl({
+  className,
+  labelClassName,
+  inputClassName,
+}) {
+  const music = useContext(StartPageMusicContext);
+
+  if (!music) {
+    return null;
+  }
+
+  return (
+    <div className={className}>
+      <span className={labelClassName} aria-hidden="true">
+        Vol
+      </span>
+      <input
+        className={inputClassName}
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        value={music.volumePercent}
+        onChange={(event) => music.setVolumePercent(event.target.value)}
+        aria-label={`Musikvolym ${music.volumePercent}%`}
+        title={`Musikvolym ${music.volumePercent}%`}
+      />
+    </div>
   );
 }
 

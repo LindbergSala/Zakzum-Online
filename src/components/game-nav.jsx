@@ -1,6 +1,9 @@
 import Link from "next/link";
 
-import { MusicToggleButton } from "@/components/audio/start-page-music";
+import {
+  MusicToggleButton,
+  MusicVolumeControl,
+} from "@/components/audio/start-page-music";
 import LogoutButton from "@/components/logout-button";
 import styles from "./game-nav.module.css";
 
@@ -29,6 +32,11 @@ export default function GameNav() {
         ))}
       </nav>
       <div className={styles.logoutWrap}>
+        <MusicVolumeControl
+          className={styles.volumeWrap}
+          labelClassName={styles.volumeLabel}
+          inputClassName={styles.volumeSlider}
+        />
         <MusicToggleButton className={`music-toggle-button ${styles.musicButton}`} />
         <LogoutButton />
       </div>
