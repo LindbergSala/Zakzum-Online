@@ -18,6 +18,7 @@ function createCommonDependencies(overrides = {}) {
       successfulActivityCount: 1,
       shopActionCount: 1,
       equipActionCount: 0,
+      hasViewedZakzumLore: true,
       hasClaimedOnboardingReward: false,
     }),
     maybeGrantOnboardingCompletionReward: async () => ({ granted: true }),
@@ -32,10 +33,11 @@ test("claim route blocks reward claim before onboarding completion", async () =>
     createCommonDependencies({
       getOnboardingMetricsForCharacter: async () => ({
         hasCharacter: true,
-        activityRunCount: 0,
-        successfulActivityCount: 0,
-        shopActionCount: 0,
+        activityRunCount: 1,
+        successfulActivityCount: 1,
+        shopActionCount: 1,
         equipActionCount: 0,
+        hasViewedZakzumLore: false,
         hasClaimedOnboardingReward: false,
       }),
       maybeGrantOnboardingCompletionReward: async () => {
@@ -63,6 +65,7 @@ test("claim route returns already claimed when reward was claimed earlier", asyn
         successfulActivityCount: 1,
         shopActionCount: 1,
         equipActionCount: 0,
+        hasViewedZakzumLore: true,
         hasClaimedOnboardingReward: true,
       }),
       maybeGrantOnboardingCompletionReward: async () => {
@@ -91,6 +94,7 @@ test("concurrent route claims resolve to one granted reward", async () => {
         successfulActivityCount: 1,
         shopActionCount: 1,
         equipActionCount: 0,
+        hasViewedZakzumLore: true,
         hasClaimedOnboardingReward: false,
       }),
       maybeGrantOnboardingCompletionReward: async () => {

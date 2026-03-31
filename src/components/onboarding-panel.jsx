@@ -106,20 +106,29 @@ export default function OnboardingPanel({ model }) {
         <div className={styles.nextStepCard}>
           <p className={styles.stepLabel}>Next recommended action</p>
           <p className={styles.stepValue}>{model.nextStep}</p>
-          {showRewardClaim ? (
-            <button
-              type="button"
-              className={styles.primaryActionButton}
-              onClick={handleClaimReward}
-              disabled={isClaiming}
-            >
-              {isClaiming ? "Claiming..." : "Claim Reward"}
-            </button>
-          ) : (
-            <Link className={styles.primaryAction} href={model.primaryAction.href}>
-              {model.primaryAction.label}
-            </Link>
-          )}
+          <div className={styles.actionRow}>
+            {showRewardClaim ? (
+              <button
+                type="button"
+                className={styles.primaryActionButton}
+                onClick={handleClaimReward}
+                disabled={isClaiming}
+              >
+                {isClaiming ? "Claiming..." : "Claim Reward"}
+              </button>
+            ) : (
+              <>
+                <Link className={styles.primaryAction} href={model.primaryAction.href}>
+                  {model.primaryAction.label}
+                </Link>
+                {model.secondaryAction ? (
+                  <Link className={styles.secondaryAction} href={model.secondaryAction.href}>
+                    {model.secondaryAction.label}
+                  </Link>
+                ) : null}
+              </>
+            )}
+          </div>
           {claimError ? (
             <p className={styles.claimError} aria-live="polite">
               {claimError}

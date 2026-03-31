@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import styles from "./zakzum-map-explorer.module.css";
 import { REGION_REGION_LINK_HOTSPOTS } from "@/lib/zakzum-map-hotspots";
@@ -121,6 +121,7 @@ export default function ZakzumMapExplorer({
   const regionMapWrapRef = useRef(null);
   const [activeRegionId, setActiveRegionId] = useState(null);
   const [activeLocationId, setActiveLocationId] = useState(null);
+  const [hasLoggedLoreStep, setHasLoggedLoreStep] = useState(false);
 
   const activeRegion = useMemo(
     () => regions.find((entry) => entry.id === activeRegionId) ?? null,
@@ -257,6 +258,43 @@ export default function ZakzumMapExplorer({
   const activeLoreText = activeLocation
     ? activeLocation.lore ?? getFallbackLore(activeLocation.name, activeRegion?.name ?? "Zakzum")
     : "";
+
+  useEffect(() => {
+    if (!activeLocation || hasLoggedLoreStep) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    async function markLoreStepCompleted() {
+      try {
+        const response = await fetch("/api/game/onboarding/complete-lore", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            regionId: activeRegion?.id ?? "",
+            regionName: activeRegion?.name ?? "",
+            locationId: activeLocation.id,
+            locationName: activeLocation.name,
+          }),
+        });
+
+        if (response.ok && !isCancelled) {
+          setHasLoggedLoreStep(true);
+        }
+      } catch {
+        // Keep silent. The action can be retried next time the player opens a lore overlay.
+      }
+    }
+
+    void markLoreStepCompleted();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeLocation, activeRegion, hasLoggedLoreStep]);
 
   const openRegion = (regionId) => {
     setActiveRegionId(regionId);

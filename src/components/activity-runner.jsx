@@ -252,95 +252,102 @@ export default function ActivityRunner({ activity }) {
           </div>
 
           <p>
-            <strong>Result:</strong>{" "}
-            {lastResult.success ? "SUCCESS" : "FAIL"}
-          </p>
-          <p>
-            <strong>Energy cost:</strong> {lastResult.energyCost}
-          </p>
-          <p>
-            <strong>Roll:</strong> {lastResult.roll.value} + bonus{" "}
-            {lastResult.roll.totalRollBonus ?? lastResult.roll.statModifier} ={" "}
-            {lastResult.roll.total} (target{" "}
-            {lastResult.roll.target}, chance {lastResult.roll.chancePercent}%)
-          </p>
-          {typeof lastResult.roll.baseTarget === "number" ? (
-            <p>
-              <strong>Target breakdown:</strong> Base {lastResult.roll.baseTarget} + Level scaling{" "}
-              {lastResult.roll.difficultyLevelScaling ?? 0}
-            </p>
-          ) : null}
-          <p>
-            <strong>Bonus breakdown:</strong> Primary x2{" "}
-            {lastResult.roll.primaryContribution ?? "-"} + Secondary{" "}
-            {lastResult.roll.secondaryContribution ?? "-"} + Level{" "}
-            {lastResult.roll.levelContribution ?? lastResult.roll.levelModifier} + Passive{" "}
-            {lastResult.roll.passiveRollModifier}
-            {typeof lastResult.roll.itemRollModifier === "number"
-              ? ` + Item ${lastResult.roll.itemRollModifier}`
-              : ""}
-            {typeof lastResult.roll.totalPassiveRollModifier === "number"
-              ? ` (total ${lastResult.roll.totalPassiveRollModifier})`
-              : ""}
-          </p>
-          <p>
-            <strong>Stats in roll:</strong>{" "}
-            {formatStatWithBonus(lastResult.roll.primaryStat, lastResult.stats)} and{" "}
-            {formatStatWithBonus(lastResult.roll.secondaryStat, lastResult.stats)}
-          </p>
-          <p>
             <strong>Progression:</strong> Level {lastResult.progression.levelAfter} | XP{" "}
             {lastResult.progression.xp.xp} / next level at{" "}
             {lastResult.progression.xp.nextLevelXpTarget}
             {lastResult.progression.leveledUp ? " | LEVEL UP!" : ""}
           </p>
           <p>
-            <strong>Class passive:</strong>{" "}
-            {lastResult.classIdentity.passive.name} -{" "}
-            {lastResult.classIdentity.passive.description}
-          </p>
-          <p>
-            <strong>Class effect this action:</strong>{" "}
-            Roll +{lastResult.classIdentity.passiveRollModifier},{" "}
-            Energy cost reduction{" "}
-            {lastResult.classIdentity.passiveEnergyCostReduction ?? 0},{" "}
-            {formatDeltaBonus(lastResult.classIdentity.passiveDeltaBonus)}
-          </p>
-          {lastResult.raceIdentity ? (
-            <>
-              <p>
-                <strong>Racial passive:</strong>{" "}
-                {lastResult.raceIdentity.passive.name} -{" "}
-                {lastResult.raceIdentity.passive.description}
-              </p>
-              <p>
-                <strong>Racial effect this action:</strong>{" "}
-                Roll +{lastResult.raceIdentity.passiveRollModifier ?? 0},{" "}
-                {formatDeltaBonus(lastResult.raceIdentity.passiveDeltaBonus)}
-                {lastResult.raceIdentity.halfOrcRelentlessTriggered
-                  ? " | Relentless triggered (survived at 1 HP)."
-                  : ""}
-              </p>
-            </>
-          ) : null}
-          {lastResult.itemIdentity ? (
-            <p>
-              <strong>Item effect this action:</strong>{" "}
-              Roll +{lastResult.itemIdentity.passiveRollModifier ?? 0},{" "}
-              {formatDeltaBonus(lastResult.itemIdentity.passiveDeltaBonus)}
-            </p>
-          ) : null}
-          <p>
-            <strong>Reward/Penalty (delta):</strong>{" "}
-            {formatDelta(lastResult.delta)}
-          </p>
-          <p>
-            <strong>Loot:</strong> {formatLoot(lastResult.loot)}
-          </p>
-          <p>
-            <strong>New totals:</strong>{" "}
+            <strong>Resources now:</strong>{" "}
             {formatTotals(lastResult.totals?.after)}
           </p>
+          <details className="action-result-details">
+            <summary className="action-result-details-summary">
+              Show technical breakdown
+            </summary>
+            <div className="action-result-details-body">
+              <p>
+                <strong>Result:</strong>{" "}
+                {lastResult.success ? "SUCCESS" : "FAIL"}
+              </p>
+              <p>
+                <strong>Energy cost:</strong> {lastResult.energyCost}
+              </p>
+              <p>
+                <strong>Roll:</strong> {lastResult.roll.value} + bonus{" "}
+                {lastResult.roll.totalRollBonus ?? lastResult.roll.statModifier} ={" "}
+                {lastResult.roll.total} (target{" "}
+                {lastResult.roll.target}, chance {lastResult.roll.chancePercent}%)
+              </p>
+              {typeof lastResult.roll.baseTarget === "number" ? (
+                <p>
+                  <strong>Target breakdown:</strong> Base {lastResult.roll.baseTarget} + Level scaling{" "}
+                  {lastResult.roll.difficultyLevelScaling ?? 0}
+                </p>
+              ) : null}
+              <p>
+                <strong>Bonus breakdown:</strong> Primary x2{" "}
+                {lastResult.roll.primaryContribution ?? "-"} + Secondary{" "}
+                {lastResult.roll.secondaryContribution ?? "-"} + Level{" "}
+                {lastResult.roll.levelContribution ?? lastResult.roll.levelModifier} + Passive{" "}
+                {lastResult.roll.passiveRollModifier}
+                {typeof lastResult.roll.itemRollModifier === "number"
+                  ? ` + Item ${lastResult.roll.itemRollModifier}`
+                  : ""}
+                {typeof lastResult.roll.totalPassiveRollModifier === "number"
+                  ? ` (total ${lastResult.roll.totalPassiveRollModifier})`
+                  : ""}
+              </p>
+              <p>
+                <strong>Stats in roll:</strong>{" "}
+                {formatStatWithBonus(lastResult.roll.primaryStat, lastResult.stats)} and{" "}
+                {formatStatWithBonus(lastResult.roll.secondaryStat, lastResult.stats)}
+              </p>
+              <p>
+                <strong>Class passive:</strong>{" "}
+                {lastResult.classIdentity.passive.name} -{" "}
+                {lastResult.classIdentity.passive.description}
+              </p>
+              <p>
+                <strong>Class effect this action:</strong>{" "}
+                Roll +{lastResult.classIdentity.passiveRollModifier},{" "}
+                Energy cost reduction{" "}
+                {lastResult.classIdentity.passiveEnergyCostReduction ?? 0},{" "}
+                {formatDeltaBonus(lastResult.classIdentity.passiveDeltaBonus)}
+              </p>
+              {lastResult.raceIdentity ? (
+                <>
+                  <p>
+                    <strong>Racial passive:</strong>{" "}
+                    {lastResult.raceIdentity.passive.name} -{" "}
+                    {lastResult.raceIdentity.passive.description}
+                  </p>
+                  <p>
+                    <strong>Racial effect this action:</strong>{" "}
+                    Roll +{lastResult.raceIdentity.passiveRollModifier ?? 0},{" "}
+                    {formatDeltaBonus(lastResult.raceIdentity.passiveDeltaBonus)}
+                    {lastResult.raceIdentity.halfOrcRelentlessTriggered
+                      ? " | Relentless triggered (survived at 1 HP)."
+                      : ""}
+                  </p>
+                </>
+              ) : null}
+              {lastResult.itemIdentity ? (
+                <p>
+                  <strong>Item effect this action:</strong>{" "}
+                  Roll +{lastResult.itemIdentity.passiveRollModifier ?? 0},{" "}
+                  {formatDeltaBonus(lastResult.itemIdentity.passiveDeltaBonus)}
+                </p>
+              ) : null}
+              <p>
+                <strong>Reward/Penalty (delta):</strong>{" "}
+                {formatDelta(lastResult.delta)}
+              </p>
+              <p>
+                <strong>Loot:</strong> {formatLoot(lastResult.loot)}
+              </p>
+            </div>
+          </details>
         </section>
       ) : null}
     </section>

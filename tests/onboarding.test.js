@@ -6,6 +6,7 @@ import {
   deriveOnboardingStatus,
   getRecommendedStarterActivity,
   ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
+  ONBOARDING_ZAKZUM_LORE_ACTIVITY_ID,
   ONBOARDING_STATUS,
   summarizeOnboardingLogGroups,
 } from "../src/lib/onboarding.js";
@@ -59,9 +60,23 @@ test("onboarding status is complete after first full loop", () => {
     successfulActivityCount: 1,
     shopActionCount: 1,
     equipActionCount: 0,
+    hasViewedZakzumLore: true,
   });
 
   assert.equal(status, ONBOARDING_STATUS.ONBOARDING_COMPLETE);
+});
+
+test("onboarding status stays first_activity_completed until zakzum lore is viewed", () => {
+  const status = deriveOnboardingStatus({
+    hasCharacter: true,
+    activityRunCount: 1,
+    successfulActivityCount: 1,
+    shopActionCount: 1,
+    equipActionCount: 0,
+    hasViewedZakzumLore: false,
+  });
+
+  assert.equal(status, ONBOARDING_STATUS.FIRST_ACTIVITY_COMPLETED);
 });
 
 test("recommended starter activity is a quest activity", () => {
@@ -100,6 +115,7 @@ test("onboarding view model allows reward claim after first full loop", () => {
     successfulActivityCount: 1,
     shopActionCount: 1,
     equipActionCount: 0,
+    hasViewedZakzumLore: true,
     hasClaimedOnboardingReward: false,
   });
 
@@ -116,6 +132,7 @@ test("onboarding view model hides onboarding panel after claimed reward", () => 
     successfulActivityCount: 1,
     shopActionCount: 1,
     equipActionCount: 0,
+    hasViewedZakzumLore: true,
     hasClaimedOnboardingReward: true,
   });
 
@@ -125,12 +142,18 @@ test("onboarding view model hides onboarding panel after claimed reward", () => 
   assert.equal(viewModel.showPanel, false);
 });
 
-test("onboarding reward logs are excluded from shop interaction counts", () => {
+test("onboarding system logs are excluded from shop interaction counts", () => {
   const summary = summarizeOnboardingLogGroups([
     {
       type: "SHOP",
       success: true,
       activityId: ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
+      _count: { _all: 1 },
+    },
+    {
+      type: "SHOP",
+      success: true,
+      activityId: ONBOARDING_ZAKZUM_LORE_ACTIVITY_ID,
       _count: { _all: 1 },
     },
     {
@@ -150,4 +173,5 @@ test("onboarding reward logs are excluded from shop interaction counts", () => {
   assert.equal(summary.shopActionCount, 2);
   assert.equal(summary.equipActionCount, 1);
   assert.equal(summary.onboardingRewardClaimCount, 1);
+  assert.equal(summary.zakzumLoreOpenCount, 1);
 });

@@ -13,6 +13,8 @@ export const ONBOARDING_COMPLETION_REWARD_GOLD = 50;
 export const ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID =
   "onboarding-complete-bonus";
 export const ONBOARDING_REWARD_LOG_DETAIL_ACTION = "onboarding_reward";
+export const ONBOARDING_ZAKZUM_LORE_ACTIVITY_ID = "onboarding-zakzum-lore";
+export const ONBOARDING_ZAKZUM_LORE_LOG_DETAIL_ACTION = "onboarding_zakzum_lore";
 
 function getStarterActivityFallback() {
   return ACTIVITY_DEFINITIONS[0] ?? null;
@@ -47,6 +49,8 @@ export function createEmptyOnboardingMetrics() {
     shopActionCount: 0,
     equipActionCount: 0,
     onboardingRewardClaimCount: 0,
+    zakzumLoreOpenCount: 0,
+    hasViewedZakzumLore: false,
     hasClaimedOnboardingReward: false,
   };
 }
@@ -56,6 +60,7 @@ function normalizeOnboardingMetrics(metrics = {}) {
     0,
     Number(metrics.onboardingRewardClaimCount) || 0,
   );
+  const zakzumLoreOpenCount = Math.max(0, Number(metrics.zakzumLoreOpenCount) || 0);
 
   return {
     hasCharacter: Boolean(metrics.hasCharacter),
@@ -67,6 +72,9 @@ function normalizeOnboardingMetrics(metrics = {}) {
     shopActionCount: Math.max(0, Number(metrics.shopActionCount) || 0),
     equipActionCount: Math.max(0, Number(metrics.equipActionCount) || 0),
     onboardingRewardClaimCount,
+    zakzumLoreOpenCount,
+    hasViewedZakzumLore:
+      Boolean(metrics.hasViewedZakzumLore) || zakzumLoreOpenCount > 0,
     hasClaimedOnboardingReward:
       Boolean(metrics.hasClaimedOnboardingReward) ||
       onboardingRewardClaimCount > 0,
@@ -84,6 +92,7 @@ export function summarizeOnboardingLogGroups(logGroups = []) {
     shopActionCount: 0,
     equipActionCount: 0,
     onboardingRewardClaimCount: 0,
+    zakzumLoreOpenCount: 0,
   };
 
   for (const logGroup of logGroups) {
@@ -97,6 +106,14 @@ export function summarizeOnboardingLogGroups(logGroups = []) {
 
     if (isOnboardingRewardLog) {
       summary.onboardingRewardClaimCount += groupCount;
+      continue;
+    }
+
+    const isZakzumLoreLog =
+      logGroup.activityId === ONBOARDING_ZAKZUM_LORE_ACTIVITY_ID;
+
+    if (isZakzumLoreLog) {
+      summary.zakzumLoreOpenCount += groupCount;
       continue;
     }
 
@@ -121,6 +138,7 @@ export function summarizeOnboardingLogGroups(logGroups = []) {
   return {
     ...summary,
     hasClaimedOnboardingReward: summary.onboardingRewardClaimCount > 0,
+    hasViewedZakzumLore: summary.zakzumLoreOpenCount > 0,
   };
 }
 
@@ -159,8 +177,9 @@ export function deriveOnboardingStatus(rawMetrics = {}) {
   const hasLoopInteraction =
     metrics.shopActionCount > 0 || metrics.equipActionCount > 0;
   const hasFirstReward = metrics.successfulActivityCount > 0;
+  const hasViewedZakzumLore = metrics.hasViewedZakzumLore;
 
-  if (hasLoopInteraction && hasFirstReward) {
+  if (hasLoopInteraction && hasFirstReward && hasViewedZakzumLore) {
     return ONBOARDING_STATUS.ONBOARDING_COMPLETE;
   }
 
@@ -172,6 +191,7 @@ function buildStepItems(metrics) {
   const hasFirstReward = metrics.successfulActivityCount > 0;
   const hasLoopInteraction =
     metrics.shopActionCount > 0 || metrics.equipActionCount > 0;
+  const hasViewedZakzumLore = metrics.hasViewedZakzumLore;
 
   return [
     {
@@ -193,6 +213,11 @@ function buildStepItems(metrics) {
       id: "next-goal",
       label: "Buy or equip your first item",
       done: hasLoopInteraction,
+    },
+    {
+      id: "world-lore",
+      label: "Open Zakzum lore for one location",
+      done: hasViewedZakzumLore,
     },
   ];
 }
@@ -220,6 +245,21 @@ function buildNextStepForCompletedFirstActivity(metrics) {
         href: "/market",
         label: "Open market",
       },
+      secondaryAction: {
+        href: "/inventory",
+        label: "Open inventory",
+      },
+    };
+  }
+
+  if (!metrics.hasViewedZakzumLore) {
+    return {
+      currentStep: "Core loop milestone reached",
+      nextStep: "Open Zakzum and inspect one location lore overlay to finish onboarding.",
+      primaryAction: {
+        href: "/zakzum",
+        label: "Open Zakzum",
+      },
     };
   }
 
@@ -230,6 +270,7 @@ function buildNextStepForCompletedFirstActivity(metrics) {
       href: "/activities",
       label: "Choose activity",
     },
+    secondaryAction: null,
   };
 }
 
@@ -275,6 +316,7 @@ export function buildOnboardingViewModel(rawMetrics = {}) {
       href: "/dashboard",
       label: "Continue",
     },
+    secondaryAction: null,
   };
 
   if (status === ONBOARDING_STATUS.NO_CHARACTER) {
@@ -314,6 +356,7 @@ export function buildOnboardingViewModel(rawMetrics = {}) {
       currentStep: nextStep.currentStep,
       nextStep: nextStep.nextStep,
       primaryAction: nextStep.primaryAction,
+      secondaryAction: nextStep.secondaryAction ?? null,
     };
   }
 
