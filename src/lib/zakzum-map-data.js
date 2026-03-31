@@ -1,20 +1,8 @@
 import "server-only";
 
-import path from "node:path";
-import { readdir, stat } from "node:fs/promises";
+import atlasManifest from "./zakzum-atlas-manifest.json";
 import { REGION_LOCATION_HOTSPOTS, WORLD_REGION_HOTSPOTS } from "./zakzum-map-hotspots";
 import { HEARTLANDS_LOCATION_PROFILES, HEARTLANDS_REGION_ID } from "./heartlands-lore";
-
-const WORLD_MAP_SRC = "/images/world_map/worldmap_named.png";
-const LOCATIONS_ROOT = path.join(process.cwd(), "public", "images", "locations");
-const WORLD_MAP_FILE_PATH = path.join(
-  process.cwd(),
-  "public",
-  "images",
-  "world_map",
-  "worldmap_named.png",
-);
-const IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp", ".avif"]);
 
 const REGION_NAME_OVERRIDES = {
   amber_fields: "The Amber Fields",
@@ -46,10 +34,6 @@ const LOCATION_NAME_OVERRIDES_BY_REGION_AND_ID = {
 const LOCATION_LORE_BY_REGION_AND_ID = {
   [HEARTLANDS_REGION_ID]: HEARTLANDS_LOCATION_LORE_BY_ID,
 };
-
-function isImageFile(fileName) {
-  return IMAGE_EXTENSIONS.has(path.extname(fileName).toLowerCase());
-}
 
 function stripExtension(fileName) {
   return fileName.replace(/\.[^.]+$/, "");
@@ -100,87 +84,47 @@ function buildLocationLore(locationId, locationName, regionId, regionName) {
   return `${locationName} is a known landmark in ${regionName}, documented in local travel records.`;
 }
 
-function getRegionName(regionFolderName) {
-  return REGION_NAME_OVERRIDES[regionFolderName] ?? toDisplayName(regionFolderName);
+function getRegionName(regionId) {
+  return REGION_NAME_OVERRIDES[regionId] ?? toDisplayName(regionId);
 }
 
-function withVersion(publicSrc, version) {
-  return version ? `${publicSrc}?v=${version}` : publicSrc;
-}
-
-async function getFileVersion(absoluteFilePath) {
-  try {
-    const fileStat = await stat(absoluteFilePath);
-    return Math.trunc(fileStat.mtimeMs).toString(36);
-  } catch {
-    return "";
-  }
-}
-
-async function readRegion(regionFolderName) {
-  const regionPath = path.join(LOCATIONS_ROOT, regionFolderName);
-  const regionName = getRegionName(regionFolderName);
-  const entries = await readdir(regionPath, { withFileTypes: true });
-
-  const imageFileNames = entries
-    .filter((entry) => entry.isFile() && isImageFile(entry.name))
-    .map((entry) => entry.name);
-
-  const realmMapFileName =
-    imageFileNames.find((fileName) => stripExtension(fileName).startsWith("realm_map_")) ?? null;
-
-  if (!realmMapFileName) {
-    return null;
-  }
-
-  const locations = (
-    await Promise.all(
-      imageFileNames.filter((fileName) => fileName !== realmMapFileName).map(async (fileName) => {
-        const filePath = path.join(regionPath, fileName);
-        const fileVersion = await getFileVersion(filePath);
-
-        const rawName = stripExtension(fileName);
-        const locationId = toSlug(rawName);
-        const locationName = resolveLocationName(locationId, rawName, regionFolderName);
-
-        return {
-          id: locationId,
-          name: locationName,
-          imageSrc: withVersion(`/images/locations/${regionFolderName}/${fileName}`, fileVersion),
-          lore: buildLocationLore(locationId, locationName, regionFolderName, regionName),
-          hotspot: REGION_LOCATION_HOTSPOTS[regionFolderName]?.[locationId] ?? null,
-        };
-      }),
-    )
-  )
-    .sort((first, second) => first.name.localeCompare(second.name));
-
-  const realmMapVersion = await getFileVersion(path.join(regionPath, realmMapFileName));
+function mapLocation({ regionId, regionName, fileName }) {
+  const rawName = stripExtension(fileName);
+  const locationId = toSlug(rawName);
+  const locationName = resolveLocationName(locationId, rawName, regionId);
 
   return {
-    id: regionFolderName,
+    id: locationId,
+    name: locationName,
+    imageSrc: `/images/locations/${regionId}/${fileName}`,
+    lore: buildLocationLore(locationId, locationName, regionId, regionName),
+    hotspot: REGION_LOCATION_HOTSPOTS[regionId]?.[locationId] ?? null,
+  };
+}
+
+function mapRegion(regionEntry) {
+  const regionName = getRegionName(regionEntry.id);
+
+  const locations = regionEntry.locationFileNames
+    .map((fileName) => mapLocation({ regionId: regionEntry.id, regionName, fileName }))
+    .sort((first, second) => first.name.localeCompare(second.name));
+
+  return {
+    id: regionEntry.id,
     name: regionName,
-    mapSrc: withVersion(`/images/locations/${regionFolderName}/${realmMapFileName}`, realmMapVersion),
-    hotspot: WORLD_REGION_HOTSPOTS[regionFolderName] ?? null,
+    mapSrc: `/images/locations/${regionEntry.id}/${regionEntry.realmMapFileName}`,
+    hotspot: WORLD_REGION_HOTSPOTS[regionEntry.id] ?? null,
     locations,
   };
 }
 
 export async function getZakzumAtlasData() {
-  const entries = await readdir(LOCATIONS_ROOT, { withFileTypes: true });
-  const regionFolderNames = entries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort((first, second) => getRegionName(first).localeCompare(getRegionName(second)));
-
-  const regions = (
-    await Promise.all(regionFolderNames.map((regionFolderName) => readRegion(regionFolderName)))
-  ).filter((entry) => entry !== null);
-
-  const worldMapVersion = await getFileVersion(WORLD_MAP_FILE_PATH);
+  const regions = atlasManifest.regions
+    .map((regionEntry) => mapRegion(regionEntry))
+    .sort((first, second) => first.name.localeCompare(second.name));
 
   return {
-    worldMapSrc: withVersion(WORLD_MAP_SRC, worldMapVersion),
+    worldMapSrc: atlasManifest.worldMapSrc,
     regions,
   };
 }

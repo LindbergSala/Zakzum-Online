@@ -1,0 +1,161 @@
+{
+  "worldMapSrc": "/images/world_map/worldmap_named.png",
+  "regions": [
+    {
+      "id": "amber_fields",
+      "realmMapFileName": "realm_map_amber_fields.jpg",
+      "locationFileNames": [
+        "Amber_In.png",
+        "Barleycross.png",
+        "Freefield_Estate.png",
+        "Harveston.png",
+        "Outpost_Haystack.png",
+        "Sunmeadow.png",
+        "The_Barrow.png",
+        "The_Dead_Road.png"
+      ]
+    },
+    {
+      "id": "ashen_lands",
+      "realmMapFileName": "realm_map_ashen_lands.jpg",
+      "locationFileNames": [
+        "Ashen_Crowns.png",
+        "Dragons_Landing.png",
+        "Drakonfyr.png",
+        "Mount_Blackscale.png",
+        "The_Ember_Wastes.png",
+        "The_Smoking_Step.png",
+        "Vermithrax_Shrine.png"
+      ]
+    },
+    {
+      "id": "dead_mans_land",
+      "realmMapFileName": "realm_map_dead_mans_land.jpg",
+      "locationFileNames": [
+        "Field_of_Sarrow.png",
+        "Fort_Sanguine.png",
+        "Grieving_Village.png",
+        "Road_to_Hell.png",
+        "Silence_Fields.png",
+        "Thirsting_Wood.png"
+      ]
+    },
+    {
+      "id": "green_hollows",
+      "realmMapFileName": "realm_map_green_hollows.jpg",
+      "locationFileNames": [
+        "Appleburrow.png",
+        "Bramblefoot.png",
+        "Greenthorn_Sealane.png",
+        "Hearthollow.png",
+        "Honeyhill.png",
+        "Mossbrook.png",
+        "The_Old_Warren.png",
+        "Wicker_Hollow.png"
+      ]
+    },
+    {
+      "id": "heartlands",
+      "realmMapFileName": "realm_map_heartlands.jpg",
+      "locationFileNames": [
+        "Barrowfield.png",
+        "Blackthorn_Hold.png",
+        "Elfhome.png",
+        "Goldmere.png",
+        "Kingston.png",
+        "Mournstead.png",
+        "Northwatch.png",
+        "Saints_Hollow.png"
+      ]
+    },
+    {
+      "id": "ironspine",
+      "realmMapFileName": "realm_map_ironspine.jpg",
+      "locationFileNames": [
+        "Carmine-Bank.png",
+        "Emberfall_Forge.png",
+        "Frostmantle_Peak.png",
+        "Khazad-Krag.png",
+        "Rune_Vaults.png",
+        "Stonewake_Pass.png",
+        "Threshold_of_Kin.png"
+      ]
+    },
+    {
+      "id": "lands_between",
+      "realmMapFileName": "realm_map_lands_between.jpg",
+      "locationFileNames": [
+        "Citadel_of_Bones.png",
+        "Forgotten_Archives.png",
+        "Fort_Hope.png",
+        "Graveshade.png",
+        "The_Chapel_of_Rebirth.png",
+        "The_Dead_Forest.png",
+        "The_Singing_Court.png"
+      ]
+    },
+    {
+      "id": "lower_holds",
+      "realmMapFileName": "realm_map_lower_holds.jpg",
+      "locationFileNames": [
+        "Brightburrow.png",
+        "Gearforge.png",
+        "Glimmerdeep.png",
+        "Lantern_Vale.png",
+        "The_Tower_of_History.png",
+        "Underhold.png"
+      ]
+    },
+    {
+      "id": "mirkvale",
+      "realmMapFileName": "realm_map_mirkvale.jpg",
+      "locationFileNames": [
+        "Elarion.png",
+        "Ithariels_Grove.png",
+        "Silvergrove.png",
+        "The_Silver_Lake.png",
+        "The_Whispering_Forest.png",
+        "Thornveil.png"
+      ]
+    },
+    {
+      "id": "southern_wastes",
+      "realmMapFileName": "realm_map_southern_wastes.jpg",
+      "locationFileNames": [
+        "Ashfang_Watch.png",
+        "Gorak_Hold.png",
+        "Ironhowl_Camp.png",
+        "Skullforge.png",
+        "Temple_Dominus.png",
+        "The_Blood_Fields.png"
+      ]
+    },
+    {
+      "id": "unspeakable_lands",
+      "realmMapFileName": "realm_map_unspeakable_lands.jpg",
+      "locationFileNames": [
+        "The_Citadel_of_Yearning.png",
+        "The_Endless_Castle.png",
+        "The_Many-Colored_Gate.png",
+        "The_Road_of_Emptyness.png",
+        "The_Valleys_of_Unrest.png",
+        "Tower_of_Crystals.png",
+        "Weaping_Gate.png"
+      ]
+    },
+    {
+      "id": "western_coast",
+      "realmMapFileName": "realm_map_western_coast.jpg",
+      "locationFileNames": [
+        "Bayside.png",
+        "Fort_Seawall.png",
+        "Gulls_Rest.png",
+        "Hightide_Manor.png",
+        "Saltmere.png",
+        "Stormhook_Point.png",
+        "The_Drowned_Market.png",
+        "The_Sirens_Tavern.png"
+      ]
+    }
+  ]
+}
