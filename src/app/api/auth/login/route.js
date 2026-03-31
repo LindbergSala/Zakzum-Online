@@ -1,7 +1,14 @@
 import { compare } from "bcryptjs";
 import { NextResponse } from "next/server";
 
+import {
+  checkLoginRateLimit,
+  clearLoginRateLimit,
+  recordFailedLoginAttempt,
+} from "@/lib/login-rate-limit";
 import { prisma } from "@/lib/prisma";
+import { validateWriteRequestOrigin } from "@/lib/csrf";
+import { logServerError } from "@/lib/server-logger";
 import {
   createSession,
   getSessionCookieOptions,
@@ -9,16 +16,22 @@ import {
 } from "@/lib/session";
 import { loginSchema } from "@/lib/validators/auth";
 
-const INVALID_CREDENTIALS_MESSAGE = "Fel e-post eller losenord.";
+const INVALID_CREDENTIALS_MESSAGE = "Incorrect email or password.";
+const RATE_LIMIT_MESSAGE = "Too many login attempts. Please try again later.";
 
 export async function POST(request) {
+  const originError = validateWriteRequestOrigin(request);
+  if (originError) {
+    return originError;
+  }
+
   try {
     let body;
     try {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        { message: "Ogiltig JSON i request body." },
+        { message: "Invalid JSON in request body." },
         { status: 400 },
       );
     }
@@ -28,7 +41,7 @@ export async function POST(request) {
     if (!parsed.success) {
       return NextResponse.json(
         {
-          message: "Ogiltig inmatning.",
+          message: "Invalid input.",
           errors: parsed.error.flatten().fieldErrors,
         },
         { status: 400 },
@@ -36,6 +49,19 @@ export async function POST(request) {
     }
 
     const { email, password } = parsed.data;
+    const rateLimit = await checkLoginRateLimit(request, email);
+
+    if (rateLimit.blocked) {
+      return NextResponse.json(
+        { message: RATE_LIMIT_MESSAGE },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+          },
+        },
+      );
+    }
 
     const user = await prisma.user.findUnique({
       where: { email },
@@ -46,6 +72,7 @@ export async function POST(request) {
     });
 
     if (!user) {
+      await recordFailedLoginAttempt(rateLimit.identifierSet);
       return NextResponse.json(
         { message: INVALID_CREDENTIALS_MESSAGE },
         { status: 401 },
@@ -55,16 +82,19 @@ export async function POST(request) {
     const isPasswordValid = await compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
+      await recordFailedLoginAttempt(rateLimit.identifierSet);
       return NextResponse.json(
         { message: INVALID_CREDENTIALS_MESSAGE },
         { status: 401 },
       );
     }
 
+    await clearLoginRateLimit(rateLimit.identifierSet);
+
     const { token, expiresAt } = await createSession(user.id);
 
     const response = NextResponse.json(
-      { message: "Inloggning lyckades." },
+      { message: "Login successful." },
       { status: 200 },
     );
 
@@ -75,11 +105,11 @@ export async function POST(request) {
     );
 
     return response;
-  } catch {
+  } catch (error) {
+    logServerError("/api/auth/login", error);
     return NextResponse.json(
-      { message: "Nagot gick fel vid inloggning." },
+      { message: "Something went wrong during login." },
       { status: 500 },
     );
   }
 }
-

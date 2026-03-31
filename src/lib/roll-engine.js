@@ -2,14 +2,30 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-export function getStatModifier(statValue) {
+const DEFAULT_ACTIVITY_LEVEL_DIFFICULTY_SCALING = 2;
+const SUCCESS_PRIMARY_MODIFIER_SCALE = 0.04;
+const SUCCESS_SECONDARY_MODIFIER_SCALE = 0.02;
+const SUCCESS_MARGIN_SCALE = 0.015;
+const SUCCESS_SCALE_MIN = 0.7;
+const SUCCESS_SCALE_MAX = 1.6;
+const FAIL_MARGIN_SCALE = 0.05;
+const FAIL_PRIMARY_MODIFIER_SCALE = 0.02;
+const FAIL_SECONDARY_MODIFIER_SCALE = 0.01;
+const FAIL_SCALE_MIN = 0.7;
+const FAIL_SCALE_MAX = 1.6;
+
+function toEffectiveStatValue(statValue) {
   const numericValue = Number(statValue);
 
   if (!Number.isFinite(numericValue)) {
-    return 0;
+    return 1;
   }
 
-  return Math.floor((numericValue - 10) / 2);
+  return Math.max(1, Math.floor(numericValue));
+}
+
+export function getStatModifier(effectiveStatValue) {
+  return toEffectiveStatValue(effectiveStatValue) - 1;
 }
 
 function scaleSignedDelta(baseDelta, scale) {
@@ -38,38 +54,61 @@ function calculateChancePercent(difficulty, statModifier) {
 
 function calculateSuccessScale(primaryModifier, secondaryModifier, margin) {
   return clamp(
-    1 + primaryModifier * 0.08 + secondaryModifier * 0.04 + margin * 0.02,
-    0.65,
-    1.9,
+    1 +
+      primaryModifier * SUCCESS_PRIMARY_MODIFIER_SCALE +
+      secondaryModifier * SUCCESS_SECONDARY_MODIFIER_SCALE +
+      margin * SUCCESS_MARGIN_SCALE,
+    SUCCESS_SCALE_MIN,
+    SUCCESS_SCALE_MAX,
   );
 }
 
 function calculateFailScale(primaryModifier, secondaryModifier, missMargin) {
   return clamp(
-    1 + missMargin * 0.06 - primaryModifier * 0.03 - secondaryModifier * 0.02,
-    0.75,
-    2,
+    1 +
+      missMargin * FAIL_MARGIN_SCALE -
+      primaryModifier * FAIL_PRIMARY_MODIFIER_SCALE -
+      secondaryModifier * FAIL_SECONDARY_MODIFIER_SCALE,
+    FAIL_SCALE_MIN,
+    FAIL_SCALE_MAX,
   );
 }
 
 export function resolveActivityRoll(characterStats, activityDefinition, options = {}) {
   const primaryStat = activityDefinition.roll.primaryStat;
   const secondaryStat = activityDefinition.roll.secondaryStat;
-  const difficulty = activityDefinition.roll.difficulty;
+  const baseDifficulty = activityDefinition.roll.difficulty;
 
-  const primaryStatValue = Number(characterStats[primaryStat]) || 0;
-  const secondaryStatValue = Number(characterStats[secondaryStat]) || 0;
-  const primaryModifier = getStatModifier(primaryStatValue);
-  const secondaryModifier = getStatModifier(secondaryStatValue);
-  const statModifier = primaryModifier * 2 + secondaryModifier;
+  const effectivePrimaryStat = toEffectiveStatValue(characterStats[primaryStat]);
+  const effectiveSecondaryStat = toEffectiveStatValue(characterStats[secondaryStat]);
+  const primaryModifier = getStatModifier(effectivePrimaryStat);
+  const secondaryModifier = getStatModifier(effectiveSecondaryStat);
+  const primaryContribution = effectivePrimaryStat * 2;
+  const secondaryContribution = effectiveSecondaryStat;
+  const statContribution = primaryContribution + secondaryContribution;
+  const characterLevel = Math.max(1, Number(options.level) || 1);
+  const levelContribution = Math.max(0, characterLevel - 1);
+  const activityLevelScaling = Math.max(
+    0,
+    Number(activityDefinition.roll.levelScaling) ||
+      DEFAULT_ACTIVITY_LEVEL_DIFFICULTY_SCALING,
+  );
+  const difficultyLevelScaling =
+    levelContribution * activityLevelScaling;
+  const adjustedDifficulty = baseDifficulty + difficultyLevelScaling;
+  const passiveRollModifier = Number(options.passiveRollModifier) || 0;
+  const totalRollBonus =
+    statContribution + levelContribution + passiveRollModifier;
 
   const random =
     typeof options.random === "function" ? options.random : Math.random;
   const roll = Math.floor(random() * 20) + 1;
 
-  const rollTotal = roll + statModifier;
-  const success = rollTotal >= difficulty;
-  const margin = success ? rollTotal - difficulty : difficulty - rollTotal;
+  const rollTotal = roll + totalRollBonus;
+  const success = rollTotal >= adjustedDifficulty;
+  const margin = success
+    ? rollTotal - adjustedDifficulty
+    : adjustedDifficulty - rollTotal;
 
   const scale = success
     ? calculateSuccessScale(primaryModifier, secondaryModifier, margin)
@@ -80,24 +119,46 @@ export function resolveActivityRoll(characterStats, activityDefinition, options 
     : activityDefinition.failPenalty;
 
   const delta = scaleSignedDelta(baseDelta, scale);
-  const chancePercent = calculateChancePercent(difficulty, statModifier);
+  const chancePercent = calculateChancePercent(
+    adjustedDifficulty,
+    totalRollBonus,
+  );
 
   return {
     success,
     roll,
     rollTotal,
-    successTarget: difficulty,
+    successTarget: adjustedDifficulty,
+    baseSuccessTarget: baseDifficulty,
+    difficultyLevelScaling,
     chancePercent,
-    statModifier,
+    statModifier: totalRollBonus,
+    totalRollBonus,
     scale: Number(scale.toFixed(2)),
     delta,
     calculations: {
       primaryStat,
       secondaryStat,
-      primaryStatValue,
-      secondaryStatValue,
+      effectivePrimaryStat,
+      effectiveSecondaryStat,
       primaryModifier,
       secondaryModifier,
+      characterLevel,
+      primaryContribution,
+      secondaryContribution,
+      statContribution,
+      levelContribution,
+      baseDifficulty,
+      activityLevelScaling,
+      adjustedDifficulty,
+      difficultyLevelScaling,
+      passiveRollModifier,
+      totalRollBonus,
+      // Backward-compatible aliases.
+      primaryStatValue: effectivePrimaryStat,
+      secondaryStatValue: effectiveSecondaryStat,
+      baseStatModifier: statContribution,
+      levelModifier: levelContribution,
     },
   };
 }

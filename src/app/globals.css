@@ -10,7 +10,13 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: "Segoe UI", sans-serif;
-  background: linear-gradient(160deg, #f8f5ed 0%, #ece8df 100%);
+  background:
+    linear-gradient(160deg, rgba(26, 18, 10, 0.52) 0%, rgba(34, 24, 14, 0.48) 100%),
+    url("/images/backgrounds/Zakzum.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: #1f1f1f;
 }
 
@@ -31,6 +37,16 @@ p {
 
 a {
   color: #8d5b10;
+}
+
+a[aria-label="Back to dashboard"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2em;
+  font-size: clamp(1.7rem, 1.5rem + 0.4vw, 2.2rem);
+  line-height: 1;
+  text-decoration: none;
 }
 
 form {
@@ -93,6 +109,138 @@ button:disabled {
   color: #9a1e1e;
 }
 
+.feedback.loading {
+  color: #8d5b10;
+}
+
+.action-result-card {
+  margin-top: 0.9rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 10px;
+  border: 1px solid #c8c3b6;
+  background: #fff;
+}
+
+.action-result-ok {
+  border-color: #6f8f48;
+  background: linear-gradient(180deg, #f8fff1 0%, #edf6e1 100%);
+}
+
+.action-result-error {
+  border-color: #a94d3f;
+  background: linear-gradient(180deg, #fff3ef 0%, #f7e1db 100%);
+}
+
+.activity-outcome-summary {
+  margin: 0 0 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(134, 96, 62, 0.34);
+  background: rgba(255, 252, 244, 0.74);
+  padding: 0.58rem 0.68rem;
+}
+
+.activity-outcome-line {
+  margin: 0.2rem 0 0;
+}
+
+.activity-outcome-line:first-child {
+  margin-top: 0;
+}
+
+.loot-toast {
+  margin: 0 0 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #baa685;
+  background: linear-gradient(160deg, #fff8e9 0%, #f1e4c8 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 4px 14px rgba(46, 30, 16, 0.14);
+  padding: 0.62rem 0.72rem;
+}
+
+.loot-toast-drop {
+  animation: lootFlash 480ms ease-out both;
+}
+
+.loot-toast-empty {
+  opacity: 0.88;
+}
+
+.loot-toast-kicker {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f4b20;
+}
+
+.loot-toast-headline {
+  margin: 0.12rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #2e210f;
+}
+
+.loot-toast-meta {
+  margin: 0.24rem 0 0;
+  font-size: 0.82rem;
+  color: #5b4122;
+  text-transform: capitalize;
+}
+
+.loot-toast-rarity-trash {
+  border-color: rgba(129, 97, 68, 0.64);
+  background: linear-gradient(160deg, #f3ece0 0%, #e6d8c5 100%);
+}
+
+.loot-toast-rarity-common {
+  border-color: rgba(131, 108, 60, 0.64);
+  background: linear-gradient(160deg, #fef7e7 0%, #f2e2be 100%);
+}
+
+.loot-toast-rarity-rare {
+  border-color: rgba(71, 101, 126, 0.66);
+  background: linear-gradient(160deg, #eff8ff 0%, #d4e6f5 100%);
+}
+
+.loot-toast-rarity-epic {
+  border-color: rgba(101, 75, 142, 0.68);
+  background: linear-gradient(160deg, #f5efff 0%, #e1d5f7 100%);
+}
+
+.action-result-details {
+  margin-top: 0.65rem;
+  border-radius: 9px;
+  border: 1px solid rgba(118, 91, 64, 0.35);
+  background: rgba(255, 252, 245, 0.72);
+}
+
+.action-result-details-summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+  color: #5d3c19;
+  padding: 0.52rem 0.6rem;
+}
+
+.action-result-details-summary::-webkit-details-marker {
+  display: none;
+}
+
+.action-result-details-body {
+  border-top: 1px solid rgba(118, 91, 64, 0.24);
+  padding: 0.5rem 0.6rem 0.58rem;
+}
+
+.action-result-details-body p {
+  margin: 0.35rem 0 0;
+}
+
+.action-result-details-body p:first-child {
+  margin-top: 0;
+}
+
 .activity-list {
   list-style: none;
   margin: 1rem 0;
@@ -152,3 +300,16 @@ button:disabled {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+@keyframes lootFlash {
+  0% {
+    transform: translateY(6px) scale(0.985);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+

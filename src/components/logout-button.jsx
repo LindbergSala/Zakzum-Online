@@ -16,14 +16,14 @@ export default function LogoutButton() {
       const response = await fetch("/api/auth/logout", { method: "POST" });
 
       if (!response.ok) {
-        setError("Utloggning misslyckades. Forsok igen.");
+        setError("Logout failed. Try again.");
         return;
       }
 
-      router.push("/login");
+      router.push("/");
       router.refresh();
     } catch {
-      setError("Utloggning misslyckades. Forsok igen.");
+      setError("Logout failed. Try again.");
     } finally {
       setIsLoading(false);
     }
@@ -32,10 +32,9 @@ export default function LogoutButton() {
   return (
     <>
       <button onClick={onLogout} type="button" disabled={isLoading}>
-        {isLoading ? "Loggar ut..." : "Logga ut"}
+        {isLoading ? "Logging out..." : "Log out"}
       </button>
       {error ? <p className="feedback error">{error}</p> : null}
     </>
   );
 }
-

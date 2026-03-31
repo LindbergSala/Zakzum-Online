@@ -1,0 +1,146 @@
+.card {
+  margin-top: 1rem;
+  border-radius: 12px;
+  padding: 0.85rem;
+  border: 1px solid rgba(126, 54, 44, 0.5);
+  background:
+    linear-gradient(
+      165deg,
+      rgba(90, 36, 30, 0.14) 0%,
+      rgba(121, 52, 42, 0.2) 100%
+    );
+}
+
+.title {
+  margin: 0;
+  color: #5a221a;
+  font-weight: 700;
+}
+
+.text {
+  margin: 0.3rem 0 0;
+  color: #6a3f20;
+  line-height: 1.45;
+}
+
+.form {
+  margin-top: 0.75rem;
+}
+
+.label {
+  display: block;
+  margin: 0;
+  font-weight: 700;
+  color: #5a221a;
+}
+
+.input {
+  margin-top: 0.35rem;
+  width: 100%;
+  min-height: 42px;
+  border-radius: 10px;
+  border: 1px solid rgba(118, 68, 40, 0.5);
+  background: rgba(255, 248, 235, 0.92);
+  padding: 0.56rem 0.72rem;
+  color: #2f1f0e;
+}
+
+.actions {
+  margin-top: 0.66rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.dangerButton,
+.secondaryButton {
+  min-height: 40px;
+  border-radius: 999px;
+  border: 0;
+  padding: 0.5rem 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dangerButton {
+  color: #fff5ef;
+  background: linear-gradient(145deg, #b94c3a 0%, #8f2f21 100%);
+  box-shadow: 0 8px 18px rgba(119, 45, 34, 0.28);
+}
+
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  color: #5c381d;
+  border: 1px solid rgba(112, 76, 44, 0.46);
+  background: rgba(247, 233, 206, 0.85);
+}
+
+.feedback {
+  margin: 0.65rem 0 0;
+  font-weight: 700;
+}
+
+.feedbackError {
+  color: #8f2f21;
+}
+
+.feedbackOk {
+  color: #235b2d;
+}
+
+.overlayRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.overlayBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 11, 7, 0.58);
+  backdrop-filter: blur(2px);
+}
+
+.overlayCard {
+  position: relative;
+  z-index: 1;
+  width: min(440px, 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(129, 69, 51, 0.7);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(244, 228, 196, 0.97) 0%,
+      rgba(232, 201, 154, 0.95) 100%
+    );
+  box-shadow:
+    0 22px 38px rgba(19, 10, 6, 0.42),
+    inset 0 1px 0 rgba(255, 249, 235, 0.58);
+  padding: 0.92rem 1rem;
+}
+
+.overlayTitle {
+  margin: 0;
+  color: #5a221a;
+  font-size: 1.12rem;
+}
+
+.overlayText {
+  margin: 0.42rem 0 0;
+  color: #6a3f20;
+  line-height: 1.45;
+}
+
+.overlayActions {
+  margin-top: 0.76rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}

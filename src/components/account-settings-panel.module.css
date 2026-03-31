@@ -1,0 +1,229 @@
+.panelGrid {
+  display: grid;
+  gap: 0.72rem;
+  margin-top: 0.3rem;
+}
+
+.card {
+  border-radius: 12px;
+  padding: 0.85rem;
+  border: 1px solid rgba(103, 64, 35, 0.32);
+  background:
+    linear-gradient(
+      156deg,
+      rgba(255, 249, 238, 0.78) 0%,
+      rgba(252, 240, 217, 0.67) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 252, 244, 0.7),
+    0 10px 20px rgba(72, 42, 22, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.3), transparent 38%),
+    radial-gradient(circle at 100% 100%, rgba(131, 80, 43, 0.1), transparent 34%);
+  pointer-events: none;
+}
+
+.card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.cardDanger {
+  border-color: rgba(139, 61, 50, 0.5);
+  background:
+    linear-gradient(
+      155deg,
+      rgba(255, 246, 242, 0.75) 0%,
+      rgba(247, 218, 209, 0.67) 100%
+    );
+}
+
+.cardHeader {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.cardKicker {
+  margin: 0;
+  color: #7a4e2f;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: #3a2512;
+  font-size: 1.02rem;
+}
+
+.text {
+  margin: 0.35rem 0 0;
+  color: #6a4a2e;
+  line-height: 1.45;
+}
+
+.form {
+  margin-top: 0.7rem;
+  display: grid;
+  gap: 0.58rem;
+}
+
+.label {
+  display: grid;
+  gap: 0.3rem;
+  font-weight: 700;
+  color: #3a2512;
+}
+
+.input {
+  min-height: 42px;
+  padding: 0.58rem 0.7rem;
+  border: 1px solid rgba(106, 69, 40, 0.42);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.95rem;
+  color: #2f1f0e;
+  background: rgba(255, 248, 235, 0.92);
+}
+
+.input:focus-visible {
+  outline: 2px solid rgba(196, 121, 56, 0.6);
+  outline-offset: 1px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.48rem;
+}
+
+.primaryButton,
+.dangerButton,
+.secondaryButton {
+  min-height: 40px;
+  border-radius: 999px;
+  border: 0;
+  padding: 0.5rem 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.primaryButton {
+  color: #fff8eb;
+  background: linear-gradient(145deg, #cf7e34 0%, #a65426 100%);
+  box-shadow: 0 8px 18px rgba(129, 67, 29, 0.25);
+}
+
+.dangerButton {
+  color: #fff5ef;
+  background: linear-gradient(145deg, #b94c3a 0%, #8f2f21 100%);
+  box-shadow: 0 8px 18px rgba(119, 45, 34, 0.28);
+}
+
+.secondaryButton {
+  color: #5c381d;
+  border: 1px solid rgba(112, 76, 44, 0.46);
+  background: rgba(247, 233, 206, 0.85);
+}
+
+.primaryButton:hover,
+.dangerButton:hover,
+.secondaryButton:hover {
+  transform: translateY(-1px);
+}
+
+.primaryButton:disabled,
+.dangerButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.feedback {
+  margin: 0.58rem 0 0;
+  font-weight: 700;
+}
+
+.feedbackError {
+  color: #8a2316;
+}
+
+.feedbackOk {
+  color: #235b2d;
+}
+
+.overlayRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 1150;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.overlayBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 11, 7, 0.58);
+  backdrop-filter: blur(3px);
+}
+
+.overlayCard {
+  position: relative;
+  z-index: 1;
+  width: min(460px, 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(129, 69, 51, 0.7);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(244, 228, 196, 0.97) 0%,
+      rgba(232, 201, 154, 0.95) 100%
+    );
+  box-shadow:
+    0 24px 40px rgba(19, 10, 6, 0.44),
+    inset 0 1px 0 rgba(255, 249, 235, 0.58);
+  padding: 0.92rem 1rem;
+}
+
+.overlayKicker {
+  margin: 0;
+  color: #7a4e2f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.overlayTitle {
+  margin: 0.24rem 0 0;
+  color: #5a221a;
+  font-size: 1.08rem;
+}
+
+.overlayText {
+  margin: 0.42rem 0 0;
+  color: #6a3f20;
+  line-height: 1.45;
+}
+
+.overlayActions {
+  margin-top: 0.82rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}

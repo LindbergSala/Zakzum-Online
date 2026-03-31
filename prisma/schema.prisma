@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -30,37 +29,96 @@ model Session {
   @@index([userId])
 }
 
+model LoginRateLimit {
+  id              String   @id @db.VarChar(80)
+  scope           String   @db.VarChar(16)
+  identifierHash  String   @db.Char(64)
+  failureCount    Int      @default(0)
+  windowStartedAt DateTime?
+  blockedUntil    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([scope, identifierHash])
+  @@index([blockedUntil])
+  @@index([updatedAt])
+}
+
 enum CharacterClass {
-  FIGHTER
-  ROGUE
   BARBARIAN
+  BARD
+  CLERIC
+  DRUID
+  FIGHTER
+  MONK
+  PALADIN
+  RANGER
+  ROGUE
+  SORCERER
+  WARLOCK
   WIZARD
 }
 
+enum CharacterRace {
+  DRAGONBORN
+  HUMAN
+  DWARF
+  ELF
+  GNOME
+  HALF_ELF
+  HALF_ORC
+  HALFLING
+  TIEFLING
+}
+
+enum CharacterBackground {
+  ACOLYTE
+  CHARLATAN
+  CRIMINAL
+  ENTERTAINER
+  FOLK_HERO
+  GUILD_ARTISAN
+  HERMIT
+  NOBLE
+  OUTLANDER
+  SAGE
+  SAILOR
+  SOLDIER
+  URCHIN
+}
+
 model Character {
-  id             String         @id @default(cuid())
-  userId         String         @unique
-  user           User           @relation("OwnedCharacter", fields: [userId], references: [id], onDelete: Cascade)
-  activeForUser  User?          @relation("ActiveCharacter")
-  name           String         @db.VarChar(32)
-  characterClass CharacterClass
-  strength       Int
-  dexterity      Int
-  constitution   Int
-  intelligence   Int
-  wisdom         Int
-  charisma       Int
-  hp             Int            @default(20)
-  energy         Int            @default(20)
-  gold           Int            @default(0)
-  xp             Int            @default(0)
-  renown         Int            @default(0)
-  heat           Int            @default(0)
-  level          Int            @default(1)
-  items          CharacterItem[]
-  activityLogs   ActivityLog[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id                String          @id @default(cuid())
+  userId            String          @unique
+  user              User            @relation("OwnedCharacter", fields: [userId], references: [id], onDelete: Cascade)
+  activeForUser     User?           @relation("ActiveCharacter")
+  name              String          @db.VarChar(32)
+  characterClass    CharacterClass
+  characterRace     CharacterRace   @default(HUMAN)
+  characterBackground CharacterBackground @default(ACOLYTE)
+  backgroundLore    String          @default("") @db.Text
+  avatarImage       String?         @db.VarChar(255)
+  strength          Int
+  dexterity         Int
+  constitution      Int
+  intelligence      Int
+  wisdom            Int
+  charisma          Int
+  hp                Int             @default(20)
+  energy            Int             @default(20)
+  maxEnergy         Int             @default(20)
+  energyRegenAt     DateTime        @default(now())
+  gold              Int             @default(0)
+  xp                Int             @default(0)
+  renown            Int             @default(0)
+  heat              Int             @default(0)
+  level             Int             @default(1)
+  nextActivityRollBonus Int         @default(0)
+  unspentStatPoints Int             @default(0)
+  items             CharacterItem[]
+  activityLogs      ActivityLog[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 }
 
 model CharacterItem {
@@ -69,11 +127,12 @@ model CharacterItem {
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
   itemId      String    @db.VarChar(64)
   itemName    String    @db.VarChar(64)
+  quantity    Int       @default(1)
   isEquipped  Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@unique([characterId, itemId])
+  @@index([characterId, itemId])
   @@index([characterId])
 }
 
@@ -84,12 +143,12 @@ enum ActivityLogType {
 }
 
 model ActivityLog {
-  id              String    @id @default(cuid())
+  id              String          @id @default(cuid())
   characterId     String
-  character       Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  character       Character       @relation(fields: [characterId], references: [id], onDelete: Cascade)
   type            ActivityLogType @default(ACTIVITY)
-  activityId      String    @db.VarChar(32)
-  activityName    String    @db.VarChar(64)
+  activityId      String          @db.VarChar(32)
+  activityName    String          @db.VarChar(64)
   success         Boolean
   energyCost      Int
   roll            Int
@@ -101,7 +160,7 @@ model ActivityLog {
   beforeResources Json
   afterResources  Json
   details         Json?
-  createdAt       DateTime  @default(now())
+  createdAt       DateTime        @default(now())
 
   @@index([characterId, createdAt])
 }

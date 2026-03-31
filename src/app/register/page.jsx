@@ -28,12 +28,12 @@ export default function RegisterPage() {
         return;
       }
 
-      setFeedback({ tone: "ok", text: "Konto skapat. Du kan nu logga in." });
+      setFeedback({ tone: "ok", text: "Account created. You can now log in." });
       setPassword("");
     } catch {
       setFeedback({
         tone: "error",
-        text: "Registreringen misslyckades. Forsok igen.",
+        text: "Registration failed. Try again.",
       });
     } finally {
       setIsLoading(false);
@@ -42,12 +42,12 @@ export default function RegisterPage() {
 
   return (
     <main>
-      <h1>Skapa konto</h1>
-      <p>Anvand e-post och losenord for att skapa en ny anvandare.</p>
+      <h1>Create account</h1>
+      <p>Use email and password to create a new user.</p>
 
       <form onSubmit={onSubmit}>
         <label htmlFor="email">
-          E-post
+          Email
           <input
             id="email"
             type="email"
@@ -59,7 +59,7 @@ export default function RegisterPage() {
         </label>
 
         <label htmlFor="password">
-          Losenord
+          Password
           <input
             id="password"
             type="password"
@@ -72,7 +72,7 @@ export default function RegisterPage() {
         </label>
 
         <button disabled={isLoading} type="submit">
-          {isLoading ? "Skapar konto..." : "Registrera"}
+          {isLoading ? "Creating account..." : "Register"}
         </button>
       </form>
 
@@ -81,7 +81,7 @@ export default function RegisterPage() {
       ) : null}
 
       <p>
-        Har du redan konto? <Link href="/login">Logga in har</Link>.
+        Already have an account? <Link href="/login">Log in here</Link>.
       </p>
     </main>
   );

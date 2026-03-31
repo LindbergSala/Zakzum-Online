@@ -1,0 +1,540 @@
+.pageShell {
+  --ink-strong: #2f1f0e;
+  --ink-soft: #4e3720;
+  --accent-deep: #8e4722;
+  --market-glint-angle: 115deg;
+  --market-glint-color: rgba(255, 255, 255, 0.3);
+  --market-glint-soft-color: rgba(255, 255, 255, 0.14);
+  --market-glint-duration: 12s;
+  min-height: 100vh;
+  padding: clamp(0.85rem, 3vw, 2rem);
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      142deg,
+      rgba(25, 16, 9, 0.64) 0%,
+      rgba(42, 27, 12, 0.5) 45%,
+      rgba(31, 20, 9, 0.64) 100%
+    ),
+    url("/images/backgrounds/Zakzum.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.marketHubPageShell {
+  --market-glint-angle: 112deg;
+  --market-glint-color: rgba(255, 213, 153, 0.33);
+  --market-glint-soft-color: rgba(232, 176, 118, 0.16);
+  --market-glint-duration: 11.5s;
+  background:
+    linear-gradient(
+      142deg,
+      rgba(24, 16, 10, 0.66) 0%,
+      rgba(38, 27, 18, 0.56) 45%,
+      rgba(24, 17, 11, 0.66) 100%
+    ),
+    url("/images/backgrounds/market.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.blacksmithPageShell {
+  --market-glint-angle: 108deg;
+  --market-glint-color: rgba(255, 201, 123, 0.36);
+  --market-glint-soft-color: rgba(230, 145, 78, 0.18);
+  --market-glint-duration: 10.5s;
+  background:
+    linear-gradient(
+      142deg,
+      rgba(20, 14, 10, 0.68) 0%,
+      rgba(34, 24, 18, 0.56) 45%,
+      rgba(22, 15, 11, 0.68) 100%
+    ),
+    url("/images/backgrounds/Blacksmith.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.alchemistPageShell {
+  --market-glint-angle: 120deg;
+  --market-glint-color: rgba(177, 255, 228, 0.33);
+  --market-glint-soft-color: rgba(116, 206, 168, 0.16);
+  --market-glint-duration: 13.5s;
+  background:
+    linear-gradient(
+      142deg,
+      rgba(18, 14, 16, 0.68) 0%,
+      rgba(30, 24, 34, 0.58) 45%,
+      rgba(18, 14, 19, 0.68) 100%
+    ),
+    url("/images/backgrounds/Alchemist.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.arcanistPageShell {
+  --market-glint-angle: 122deg;
+  --market-glint-color: rgba(186, 194, 255, 0.35);
+  --market-glint-soft-color: rgba(142, 153, 238, 0.17);
+  --market-glint-duration: 12.8s;
+  background:
+    linear-gradient(
+      142deg,
+      rgba(15, 14, 19, 0.7) 0%,
+      rgba(28, 25, 39, 0.6) 45%,
+      rgba(16, 15, 25, 0.7) 100%
+    ),
+    url("/images/backgrounds/Arcanist.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.bazaarPageShell {
+  --market-glint-angle: 106deg;
+  --market-glint-color: rgba(255, 171, 136, 0.32);
+  --market-glint-soft-color: rgba(219, 106, 78, 0.17);
+  --market-glint-duration: 9.8s;
+  background:
+    linear-gradient(
+      142deg,
+      rgba(19, 13, 10, 0.72) 0%,
+      rgba(34, 22, 17, 0.62) 45%,
+      rgba(18, 12, 10, 0.72) 100%
+    ),
+    url("/images/backgrounds/Bazaar.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.trophyPageShell {
+  --market-glint-angle: 110deg;
+  --market-glint-color: rgba(255, 230, 150, 0.36);
+  --market-glint-soft-color: rgba(231, 191, 95, 0.19);
+  --market-glint-duration: 10.8s;
+  background:
+    linear-gradient(
+      142deg,
+      rgba(16, 14, 11, 0.7) 0%,
+      rgba(30, 25, 20, 0.62) 45%,
+      rgba(18, 16, 12, 0.7) 100%
+    ),
+    url("/images/backgrounds/Trophy.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.leathermakerPageShell {
+  --market-glint-angle: 116deg;
+  --market-glint-color: rgba(240, 205, 162, 0.33);
+  --market-glint-soft-color: rgba(186, 138, 95, 0.16);
+  --market-glint-duration: 12.4s;
+  background:
+    linear-gradient(
+      142deg,
+      rgba(17, 14, 11, 0.7) 0%,
+      rgba(31, 24, 19, 0.58) 45%,
+      rgba(20, 15, 12, 0.7) 100%
+    ),
+    url("/images/backgrounds/Leathermaker.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.pageShell::before,
+.pageShell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.pageShell::before {
+  background:
+    linear-gradient(
+      var(--market-glint-angle),
+      transparent 36%,
+      var(--market-glint-soft-color) 45%,
+      var(--market-glint-color) 50%,
+      var(--market-glint-soft-color) 55%,
+      transparent 64%
+    );
+  transform: translateX(-120vw);
+  animation: glintSweep var(--market-glint-duration) linear infinite;
+  will-change: transform;
+}
+
+.pageShell::after {
+  background:
+    radial-gradient(circle at center, transparent 35%, rgba(15, 10, 6, 0.3) 100%);
+}
+
+.main {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.heroCard {
+  width: 100%;
+  padding: clamp(1.2rem, 3vw, 2.2rem);
+  border-radius: 18px;
+  border: 1px solid rgba(92, 58, 32, 0.68);
+  background: linear-gradient(
+    154deg,
+    rgba(244, 228, 196, 0.96) 0%,
+    rgba(233, 207, 165, 0.94) 46%,
+    rgba(208, 174, 126, 0.94) 100%
+  );
+  box-shadow:
+    0 28px 65px rgba(33, 20, 9, 0.4),
+    inset 0 1px 0 rgba(255, 246, 225, 0.56),
+    inset 0 0 0 1px rgba(104, 65, 36, 0.22),
+    inset 0 -28px 42px rgba(88, 53, 29, 0.3),
+    inset 0 32px 30px rgba(255, 245, 223, 0.2);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  animation: riseIn 650ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+.heroCard::before,
+.heroCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.heroCard::before {
+  background:
+    repeating-linear-gradient(
+      -12deg,
+      rgba(125, 79, 45, 0.15) 0 2px,
+      transparent 2px 8px
+    ),
+    repeating-linear-gradient(
+      18deg,
+      rgba(255, 247, 227, 0.2) 0 1px,
+      transparent 1px 5px
+    ),
+    radial-gradient(circle at 84% 16%, rgba(120, 66, 36, 0.2) 0 14%, transparent 56%),
+    radial-gradient(circle at 9% 80%, rgba(97, 56, 32, 0.17) 0 16%, transparent 58%);
+  opacity: 0.9;
+  mix-blend-mode: multiply;
+  z-index: 0;
+}
+
+.heroCard::after {
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(94, 56, 30, 0.34),
+    inset 0 0 70px rgba(85, 49, 27, 0.24),
+    inset 18px 0 24px rgba(86, 50, 27, 0.26),
+    inset -18px 0 24px rgba(84, 49, 27, 0.24),
+    inset 0 -18px 22px rgba(79, 46, 25, 0.2);
+  z-index: 0;
+}
+
+.heroCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+.heroIntro {
+  margin: 0 auto;
+  max-width: 72ch;
+  text-align: center;
+}
+
+.kicker {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--accent-deep);
+}
+
+.title {
+  margin: 0.5rem 0 0;
+  color: var(--ink-strong);
+  font-size: clamp(2.1rem, 6vw, 3.7rem);
+  line-height: 1.02;
+}
+
+.lead {
+  margin: 0.9rem auto 0;
+  max-width: 62ch;
+  font-size: clamp(1rem, 2vw, 1.16rem);
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.panel {
+  margin-top: 1.05rem;
+  border-radius: 14px;
+  padding: 1rem;
+  border: 1px solid rgba(95, 60, 33, 0.43);
+  background:
+    linear-gradient(
+      150deg,
+      rgba(245, 228, 194, 0.72) 0%,
+      rgba(228, 202, 159, 0.62) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 249, 233, 0.52),
+    inset 0 -10px 16px rgba(96, 59, 33, 0.14);
+}
+
+.panel h2 {
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: 1.12rem;
+}
+
+.muted {
+  margin: 0.3rem 0 0.65rem;
+  color: var(--ink-soft);
+}
+
+.metricCard {
+  margin-top: 0.5rem;
+  border-radius: 10px;
+  padding: 0.68rem 0.76rem;
+  border: 1px solid rgba(103, 64, 35, 0.28);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.carryLabel {
+  margin-top: 0.5rem;
+  color: var(--ink-soft);
+}
+
+.vendorMetrics {
+  margin-top: 0.55rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.vendorMetric {
+  border-radius: 10px;
+  padding: 0.66rem 0.72rem;
+  border: 1px solid rgba(95, 58, 33, 0.3);
+  background: rgba(255, 250, 240, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 251, 242, 0.54);
+}
+
+.vendorMetricLabel {
+  margin: 0;
+  color: #6a4a2e;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.vendorMetricValue {
+  margin: 0.2rem 0 0;
+  color: var(--ink-strong);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.vendorMetricMeta {
+  margin: 0.2rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+
+.inventorySection {
+  margin-top: 0.75rem;
+}
+
+.sectionHeading {
+  margin: 0.88rem 0 0.55rem;
+  color: var(--ink-strong);
+  font-size: 1rem;
+}
+
+.actionsWrap {
+  margin-top: 0.65rem;
+}
+
+.actionsWrap :global(h4) {
+  margin: 0 0 0.42rem;
+  color: var(--ink-strong);
+  font-size: 0.95rem;
+}
+
+.actionsWrap :global(ul) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.actionsWrap :global(li) {
+  margin: 0;
+  border-radius: 10px;
+  padding: 0.66rem 0.72rem;
+  border: 1px solid rgba(95, 58, 33, 0.26);
+  background: rgba(255, 250, 241, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 251, 242, 0.52);
+}
+
+.actionsWrap :global(button) {
+  margin-top: 0.34rem;
+}
+
+.emptyState {
+  margin-top: 0.7rem;
+  color: var(--ink-soft);
+}
+
+.marketGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.66rem;
+}
+
+.marketCard {
+  border-radius: 11px;
+  padding: 0.78rem;
+  border: 1px solid rgba(95, 58, 33, 0.26);
+  background: rgba(255, 249, 238, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 251, 242, 0.55);
+}
+
+.marketName {
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: 1rem;
+}
+
+.marketSummary {
+  margin: 0.4rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.93rem;
+  line-height: 1.45;
+}
+
+.marketMeta {
+  margin: 0.42rem 0 0;
+  color: #6a4a2e;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.marketLink {
+  margin-top: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0.42rem 0.82rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  color: #fff8eb;
+  background: linear-gradient(145deg, #cf7e34 0%, #a65426 100%);
+  box-shadow: 0 9px 20px rgba(129, 67, 29, 0.28);
+}
+
+.marketSoon {
+  margin-top: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0.42rem 0.82rem;
+  border-radius: 999px;
+  font-weight: 700;
+  color: #6f4323;
+  border: 1px solid rgba(112, 76, 44, 0.35);
+  background: rgba(247, 233, 206, 0.75);
+}
+
+.backLink {
+  margin: 0.85rem 0 0;
+}
+
+.backLink a {
+  color: #6a3f20;
+  font-weight: 700;
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.987);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes glintSweep {
+  0% {
+    transform: translateX(-120vw);
+  }
+
+  100% {
+    transform: translateX(120vw);
+  }
+}
+
+@media (max-width: 640px) {
+  .pageShell {
+    padding: 0.75rem;
+  }
+
+  .heroCard {
+    border-radius: 16px;
+    padding: 1rem;
+  }
+
+  .marketGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .vendorMetrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pageShell::before,
+  .heroCard {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}
+

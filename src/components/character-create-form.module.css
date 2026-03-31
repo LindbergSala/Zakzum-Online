@@ -1,0 +1,311 @@
+.form {
+  display: grid;
+  gap: 0.86rem;
+  margin-top: 1rem;
+}
+
+.identityGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.72rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+  color: #3a2512;
+}
+
+.input {
+  min-height: 42px;
+  padding: 0.58rem 0.7rem;
+  border: 1px solid rgba(106, 69, 40, 0.42);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.96rem;
+  color: #2f1f0e;
+  background: rgba(255, 248, 235, 0.86);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.input:focus-visible {
+  outline: 2px solid rgba(196, 121, 56, 0.6);
+  outline-offset: 1px;
+}
+
+.classInfoCard {
+  border-radius: 10px;
+  padding: 0.7rem 0.74rem;
+  border: 1px solid rgba(103, 64, 35, 0.26);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.backgroundLoreCard {
+  border-radius: 10px;
+  padding: 0.7rem 0.74rem;
+  border: 1px solid rgba(103, 64, 35, 0.26);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.backgroundLoreKicker {
+  margin: 0;
+  color: #6a4a2e;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.backgroundLoreTitle {
+  margin: 0.2rem 0 0.55rem;
+  color: #3a2512;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.backgroundLoreInput {
+  width: 100%;
+  min-height: 170px;
+  resize: vertical;
+  line-height: 1.42;
+}
+
+.backgroundLoreCounter {
+  margin: 0.25rem 0 0;
+  text-align: right;
+  color: #6a4a2e;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.avatarCard {
+  border-radius: 10px;
+  padding: 0.7rem 0.74rem;
+  border: 1px solid rgba(103, 64, 35, 0.26);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.avatarHeadingRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.avatarTitle {
+  margin: 0;
+  color: #3a2512;
+  font-weight: 700;
+}
+
+.avatarMeta {
+  margin: 0;
+  color: #6a4a2e;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.avatarControls {
+  margin-top: 0.55rem;
+  display: flex;
+  gap: 0.52rem;
+}
+
+.avatarControlButton {
+  flex: 1;
+  min-height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(141, 91, 50, 0.42);
+  background: linear-gradient(145deg, #d38a48 0%, #ac612f 100%);
+  color: #fff8eb;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.avatarRail {
+  margin-top: 0.62rem;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 64px;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0.14rem 0.04rem 0.16rem;
+}
+
+.avatarRail::-webkit-scrollbar {
+  height: 8px;
+}
+
+.avatarRail::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(136, 85, 46, 0.45);
+}
+
+.avatarRailItem {
+  border: 1px solid rgba(123, 79, 45, 0.36);
+  border-radius: 8px;
+  padding: 0.1rem;
+  background: rgba(255, 248, 236, 0.78);
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease;
+}
+
+.avatarRailItem:hover {
+  transform: translateY(-1px);
+}
+
+.avatarRailItemActive {
+  border-color: rgba(161, 90, 34, 0.86);
+  box-shadow: 0 0 0 2px rgba(185, 114, 56, 0.24);
+}
+
+.avatarRailImage {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarSwipeStage {
+  margin-top: 0.68rem;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 83, 48, 0.34);
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255, 244, 223, 0.35) 0%, transparent 60%),
+    linear-gradient(160deg, rgba(219, 182, 132, 0.44) 0%, rgba(190, 146, 95, 0.34) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 249, 237, 0.6),
+    inset 0 -8px 14px rgba(109, 70, 39, 0.12);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.32fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(0.25rem, 1vw, 0.68rem);
+  padding: 0.56rem;
+  overflow: hidden;
+}
+
+.avatarSwipeCard {
+  border: 1px solid rgba(123, 79, 45, 0.4);
+  border-radius: 10px;
+  padding: 0.12rem;
+  background: rgba(255, 248, 236, 0.82);
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    opacity 120ms ease,
+    filter 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.avatarSwipeCenter {
+  border-color: rgba(160, 92, 37, 0.82);
+  box-shadow: 0 0 0 2px rgba(183, 109, 51, 0.24);
+}
+
+.avatarSwipeSide {
+  opacity: 0.52;
+  transform: scale(0.82);
+  filter: saturate(0.78);
+}
+
+.avatarSwipeSide:hover {
+  opacity: 0.72;
+}
+
+.avatarSwipeCenter:hover {
+  transform: translateY(-1px);
+}
+
+.avatarSwipeImage {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarEmptyText {
+  margin: 0.45rem 0 0;
+  color: #6a4a2e;
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.72rem;
+}
+
+.pointBuyCard {
+  border-radius: 10px;
+  padding: 0.7rem 0.74rem;
+  border: 1px solid rgba(103, 64, 35, 0.26);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.submitButton {
+  cursor: pointer;
+  border: 0;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 0.72rem 1.15rem;
+  font: inherit;
+  font-weight: 700;
+  color: #fff8eb;
+  background: linear-gradient(145deg, #cf7e34 0%, #a65426 100%);
+  box-shadow: 0 10px 22px rgba(129, 67, 29, 0.31);
+}
+
+.submitButton:hover {
+  transform: translateY(-1px);
+}
+
+.submitButton:disabled {
+  opacity: 0.68;
+  cursor: wait;
+  transform: none;
+}
+
+.feedback {
+  margin: 0;
+  font-weight: 700;
+}
+
+.feedbackOk {
+  color: #355f1f;
+}
+
+.feedbackError {
+  color: #8a2316;
+}
+
+@media (max-width: 980px) {
+  .identityGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .identityGrid,
+  .statGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .avatarControls {
+    flex-direction: column;
+  }
+
+  .avatarSwipeStage {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) minmax(0, 0.9fr);
+    gap: 0.18rem;
+    padding: 0.45rem 0.35rem;
+  }
+}

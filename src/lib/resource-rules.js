@@ -1,3 +1,5 @@
+import { getLevelForXp } from "@/lib/level-progression";
+
 const MIN_ZERO_FIELDS = ["hp", "energy", "gold", "xp", "renown", "heat"];
 
 export function getCharacterResourceSnapshot(character) {
@@ -32,13 +34,14 @@ export function calculateCharacterResourceResult(character, options) {
     return {
       ok: false,
       reason: "NOT_ENOUGH_ENERGY",
-      message: `Inte tillrackligt med Energy. Kravs ${energyCost}, du har ${character.energy}.`,
+      message: `Not enough Energy. Required ${energyCost}, you have ${character.energy}.`,
       requiredEnergy: energyCost,
       currentEnergy: character.energy,
     };
   }
 
   const current = getCharacterResourceSnapshot(character);
+  const currentLevel = Math.max(1, Number(current.level) || 1);
   const raw = {
     hp: current.hp + (delta.hp ?? 0),
     energy: current.energy - energyCost + (delta.energy ?? 0),
@@ -57,7 +60,8 @@ export function calculateCharacterResourceResult(character, options) {
     next[field] = Math.max(0, next[field]);
   }
 
-  next.level = Math.max(1, next.level);
+  const levelFromXp = getLevelForXp(next.xp);
+  next.level = Math.max(1, currentLevel, next.level, levelFromXp);
 
   return {
     ok: true,

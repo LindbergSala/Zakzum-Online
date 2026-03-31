@@ -1,0 +1,179 @@
+.marketItemRow {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 0.62rem;
+  align-items: start;
+  position: relative;
+}
+
+.marketItemRow:hover,
+.marketItemRow:focus-within {
+  z-index: 20;
+}
+
+.topFeedback {
+  margin: 0 0 0.9rem;
+}
+
+.itemVisualWrap {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  overflow: visible;
+}
+
+.itemVisualFrame {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(184, 140, 92, 0.52);
+  background:
+    linear-gradient(165deg, rgba(54, 35, 21, 0.94) 0%, rgba(33, 21, 13, 0.98) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 238, 212, 0.16),
+    0 6px 14px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.itemVisual {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.itemVisualFallback {
+  font-size: 0.72rem;
+  color: #cfb188;
+}
+
+.itemHoverOverlay {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  transform: none;
+  width: min(300px, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 80;
+  transition:
+    opacity 110ms ease,
+    visibility 110ms ease;
+}
+
+.itemVisualWrap:hover .itemHoverOverlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+.itemHoverCard {
+  display: block;
+  border-radius: 10px;
+  border: 1px solid rgba(192, 150, 103, 0.62);
+  background: linear-gradient(162deg, #352314 0%, #1f140c 100%);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 240, 213, 0.14);
+  overflow: hidden;
+}
+
+.itemHoverImageWrap {
+  display: block;
+  width: 100%;
+  height: clamp(220px, 32vh, 320px);
+  border-bottom: 1px solid rgba(191, 149, 103, 0.4);
+  background: linear-gradient(160deg, #4c321d 0%, #2e1f13 100%);
+}
+
+.itemHoverImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0.35rem;
+}
+
+.itemHoverImageFallback {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: #d2b28d;
+  font-size: 0.8rem;
+}
+
+.itemHoverInfo {
+  display: block;
+  padding: 0.5rem 0.55rem 0.58rem;
+  background: linear-gradient(168deg, #2d1d12 0%, #21150d 100%);
+}
+
+.itemHoverName {
+  display: block;
+  margin: 0;
+  color: #f1ddbe;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.itemHoverStatLine {
+  display: block;
+  margin-top: 0.32rem;
+  color: #d5b994;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.itemHoverValueLine {
+  display: block;
+  margin-top: 0.26rem;
+  color: #f0d8b4;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.itemInfo {
+  min-width: 0;
+}
+
+.itemInfo p {
+  margin: 0 0 0.24rem;
+}
+
+.marketItemRow > button {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 0.14rem;
+}
+
+@media (max-width: 640px) {
+  .marketItemRow {
+    grid-template-columns: 1fr;
+  }
+
+  .itemVisualWrap {
+    width: 100%;
+    max-width: 180px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .itemHoverOverlay {
+    left: 0;
+    transform: none;
+    width: min(88vw, 300px);
+  }
+
+  .marketItemRow > button {
+    grid-column: auto;
+  }
+}

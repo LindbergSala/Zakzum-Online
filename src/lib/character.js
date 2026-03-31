@@ -1,20 +1,17 @@
 import { prisma } from "@/lib/prisma";
-
-export const CHARACTER_RESOURCE_SELECT = {
-  id: true,
-  hp: true,
-  energy: true,
-  gold: true,
-  xp: true,
-  level: true,
-  renown: true,
-  heat: true,
-};
+import {
+  DEFAULT_MAX_ENERGY,
+  resolveCharacterEnergyRegeneration,
+} from "@/lib/energy-regeneration";
 
 export const CHARACTER_OVERVIEW_SELECT = {
   id: true,
   name: true,
   characterClass: true,
+  characterRace: true,
+  characterBackground: true,
+  backgroundLore: true,
+  avatarImage: true,
   strength: true,
   dexterity: true,
   constitution: true,
@@ -23,19 +20,31 @@ export const CHARACTER_OVERVIEW_SELECT = {
   charisma: true,
   hp: true,
   energy: true,
+  maxEnergy: true,
+  energyRegenAt: true,
   gold: true,
   xp: true,
   level: true,
   renown: true,
   heat: true,
+  nextActivityRollBonus: true,
   createdAt: true,
+  unspentStatPoints: true,
 };
 
 export function buildBaseResourcesForCharacter(characterClass, constitution) {
   const classHpBase = {
-    FIGHTER: 24,
-    ROGUE: 20,
     BARBARIAN: 28,
+    BARD: 20,
+    CLERIC: 22,
+    DRUID: 20,
+    FIGHTER: 24,
+    MONK: 22,
+    PALADIN: 26,
+    RANGER: 22,
+    ROGUE: 20,
+    SORCERER: 18,
+    WARLOCK: 18,
     WIZARD: 16,
   };
 
@@ -45,12 +54,29 @@ export function buildBaseResourcesForCharacter(characterClass, constitution) {
 
   return {
     hp,
-    energy: 20,
+    energy: DEFAULT_MAX_ENERGY,
+    maxEnergy: DEFAULT_MAX_ENERGY,
+    energyRegenAt: new Date(),
     gold: 10,
     xp: 0,
     renown: 0,
     heat: 0,
     level: 1,
+  };
+}
+
+async function withRegeneratedActiveCharacter(user) {
+  if (!user?.activeCharacter) {
+    return user;
+  }
+
+  const resolved = await resolveCharacterEnergyRegeneration(user.activeCharacter, {
+    persist: true,
+  });
+
+  return {
+    ...user,
+    activeCharacter: resolved.character,
   };
 }
 
@@ -75,7 +101,7 @@ export async function getUserWithResolvedActiveCharacter(userId) {
   }
 
   if (user.activeCharacter) {
-    return user;
+    return withRegeneratedActiveCharacter(user);
   }
 
   if (!user.ownedCharacter) {
@@ -87,11 +113,11 @@ export async function getUserWithResolvedActiveCharacter(userId) {
     data: { activeCharacterId: user.ownedCharacter.id },
   });
 
-  return {
+  return withRegeneratedActiveCharacter({
     ...user,
     activeCharacterId: user.ownedCharacter.id,
     activeCharacter: user.ownedCharacter,
-  };
+  });
 }
 
 export async function getActiveCharacterForUser(userId) {

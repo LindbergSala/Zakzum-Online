@@ -1,14 +1,19 @@
 import "./globals.css";
+import StartPageMusic from "@/components/audio/start-page-music";
 
 export const metadata = {
   title: "Zakzum Online",
-  description: "Fantasy PoC med registrering och progression.",
+  description: "Fantasy PoC with registration and progression.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="sv">
-      <body>{children}</body>
+    <html lang="en">
+      <body>
+        <StartPageMusic src="/audio/music/Intro.wav">
+          {children}
+        </StartPageMusic>
+      </body>
     </html>
   );
 }
