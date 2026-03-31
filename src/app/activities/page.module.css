@@ -173,6 +173,15 @@
   background-size: cover;
 }
 
+.activityIllustrationFrameQuest {
+  background:
+    linear-gradient(165deg, rgba(34, 24, 14, 0.4) 0%, rgba(28, 18, 10, 0.7) 100%),
+    url("/images/world_map/worldmap_unnamed.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 .activityIllustrationImage {
   display: block;
   width: 100%;

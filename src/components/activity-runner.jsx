@@ -225,9 +225,6 @@ export default function ActivityRunner({ activity }) {
       {feedback ? (
         feedback.tone === "error" ? (
           <section className="action-result-card action-result-error" aria-live="polite">
-            <p>
-              <strong>Action result:</strong> ERROR
-            </p>
             <p>{feedback.text}</p>
           </section>
         ) : (

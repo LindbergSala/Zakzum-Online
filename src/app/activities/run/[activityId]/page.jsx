@@ -74,6 +74,7 @@ export default async function ActivityRunPage({ params }) {
   const activityIllustrationSrc = getActivityIllustrationSrc(activity);
   const activityIllustrationFrameClassName = [
     styles.activityIllustrationFrame,
+    activity.groupId === "quest" ? styles.activityIllustrationFrameQuest : "",
     activity.groupId === "adventure" ? styles.activityIllustrationFrameAdventure : "",
   ]
     .filter(Boolean)
