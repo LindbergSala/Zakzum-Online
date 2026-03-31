@@ -9,7 +9,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --env-file-if-exists=.env ./node_modules/tsx/dist/cli.mjs --tsconfig jsconfig.json --test \"tests/*.test.js\"",
+    "test": "node --env-file-if-exists=.env ./node_modules/tsx/dist/cli.mjs --tsconfig jsconfig.json --test",
     "test:smoke": "node --env-file-if-exists=.env ./node_modules/tsx/dist/cli.mjs --tsconfig jsconfig.json --test tests/account-validation.test.js tests/character-validation.test.js tests/core-loop-validation.test.js tests/onboarding-claim-route.test.js tests/inventory-placement.test.js",
     "test:inventory": "node --env-file-if-exists=.env ./node_modules/tsx/dist/cli.mjs --test tests/inventory-placement.test.js",
     "prisma:generate": "prisma generate",
