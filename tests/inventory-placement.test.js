@@ -9,7 +9,7 @@ import {
   normalizeInventoryItems,
   splitItemStack,
   toItemsByKey,
-} from "../src/components/inventory/inventoryLogic.js";
+} from "../src/components/inventory/inventory-logic.js";
 
 function buildState(rawItems, placements) {
   const items = normalizeInventoryItems(rawItems);

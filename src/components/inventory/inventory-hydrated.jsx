@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-import Inventory from "./Inventory";
+import Inventory from "./inventory-view";
 
 function subscribe() {
   return () => {};

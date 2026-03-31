@@ -5,7 +5,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import CharacterOverview from "@/components/character-overview";
 import EnergyTimer from "@/components/energy-timer";
 import GameNav from "@/components/game-nav";
-import InventoryHydrated from "@/components/inventory/InventoryHydrated";
+import InventoryHydrated from "@/components/inventory/inventory-hydrated";
 import StatPointAllocator from "@/components/stat-point-allocator";
 import {
   buildBaseResourcesForCharacter,

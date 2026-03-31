@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import GameNav from "@/components/game-nav";
-import InventoryHydrated from "@/components/inventory/InventoryHydrated";
+import InventoryHydrated from "@/components/inventory/inventory-hydrated";
 import ShopActions from "@/components/shop-actions";
 import { getActiveCharacterForUser } from "@/lib/character";
 import {

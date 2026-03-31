@@ -1,0 +1,77 @@
+.quantityModalRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+}
+
+.quantityModalBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 10, 15, 0.78);
+  backdrop-filter: blur(2px);
+}
+
+.quantityModalCard {
+  position: relative;
+  width: min(420px, calc(100vw - 2rem));
+  border-radius: 18px;
+  border: 1px solid rgba(148, 179, 206, 0.28);
+  background:
+    linear-gradient(165deg, rgba(25, 38, 52, 0.98), rgba(15, 24, 35, 0.98));
+  box-shadow:
+    0 24px 55px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  padding: 1.1rem 1.2rem 1.25rem;
+  color: rgba(236, 245, 252, 0.95);
+}
+
+.quantityModalKicker {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(179, 208, 234, 0.78);
+  font-weight: 700;
+}
+
+.quantityModalTitle {
+  margin: 0.32rem 0 0;
+  font-size: 1.15rem;
+}
+
+.quantityModalText {
+  margin: 0.46rem 0 0;
+  color: rgba(193, 214, 232, 0.9);
+  line-height: 1.4;
+}
+
+.quantityModalForm {
+  margin-top: 0.95rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.quantityModalLabel {
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: rgba(201, 220, 236, 0.88);
+}
+
+.quantityModalInput {
+  border: 1px solid rgba(154, 184, 208, 0.35);
+  border-radius: 10px;
+  min-height: 40px;
+  padding: 0.52rem 0.62rem;
+  font: inherit;
+  color: #f2f8fc;
+  background: rgba(11, 19, 28, 0.75);
+}
+
+.quantityModalActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
