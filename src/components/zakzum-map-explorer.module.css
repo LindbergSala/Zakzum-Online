@@ -30,36 +30,35 @@
 }
 
 .hotspot {
+  all: unset;
   position: absolute;
   z-index: 4;
   transform: translate(-50%, -50%);
   display: block;
+  box-sizing: border-box;
   padding: 0;
   margin: 0;
   border-radius: 8px;
-  border: 1px solid transparent;
+  border: 0;
   background: transparent;
   cursor: pointer;
-  transition:
-    border-color 120ms ease,
-    box-shadow 120ms ease,
-    background-color 120ms ease;
+  box-shadow: none;
 }
 
 .hotspot:hover {
-  border-color: rgba(252, 222, 172, 0.78);
-  background: rgba(255, 233, 189, 0.08);
-  box-shadow: 0 0 0 1px rgba(110, 60, 28, 0.18);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .hotspot:focus-visible {
-  outline: 2px solid rgba(252, 222, 172, 0.9);
+  outline: 2px solid rgba(252, 222, 172, 0.82);
   outline-offset: 1px;
 }
 
 .regionLocationHotspot:hover,
 .regionLocationHotspot:focus-visible {
-  border-color: rgba(255, 246, 222, 0.86);
+  border: 0;
 }
 
 .hotspotLabel {
@@ -166,6 +165,8 @@
 .regionMapFrame {
   width: 100%;
   margin: 0;
+  display: flex;
+  justify-content: center;
   background:
     linear-gradient(
       155deg,
@@ -181,11 +182,15 @@
 }
 
 .regionMapWrap {
-  width: 100%;
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .regionMapImage {
-  width: 100%;
+  display: block;
+  width: auto;
   max-width: min(860px, 100%);
   max-height: min(67dvh, 690px);
   height: auto;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import styles from "./zakzum-map-explorer.module.css";
 
@@ -8,15 +8,116 @@ const REGION_HINT_TEXT =
   "Click a name on the map to open its location lore.";
 const NO_REGIONS_TEXT = "No regional map data was found in /public/images/locations.";
 const EXTRA_LOCATIONS_TEXT = "These locations are available but are not labeled in this map image.";
+const WORLD_MAP_FALLBACK_MAX_DISTANCE = 9;
+const REGION_MAP_FALLBACK_MAX_DISTANCE = 6;
+const DEFAULT_WORLD_REGION_EXPANSION = {
+  scaleX: 1.22,
+  scaleY: 1.38,
+  minWidth: 9,
+  minHeight: 6,
+};
+const WORLD_REGION_EXPANSION_BY_REGION_ID = {
+  ironspine: {
+    scaleX: 1.12,
+    scaleY: 1.2,
+    minWidth: 8.4,
+    minHeight: 5.2,
+  },
+  lower_holds: {
+    scaleX: 1.1,
+    scaleY: 1.16,
+    minWidth: 8.2,
+    minHeight: 5.2,
+  },
+  unspeakable_lands: {
+    scaleX: 1.03,
+    scaleY: 1.08,
+    minWidth: 8.6,
+    minHeight: 6,
+  },
+};
+const DENSE_REGION_IDS = new Set([
+  "lands_between",
+  "southern_wastes",
+  "unspeakable_lands",
+  "western_coast",
+  "heartlands",
+]);
+const REGION_FALLBACK_DISTANCE_BY_REGION_ID = {
+  lands_between: 8.5,
+  southern_wastes: 8,
+  unspeakable_lands: 8.5,
+  western_coast: 8,
+  heartlands: 7.5,
+};
 
 function getFallbackLore(locationName, regionName) {
   return `${locationName} is a known landmark in ${regionName}.`;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function expandHotspot(
+  hotspot,
+  { scaleX = 1.2, scaleY = 1.35, minWidth = 0, minHeight = 0 } = {},
+) {
+  return {
+    ...hotspot,
+    width: clamp(Math.max(hotspot.width * scaleX, minWidth), 1, 100),
+    height: clamp(Math.max(hotspot.height * scaleY, minHeight), 1, 100),
+  };
+}
+
+function getPointInPercent(event, element) {
+  const rect = element.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) {
+    return null;
+  }
+
+  return {
+    x: ((event.clientX - rect.left) / rect.width) * 100,
+    y: ((event.clientY - rect.top) / rect.height) * 100,
+  };
+}
+
+function distanceToHotspot(point, hotspot) {
+  const x0 = hotspot.left - hotspot.width / 2;
+  const x1 = hotspot.left + hotspot.width / 2;
+  const y0 = hotspot.top - hotspot.height / 2;
+  const y1 = hotspot.top + hotspot.height / 2;
+
+  const dx = Math.max(x0 - point.x, 0, point.x - x1);
+  const dy = Math.max(y0 - point.y, 0, point.y - y1);
+
+  return Math.hypot(dx, dy);
+}
+
+function findClosestEntry(point, entries) {
+  if (!entries.length) {
+    return null;
+  }
+
+  let closest = null;
+
+  for (const entry of entries) {
+    const distance = distanceToHotspot(point, entry.hotspot);
+
+    if (!closest || distance < closest.distance) {
+      closest = { entry, distance };
+    }
+  }
+
+  return closest;
 }
 
 export default function ZakzumMapExplorer({
   regions = [],
   worldMapSrc = "/images/world_map/worldmap_named.png",
 }) {
+  const worldMapWrapRef = useRef(null);
+  const regionMapWrapRef = useRef(null);
   const [activeRegionId, setActiveRegionId] = useState(null);
   const [activeLocationId, setActiveLocationId] = useState(null);
 
@@ -32,14 +133,71 @@ export default function ZakzumMapExplorer({
   );
 
   const mapHotspotRegions = useMemo(
-    () => regions.filter((entry) => entry.hotspot),
+    () =>
+      regions
+        .filter((entry) => entry.hotspot)
+        .map((entry) => {
+          const expandedHotspot = expandHotspot(entry.hotspot, {
+            ...DEFAULT_WORLD_REGION_EXPANSION,
+            ...(WORLD_REGION_EXPANSION_BY_REGION_ID[entry.id] ?? {}),
+          });
+
+          return {
+            ...entry,
+            hotspot: expandedHotspot,
+            hotspotArea: expandedHotspot.width * expandedHotspot.height,
+          };
+        }),
     [regions],
   );
 
+  const worldRegionZIndexById = useMemo(() => {
+    const sortedByArea = [...mapHotspotRegions].sort(
+      (first, second) => second.hotspotArea - first.hotspotArea,
+    );
+
+    return sortedByArea.reduce((accumulator, region, index) => {
+      accumulator[region.id] = index + 1;
+      return accumulator;
+    }, {});
+  }, [mapHotspotRegions]);
+
   const activeRegionHotspotLocations = useMemo(
-    () => activeRegion?.locations.filter((entry) => entry.hotspot) ?? [],
+    () => {
+      const isDenseRegion = DENSE_REGION_IDS.has(activeRegion?.id ?? "");
+
+      return (
+        activeRegion?.locations
+          .filter((entry) => entry.hotspot)
+          .map((entry) => {
+            const expandedHotspot = expandHotspot(entry.hotspot, {
+              scaleX: isDenseRegion ? 1.3 : 1.18,
+              scaleY: isDenseRegion ? 1.45 : 1.32,
+              minWidth: isDenseRegion ? 9.5 : 8,
+              minHeight: isDenseRegion ? 6 : 5,
+            });
+
+            return {
+              ...entry,
+              hotspot: expandedHotspot,
+              hotspotArea: expandedHotspot.width * expandedHotspot.height,
+            };
+          }) ?? []
+      );
+    },
     [activeRegion],
   );
+
+  const locationZIndexById = useMemo(() => {
+    const sortedByArea = [...activeRegionHotspotLocations].sort(
+      (first, second) => second.hotspotArea - first.hotspotArea,
+    );
+
+    return sortedByArea.reduce((accumulator, location, index) => {
+      accumulator[location.id] = index + 1;
+      return accumulator;
+    }, {});
+  }, [activeRegionHotspotLocations]);
 
   const activeRegionExtraLocations = useMemo(
     () => activeRegion?.locations.filter((entry) => !entry.hotspot) ?? [],
@@ -64,10 +222,62 @@ export default function ZakzumMapExplorer({
     setActiveLocationId(null);
   };
 
+  const handleWorldMapWrapClick = (event) => {
+    if (!(event.target instanceof Element) || event.target.closest("button")) {
+      return;
+    }
+
+    if (!worldMapWrapRef.current) {
+      return;
+    }
+
+    const point = getPointInPercent(event, worldMapWrapRef.current);
+    if (!point) {
+      return;
+    }
+
+    const closest = findClosestEntry(point, mapHotspotRegions);
+    if (!closest || closest.distance > WORLD_MAP_FALLBACK_MAX_DISTANCE) {
+      return;
+    }
+
+    openRegion(closest.entry.id);
+  };
+
+  const handleRegionMapWrapClick = (event) => {
+    if (!(event.target instanceof Element) || event.target.closest("button")) {
+      return;
+    }
+
+    if (!regionMapWrapRef.current) {
+      return;
+    }
+
+    const point = getPointInPercent(event, regionMapWrapRef.current);
+    if (!point) {
+      return;
+    }
+
+    const closest = findClosestEntry(point, activeRegionHotspotLocations);
+    const regionFallbackDistance =
+      REGION_FALLBACK_DISTANCE_BY_REGION_ID[activeRegion?.id] ??
+      REGION_MAP_FALLBACK_MAX_DISTANCE;
+
+    if (!closest || closest.distance > regionFallbackDistance) {
+      return;
+    }
+
+    setActiveLocationId(closest.entry.id);
+  };
+
   return (
     <>
       <div className={styles.mapFrame}>
-        <div className={styles.mapWrap}>
+        <div
+          className={styles.mapWrap}
+          ref={worldMapWrapRef}
+          onClick={handleWorldMapWrapClick}
+        >
           <Image
             src={worldMapSrc}
             alt="Map of Zakzum"
@@ -87,6 +297,7 @@ export default function ZakzumMapExplorer({
                 top: `${region.hotspot.top}%`,
                 width: `${region.hotspot.width}%`,
                 height: `${region.hotspot.height}%`,
+                zIndex: worldRegionZIndexById[region.id] ?? 1,
               }}
               aria-label={`Open regional map for ${region.name}`}
               onClick={() => openRegion(region.id)}
@@ -130,7 +341,11 @@ export default function ZakzumMapExplorer({
 
             <div className={styles.regionOverlayLayout}>
               <div className={`${styles.mapFrame} ${styles.regionMapFrame}`}>
-                <div className={`${styles.mapWrap} ${styles.regionMapWrap}`}>
+                <div
+                  className={`${styles.mapWrap} ${styles.regionMapWrap}`}
+                  ref={regionMapWrapRef}
+                  onClick={handleRegionMapWrapClick}
+                >
                   <Image
                     src={activeRegion.mapSrc}
                     alt={`${activeRegion.name} regional map`}
@@ -149,6 +364,7 @@ export default function ZakzumMapExplorer({
                         top: `${location.hotspot.top}%`,
                         width: `${location.hotspot.width}%`,
                         height: `${location.hotspot.height}%`,
+                        zIndex: locationZIndexById[location.id] ?? 1,
                       }}
                       aria-label={`Open lore for ${location.name}`}
                       onClick={() => setActiveLocationId(location.id)}

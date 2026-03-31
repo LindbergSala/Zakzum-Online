@@ -1,11 +1,18 @@
 import "server-only";
 
 import path from "node:path";
-import { readdir } from "node:fs/promises";
+import { readdir, stat } from "node:fs/promises";
 import { REGION_LOCATION_HOTSPOTS, WORLD_REGION_HOTSPOTS } from "./zakzum-map-hotspots";
 
 const WORLD_MAP_SRC = "/images/world_map/worldmap_named.png";
 const LOCATIONS_ROOT = path.join(process.cwd(), "public", "images", "locations");
+const WORLD_MAP_FILE_PATH = path.join(
+  process.cwd(),
+  "public",
+  "images",
+  "world_map",
+  "worldmap_named.png",
+);
 const IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp", ".avif"]);
 
 const REGION_NAME_OVERRIDES = {
@@ -62,6 +69,19 @@ function getRegionName(regionFolderName) {
   return REGION_NAME_OVERRIDES[regionFolderName] ?? toDisplayName(regionFolderName);
 }
 
+function withVersion(publicSrc, version) {
+  return version ? `${publicSrc}?v=${version}` : publicSrc;
+}
+
+async function getFileVersion(absoluteFilePath) {
+  try {
+    const fileStat = await stat(absoluteFilePath);
+    return Math.trunc(fileStat.mtimeMs).toString(36);
+  } catch {
+    return "";
+  }
+}
+
 async function readRegion(regionFolderName) {
   const regionPath = path.join(LOCATIONS_ROOT, regionFolderName);
   const regionName = getRegionName(regionFolderName);
@@ -78,26 +98,33 @@ async function readRegion(regionFolderName) {
     return null;
   }
 
-  const locations = imageFileNames
-    .filter((fileName) => fileName !== realmMapFileName)
-    .map((fileName) => {
-      const rawName = stripExtension(fileName);
-      const locationName = toDisplayName(rawName);
+  const locations = (
+    await Promise.all(
+      imageFileNames.filter((fileName) => fileName !== realmMapFileName).map(async (fileName) => {
+        const filePath = path.join(regionPath, fileName);
+        const fileVersion = await getFileVersion(filePath);
 
-      return {
-        id: toSlug(rawName),
-        name: locationName,
-        imageSrc: `/images/locations/${regionFolderName}/${fileName}`,
-        lore: buildLocationLore(locationName, regionName),
-        hotspot: REGION_LOCATION_HOTSPOTS[regionFolderName]?.[toSlug(rawName)] ?? null,
-      };
-    })
+        const rawName = stripExtension(fileName);
+        const locationName = toDisplayName(rawName);
+
+        return {
+          id: toSlug(rawName),
+          name: locationName,
+          imageSrc: withVersion(`/images/locations/${regionFolderName}/${fileName}`, fileVersion),
+          lore: buildLocationLore(locationName, regionName),
+          hotspot: REGION_LOCATION_HOTSPOTS[regionFolderName]?.[toSlug(rawName)] ?? null,
+        };
+      }),
+    )
+  )
     .sort((first, second) => first.name.localeCompare(second.name));
+
+  const realmMapVersion = await getFileVersion(path.join(regionPath, realmMapFileName));
 
   return {
     id: regionFolderName,
     name: regionName,
-    mapSrc: `/images/locations/${regionFolderName}/${realmMapFileName}`,
+    mapSrc: withVersion(`/images/locations/${regionFolderName}/${realmMapFileName}`, realmMapVersion),
     hotspot: WORLD_REGION_HOTSPOTS[regionFolderName] ?? null,
     locations,
   };
@@ -114,8 +141,10 @@ export async function getZakzumAtlasData() {
     await Promise.all(regionFolderNames.map((regionFolderName) => readRegion(regionFolderName)))
   ).filter((entry) => entry !== null);
 
+  const worldMapVersion = await getFileVersion(WORLD_MAP_FILE_PATH);
+
   return {
-    worldMapSrc: WORLD_MAP_SRC,
+    worldMapSrc: withVersion(WORLD_MAP_SRC, worldMapVersion),
     regions,
   };
 }

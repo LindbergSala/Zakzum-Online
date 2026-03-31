@@ -351,35 +351,47 @@ export const REGION_LOCATION_HOTSPOTS = {
     }
   },
   "lands_between": {
+    "citadel-of-bones": {
+      "left": 67.8,
+      "top": 46.4,
+      "width": 29.8,
+      "height": 6.2
+    },
     "forgotten-archives": {
-      "left": 58.9759,
-      "top": 88.8253,
-      "width": 32.6988,
-      "height": 5.3133
-    },
-    "fort-hope": {
-      "left": 37.8916,
-      "top": 71.2651,
-      "width": 34.1205,
-      "height": 16.5301
-    },
-    "graveshade": {
-      "left": 25.6024,
-      "top": 53.8253,
-      "width": 24.1687,
-      "height": 8.6867
-    },
-    "the-chapel-of-rebirth": {
-      "left": 24,
-      "top": 28,
-      "width": 23,
+      "left": 58.2,
+      "top": 84.7,
+      "width": 29,
       "height": 11
     },
-    "the-hollow-throne": {
-      "left": 68.6145,
-      "top": 44.8193,
-      "width": 24.8795,
-      "height": 11.1325
+    "fort-hope": {
+      "left": 34.4,
+      "top": 73.7,
+      "width": 22.2,
+      "height": 6.3
+    },
+    "graveshade": {
+      "left": 25.2,
+      "top": 52.8,
+      "width": 21.5,
+      "height": 6.1
+    },
+    "the-chapel-of-rebirth": {
+      "left": 24.2,
+      "top": 31,
+      "width": 20.5,
+      "height": 11.3
+    },
+    "the-dead-forest": {
+      "left": 69.5,
+      "top": 61.9,
+      "width": 21,
+      "height": 11
+    },
+    "the-singing-court": {
+      "left": 65.6,
+      "top": 15.2,
+      "width": 24.5,
+      "height": 11.2
     }
   },
   "lower_holds": {
@@ -503,6 +515,12 @@ export const REGION_LOCATION_HOTSPOTS = {
       "width": 58.4537,
       "height": 7.7778
     },
+    "the-endless-castle": {
+      "left": 67.9,
+      "top": 81.8519,
+      "width": 31.1111,
+      "height": 3.75
+    },
     "the-many-colored-gate": {
       "left": 25.5556,
       "top": 50.3241,
@@ -512,14 +530,20 @@ export const REGION_LOCATION_HOTSPOTS = {
     "the-road-of-emptyness": {
       "left": 21.7593,
       "top": 65.5556,
-      "width": 34.7444,
-      "height": 4.6667
+      "width": 35.3333,
+      "height": 4.5
     },
     "the-valleys-of-unrest": {
       "left": 61.4815,
       "top": 62.6852,
       "width": 38.8963,
       "height": 5.7037
+    },
+    "tower-of-crystals": {
+      "left": 47.037,
+      "top": 27.8704,
+      "width": 27.1111,
+      "height": 4.5
     },
     "weaping-gate": {
       "left": 16.6667,
