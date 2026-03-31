@@ -160,6 +160,17 @@
   box-shadow:
     0 14px 24px rgba(31, 18, 8, 0.22),
     inset 0 1px 0 rgba(255, 245, 218, 0.18);
+  display: grid;
+  place-items: center;
+}
+
+.activityIllustrationFrameAdventure {
+  background:
+    linear-gradient(165deg, rgba(22, 17, 11, 0.42) 0%, rgba(20, 14, 8, 0.72) 100%),
+    url("/images/world_map/worldmap_unnamed.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .activityIllustrationImage {
@@ -167,7 +178,8 @@
   width: 100%;
   height: auto;
   max-height: min(44dvh, 420px);
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   border-radius: inherit;
 }
 

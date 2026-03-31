@@ -30,12 +30,25 @@ const QUEST_ACTIVITY_IMAGE_BY_TIER = {
   5: "/images/activities/quest/heartlands/Quest_V.png",
 };
 
+const ADVENTURE_ACTIVITY_IMAGE_BY_TIER = {
+  1: "/images/activities/adventure/heartlands/Adventure_I.png",
+  2: "/images/activities/adventure/heartlands/Adventure_II.png",
+  3: "/images/activities/adventure/heartlands/Adventure_III.png",
+  4: "/images/activities/adventure/heartlands/Adventure_IV.png",
+  5: "/images/activities/adventure/heartlands/Adventure_V.png",
+};
+
+const ACTIVITY_IMAGE_BY_GROUP_AND_TIER = {
+  quest: QUEST_ACTIVITY_IMAGE_BY_TIER,
+  adventure: ADVENTURE_ACTIVITY_IMAGE_BY_TIER,
+};
+
 function getActivityIllustrationSrc(activity) {
-  if (!activity || activity.groupId !== "quest") {
+  if (!activity || typeof activity.tier !== "number") {
     return null;
   }
 
-  return QUEST_ACTIVITY_IMAGE_BY_TIER[activity.tier] ?? null;
+  return ACTIVITY_IMAGE_BY_GROUP_AND_TIER[activity.groupId]?.[activity.tier] ?? null;
 }
 
 export default async function ActivityRunPage({ params }) {
@@ -59,6 +72,12 @@ export default async function ActivityRunPage({ params }) {
         ? "/adventure"
         : `/activities/${activity.groupId ?? activity.id}`;
   const activityIllustrationSrc = getActivityIllustrationSrc(activity);
+  const activityIllustrationFrameClassName = [
+    styles.activityIllustrationFrame,
+    activity.groupId === "adventure" ? styles.activityIllustrationFrameAdventure : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -82,7 +101,7 @@ export default async function ActivityRunPage({ params }) {
           </header>
 
           {activityIllustrationSrc ? (
-            <div className={styles.activityIllustrationFrame}>
+            <div className={activityIllustrationFrameClassName}>
               <Image
                 src={activityIllustrationSrc}
                 alt={`${activity.name} illustration`}
