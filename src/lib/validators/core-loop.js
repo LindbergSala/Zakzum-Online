@@ -178,5 +178,3 @@ export const inventoryActionSchema = z.object({
     }
   }
 });
-
-export const inventoryEquipSchema = inventoryActionSchema;

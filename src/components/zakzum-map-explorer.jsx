@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import styles from "./zakzum-map-explorer.module.css";
 import { REGION_REGION_LINK_HOTSPOTS } from "@/lib/zakzum-map-hotspots";
 import { useStartPageMusic } from "@/components/audio/start-page-music";
@@ -82,6 +83,44 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+function normalizeQueryValue(value) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+function resolveInitialOverlay({ regions, requestedRegionId, requestedLocationId }) {
+  if (!requestedRegionId && !requestedLocationId) {
+    return { regionId: null, locationId: null };
+  }
+
+  let matchedRegion = null;
+
+  if (requestedRegionId) {
+    matchedRegion = regions.find((region) => region.id === requestedRegionId) ?? null;
+  }
+
+  if (!matchedRegion && requestedLocationId) {
+    matchedRegion =
+      regions.find((region) =>
+        region.locations.some((location) => location.id === requestedLocationId),
+      ) ?? null;
+  }
+
+  if (!matchedRegion) {
+    return { regionId: null, locationId: null };
+  }
+
+  const resolvedLocationId =
+    requestedLocationId &&
+    matchedRegion.locations.some((location) => location.id === requestedLocationId)
+      ? requestedLocationId
+      : null;
+
+  return {
+    regionId: matchedRegion.id,
+    locationId: resolvedLocationId,
+  };
+}
+
 function expandHotspot(
   hotspot,
   { scaleX = 1.2, scaleY = 1.35, minWidth = 0, minHeight = 0 } = {},
@@ -140,10 +179,17 @@ export default function ZakzumMapExplorer({
   worldMapSrc = "/images/world_map/worldmap_named.png",
 }) {
   const music = useStartPageMusic();
+  const searchParams = useSearchParams();
   const worldMapWrapRef = useRef(null);
   const regionMapWrapRef = useRef(null);
-  const [activeRegionId, setActiveRegionId] = useState(null);
-  const [activeLocationId, setActiveLocationId] = useState(null);
+  const requestedRegionId = normalizeQueryValue(searchParams.get("region"));
+  const requestedLocationId = normalizeQueryValue(searchParams.get("location"));
+  const initialOverlay = useMemo(
+    () => resolveInitialOverlay({ regions, requestedRegionId, requestedLocationId }),
+    [regions, requestedLocationId, requestedRegionId],
+  );
+  const [activeRegionId, setActiveRegionId] = useState(() => initialOverlay.regionId);
+  const [activeLocationId, setActiveLocationId] = useState(() => initialOverlay.locationId);
   const [hasLoggedLoreStep, setHasLoggedLoreStep] = useState(false);
 
   const activeRegion = useMemo(

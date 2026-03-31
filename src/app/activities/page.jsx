@@ -30,18 +30,23 @@ export default async function ActivitiesPage() {
         <section className={styles.heroCard}>
           <header className={styles.heroIntro}>
             <p className={styles.kicker}>Action Board</p>
-            <h1 className={`${styles.title} ${headingFont.className}`}>Activities</h1>
-            <p className={styles.lead}>
-              Choose a Heartlands contract board, then progress through its internal tiers.
-            </p>
+            <h1 className={`${styles.title} ${headingFont.className}`}>
+              Activities within The Heartlands
+            </h1>
           </header>
 
           <section className={styles.panel}>
-            <h2>Available activity groups</h2>
-            <p className={styles.muted}>
-              Quest and Adventure now follow named Heartlands locations and lore. Arena remains
-              duel-focused.
-            </p>
+            <h2>
+              Available activities based in{" "}
+              <Link
+                href="/zakzum?region=heartlands"
+                className={styles.inlineLoreLink}
+                aria-label="Open The Heartlands lore overlay"
+              >
+                The Heartlands
+              </Link>{" "}
+              of Zakzum
+            </h2>
             {activeCharacter ? (
               <>
                 <div className={styles.metricCard}>

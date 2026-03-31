@@ -31,13 +31,3 @@ export function logServerError(route, error, context = {}) {
     context,
   });
 }
-
-export function logServerInfo(route, message, context = {}) {
-  console.info("[SERVER_INFO]", {
-    timestamp: buildTimestamp(),
-    route,
-    message,
-    context,
-  });
-}
-

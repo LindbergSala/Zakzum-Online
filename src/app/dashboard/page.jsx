@@ -23,7 +23,6 @@ import {
 } from "@/lib/onboarding";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
-import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
 import styles from "./page.module.css";
 
 const headingFont = Cinzel({
@@ -37,7 +36,6 @@ const bodyFont = Source_Sans_3({
 });
 
 const DASHBOARD_LOG_ENTRY_LIMIT = 6;
-const SAFE_HEAT_LIMIT = 10;
 
 function clampPercent(value) {
   return Math.max(0, Math.min(100, Math.round(value)));
@@ -49,7 +47,7 @@ function getNextStepTarget(currentValue, step, minimumTarget = step) {
   return Math.max(minimumTarget, steppedTarget);
 }
 
-function buildDashboardGoals(character, levelProgress, logEntries) {
+function buildDashboardGoals(character, levelProgress) {
   const levelProgressPercent = clampPercent(
     (levelProgress.xp / levelProgress.nextLevelXpTarget) * 100,
   );
@@ -62,20 +60,6 @@ function buildDashboardGoals(character, levelProgress, logEntries) {
   const renownRemaining = Math.max(0, renownTarget - character.renown);
   const renownProgressPercent = clampPercent(
     (character.renown / renownTarget) * 100,
-  );
-
-  const heatProgressPercent = clampPercent(
-    ((SAFE_HEAT_LIMIT - character.heat) / SAFE_HEAT_LIMIT) * 100,
-  );
-  const isHeatInSafeRange = character.heat <= SAFE_HEAT_LIMIT;
-
-  const successCount = logEntries.filter((entry) => entry.success).length;
-  const successRate = logEntries.length
-    ? clampPercent((successCount / logEntries.length) * 100)
-    : 0;
-  const carryWeightSummary = getCharacterCarryWeightSummary(
-    character.strength,
-    character.items ?? [],
   );
 
   return [
@@ -99,40 +83,6 @@ function buildDashboardGoals(character, levelProgress, logEntries) {
       value: `${renownRemaining} Renown to ${renownTarget}`,
       hint: `Current Renown: ${character.renown}`,
       progressPercent: renownProgressPercent,
-    },
-    {
-      id: "heat",
-      label: "Heat control",
-      value: isHeatInSafeRange
-        ? `Safe range (${character.heat}/${SAFE_HEAT_LIMIT})`
-        : `${character.heat - SAFE_HEAT_LIMIT} above safe range`,
-      hint: isHeatInSafeRange
-        ? `${SAFE_HEAT_LIMIT - character.heat} margin left`
-        : "Consider low-risk actions to stabilize",
-      progressPercent: heatProgressPercent,
-    },
-    {
-      id: "weight",
-      label: "Carry weight",
-      value: `${carryWeightSummary.currentWeight}/${carryWeightSummary.maxWeight} Wt`,
-      hint:
-        carryWeightSummary.remainingWeight >= 0
-          ? `${carryWeightSummary.remainingWeight} Wt free`
-          : `${Math.abs(carryWeightSummary.remainingWeight)} Wt over limit`,
-      progressPercent: carryWeightSummary.usagePercent,
-    },
-    {
-      id: "momentum",
-      label: "Recent momentum",
-      value:
-        logEntries.length > 0
-          ? `${successRate}% success (${successCount}/${logEntries.length})`
-          : "No log data yet",
-      hint:
-        logEntries.length > 0
-          ? "Based on latest actions"
-          : "Play activities to build a trend",
-      progressPercent: successRate,
     },
   ];
 }
@@ -205,11 +155,7 @@ export default async function DashboardPage() {
     : [];
   const dashboardGoals =
     effectiveCharacter && levelProgress
-      ? buildDashboardGoals(
-          { ...effectiveCharacter, items: ownedItems },
-          levelProgress,
-          logEntries,
-        )
+      ? buildDashboardGoals(effectiveCharacter, levelProgress)
       : [];
   const compactLogEntries = logEntries.map(formatDashboardLogEntry);
   const maxResources = effectiveCharacter

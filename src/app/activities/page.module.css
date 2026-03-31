@@ -193,6 +193,19 @@
   font-size: 1.12rem;
 }
 
+.inlineLoreLink {
+  color: #6a3f20;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.inlineLoreLink:hover,
+.inlineLoreLink:focus-visible {
+  color: #8e4722;
+  text-decoration-thickness: 2px;
+}
+
 .muted {
   margin: 0.3rem 0 0.65rem;
   color: var(--ink-soft);

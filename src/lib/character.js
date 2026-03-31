@@ -4,21 +4,6 @@ import {
   resolveCharacterEnergyRegeneration,
 } from "@/lib/energy-regeneration";
 
-export const CHARACTER_RESOURCE_SELECT = {
-  id: true,
-  hp: true,
-  energy: true,
-  maxEnergy: true,
-  energyRegenAt: true,
-  gold: true,
-  xp: true,
-  level: true,
-  renown: true,
-  heat: true,
-  nextActivityRollBonus: true,
-  unspentStatPoints: true,
-};
-
 export const CHARACTER_OVERVIEW_SELECT = {
   id: true,
   name: true,
