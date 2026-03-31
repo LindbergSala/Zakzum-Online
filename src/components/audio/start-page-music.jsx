@@ -11,7 +11,7 @@ import {
 import { usePathname } from "next/navigation";
 
 const StartPageMusicContext = createContext(null);
-const MARKET_MUSIC_PATH = "/audio/music/market-sounds.mp3";
+const MARKET_MUSIC_PATH = "/audio/music/Market.wav";
 
 function resolveTrackByPathname(pathname, fallbackSrc) {
   if (typeof pathname === "string" && pathname.startsWith("/market")) {
@@ -26,7 +26,22 @@ export default function StartPageMusic({ src, children }) {
   const audioRef = useRef(null);
   const [enabled, setEnabled] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
-  const activeSrc = resolveTrackByPathname(pathname, src);
+  const [trackOverride, setTrackOverride] = useState(null);
+  const routeTrack = resolveTrackByPathname(pathname, src);
+  const activeSrc = trackOverride ?? routeTrack;
+
+  const setMusicTrackOverride = useCallback((nextSrc) => {
+    if (typeof nextSrc !== "string" || nextSrc.trim() === "") {
+      setTrackOverride(null);
+      return;
+    }
+
+    setTrackOverride(nextSrc);
+  }, []);
+
+  const clearMusicTrackOverride = useCallback(() => {
+    setTrackOverride(null);
+  }, []);
 
   const tryPlay = useCallback(async () => {
     const audio = audioRef.current;
@@ -126,6 +141,8 @@ export default function StartPageMusic({ src, children }) {
     isActive,
     buttonLabel,
     toggleMusic,
+    setTrackOverride: setMusicTrackOverride,
+    clearTrackOverride: clearMusicTrackOverride,
   };
 
   return (
@@ -155,4 +172,8 @@ export function MusicToggleButton({ className }) {
       🎻
     </button>
   );
+}
+
+export function useStartPageMusic() {
+  return useContext(StartPageMusicContext);
 }

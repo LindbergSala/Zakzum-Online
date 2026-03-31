@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import styles from "./zakzum-map-explorer.module.css";
 import { REGION_REGION_LINK_HOTSPOTS } from "@/lib/zakzum-map-hotspots";
+import { useStartPageMusic } from "@/components/audio/start-page-music";
 
 const REGION_HINT_TEXT =
   "Click a name on the map to open its location lore.";
@@ -51,6 +52,27 @@ const REGION_FALLBACK_DISTANCE_BY_REGION_ID = {
   western_coast: 8,
   heartlands: 7.5,
 };
+const REGION_MUSIC_FILE_BY_ID = {
+  amber_fields: "The Amber Fields.wav",
+  ashen_lands: "Ash Lands.wav",
+  dead_mans_land: "The Dead Man\u2019s Land.wav",
+  green_hollows: "The Green Hollows.wav",
+  heartlands: "The Heartlands.wav",
+  ironspine: "The Ironspine.wav",
+  lands_between: "The Lands Between.wav",
+  lower_holds: "The Lower Holds.wav",
+  mirkvale: "Mirkvale.wav",
+  southern_wastes: "Southern Wastes.wav",
+  unspeakable_lands: "The Unspeakable Lands.wav",
+  western_coast: "The Western Coast.wav",
+};
+const REGION_MUSIC_SRC_BY_ID = Object.entries(REGION_MUSIC_FILE_BY_ID).reduce(
+  (accumulator, [regionId, fileName]) => {
+    accumulator[regionId] = encodeURI(`/audio/music/${fileName}`);
+    return accumulator;
+  },
+  {},
+);
 
 function getFallbackLore(locationName, regionName) {
   return `${locationName} is a known landmark in ${regionName}.`;
@@ -117,6 +139,7 @@ export default function ZakzumMapExplorer({
   regions = [],
   worldMapSrc = "/images/world_map/worldmap_named.png",
 }) {
+  const music = useStartPageMusic();
   const worldMapWrapRef = useRef(null);
   const regionMapWrapRef = useRef(null);
   const [activeRegionId, setActiveRegionId] = useState(null);
@@ -258,6 +281,29 @@ export default function ZakzumMapExplorer({
   const activeLoreText = activeLocation
     ? activeLocation.lore ?? getFallbackLore(activeLocation.name, activeRegion?.name ?? "Zakzum")
     : "";
+  const activeRegionMusicSrc = activeRegion?.id
+    ? REGION_MUSIC_SRC_BY_ID[activeRegion.id] ?? null
+    : null;
+
+  useEffect(() => {
+    if (!music) {
+      return;
+    }
+
+    if (activeRegionMusicSrc) {
+      music.setTrackOverride?.(activeRegionMusicSrc);
+      return;
+    }
+
+    music.clearTrackOverride?.();
+  }, [music, activeRegionMusicSrc]);
+
+  useEffect(
+    () => () => {
+      music?.clearTrackOverride?.();
+    },
+    [music],
+  );
 
   useEffect(() => {
     if (!activeLocation || hasLoggedLoreStep) {
