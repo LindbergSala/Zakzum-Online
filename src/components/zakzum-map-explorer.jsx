@@ -5,95 +5,24 @@ import Image from "next/image";
 import styles from "./zakzum-map-explorer.module.css";
 
 const REGION_HINT_TEXT =
-  "Select a marked location to open the local lore overlay for the western coast.";
+  "Click a name on the map to open its location lore.";
+const NO_REGIONS_TEXT = "No regional map data was found in /public/images/locations.";
+const EXTRA_LOCATIONS_TEXT = "These locations are available but are not labeled in this map image.";
 
-const LOCATION_LORE_TEXT_BY_ID = {
-  "gulls-rest":
-    "Gull's Rest is a cliff village of rope bridges and whale-bone watchtowers, famous for scouts who track ships before dawn.",
-  "fort-seawall":
-    "Fort Seawall controls the western gate and keeps storm cannons loaded when pirate flags appear on the horizon.",
-  saltmere:
-    "Saltmere is a marsh-trade settlement where salt flats, ferries, and fish smokehouses fund the local militias.",
-  "hightide-manor":
-    "Hightide Manor is a fortified estate above the docks, where old noble charters still decide harbor taxes and safe anchorage rights.",
-  "stormhook-point":
-    "Stormhook Point is a jagged cape with warning beacons, salvage crews, and shrine-keepers who read the tides.",
-  "the-drowned-market":
-    "The Drowned Market opens with the tide; smugglers and relic hunters trade in flooded alleys lit by hanging lanterns.",
-  bayside:
-    "Bayside thrives on river trade and repair docks, making it the safest place to restock before inland expeditions.",
-  "the-sirens-tavern":
-    "The Sirens Tavern is the coast's rumor exchange, where captains hire blades and map routes over spiced ale.",
-};
+function getFallbackLore(locationName, regionName) {
+  return `${locationName} is a known landmark in ${regionName}.`;
+}
 
-const WESTERN_COAST_LOCATIONS = [
-  {
-    id: "gulls-rest",
-    name: "Gull's Rest",
-    imageSrc: "/images/locations/western_coast/Gulls_Rest.png",
-    hotspot: { left: 31.8, top: 9.2, width: 22.2, height: 9.8 },
-  },
-  {
-    id: "fort-seawall",
-    name: "Fort Seawall",
-    imageSrc: "/images/locations/western_coast/Fort_Seawall.png",
-    hotspot: { left: 17, top: 20.1, width: 25.5, height: 11.3 },
-  },
-  {
-    id: "saltmere",
-    name: "Saltmere",
-    imageSrc: "/images/locations/western_coast/Saltmere.png",
-    hotspot: { left: 61.8, top: 20.2, width: 20.5, height: 10.6 },
-  },
-  {
-    id: "hightide-manor",
-    name: "Hightide Manor",
-    imageSrc: "/images/locations/western_coast/Hightide_Manor.png",
-    hotspot: { left: 58.6, top: 37.1, width: 30.8, height: 11.2 },
-  },
-  {
-    id: "stormhook-point",
-    name: "Stormhook Point",
-    imageSrc: "/images/locations/western_coast/Stormhook_Point.png",
-    hotspot: { left: 18.6, top: 51.1, width: 31.8, height: 11.6 },
-  },
-  {
-    id: "the-drowned-market",
-    name: "The Drowned Market",
-    imageSrc: "/images/locations/western_coast/The_Drowned_Market.png",
-    hotspot: { left: 19.7, top: 70.6, width: 31.6, height: 14.4 },
-  },
-  {
-    id: "bayside",
-    name: "Bayside",
-    imageSrc: "/images/locations/western_coast/Bayside.png",
-    hotspot: { left: 50.6, top: 65.4, width: 18.6, height: 10.2 },
-  },
-  {
-    id: "the-sirens-tavern",
-    name: "The Sirens Tavern",
-    imageSrc: "/images/locations/western_coast/The_Sirens_Tavern.png",
-    hotspot: { left: 82.3, top: 59.6, width: 22.4, height: 14.8 },
-  },
-];
-
-const REGION_ENTRIES = [
-  {
-    id: "realm-of-half-elfs",
-    name: "Realm of Half-Elfs",
-    mapSrc: "/images/locations/western_coast/realm_map_western_coast.jpg",
-    hotspot: { left: 13.4, top: 51.2, width: 22.4, height: 13.2 },
-    locations: WESTERN_COAST_LOCATIONS,
-  },
-];
-
-export default function ZakzumMapExplorer() {
+export default function ZakzumMapExplorer({
+  regions = [],
+  worldMapSrc = "/images/world_map/worldmap_named.png",
+}) {
   const [activeRegionId, setActiveRegionId] = useState(null);
   const [activeLocationId, setActiveLocationId] = useState(null);
 
   const activeRegion = useMemo(
-    () => REGION_ENTRIES.find((entry) => entry.id === activeRegionId) ?? null,
-    [activeRegionId],
+    () => regions.find((entry) => entry.id === activeRegionId) ?? null,
+    [activeRegionId, regions],
   );
 
   const activeLocation = useMemo(
@@ -102,8 +31,23 @@ export default function ZakzumMapExplorer() {
     [activeRegion, activeLocationId],
   );
 
+  const mapHotspotRegions = useMemo(
+    () => regions.filter((entry) => entry.hotspot),
+    [regions],
+  );
+
+  const activeRegionHotspotLocations = useMemo(
+    () => activeRegion?.locations.filter((entry) => entry.hotspot) ?? [],
+    [activeRegion],
+  );
+
+  const activeRegionExtraLocations = useMemo(
+    () => activeRegion?.locations.filter((entry) => !entry.hotspot) ?? [],
+    [activeRegion],
+  );
+
   const activeLoreText = activeLocation
-    ? LOCATION_LORE_TEXT_BY_ID[activeLocation.id]
+    ? activeLocation.lore ?? getFallbackLore(activeLocation.name, activeRegion?.name ?? "Zakzum")
     : "";
 
   const openRegion = (regionId) => {
@@ -125,7 +69,7 @@ export default function ZakzumMapExplorer() {
       <div className={styles.mapFrame}>
         <div className={styles.mapWrap}>
           <Image
-            src="/images/world_map/worldmap_named.png"
+            src={worldMapSrc}
             alt="Map of Zakzum"
             width={1920}
             height={1080}
@@ -133,7 +77,7 @@ export default function ZakzumMapExplorer() {
             priority
           />
 
-          {REGION_ENTRIES.map((region) => (
+          {mapHotspotRegions.map((region) => (
             <button
               key={region.id}
               type="button"
@@ -145,7 +89,6 @@ export default function ZakzumMapExplorer() {
                 height: `${region.hotspot.height}%`,
               }}
               aria-label={`Open regional map for ${region.name}`}
-              title={region.name}
               onClick={() => openRegion(region.id)}
             >
               <span className={styles.hotspotLabel}>{region.name}</span>
@@ -153,6 +96,8 @@ export default function ZakzumMapExplorer() {
           ))}
         </div>
       </div>
+
+      {regions.length === 0 ? <p className={styles.emptyState}>{NO_REGIONS_TEXT}</p> : null}
 
       {activeRegion ? (
         <div
@@ -166,6 +111,15 @@ export default function ZakzumMapExplorer() {
             className={`${styles.overlayCard} ${styles.regionOverlayCard}`}
             onClick={(event) => event.stopPropagation()}
           >
+            <button
+              type="button"
+              className={styles.closeButton}
+              onClick={closeRegion}
+              aria-label="Close regional map"
+            >
+              Close
+            </button>
+
             <article className={styles.loreFrame}>
               <p className={styles.loreKicker}>Regional Atlas</p>
               <h2 id="region-overlay-title" className={styles.loreTitle}>
@@ -174,36 +128,55 @@ export default function ZakzumMapExplorer() {
               <p className={styles.loreText}>{REGION_HINT_TEXT}</p>
             </article>
 
-            <div className={`${styles.mapFrame} ${styles.regionMapFrame}`}>
-              <div className={`${styles.mapWrap} ${styles.regionMapWrap}`}>
-                <Image
-                  src={activeRegion.mapSrc}
-                  alt={`${activeRegion.name} regional map`}
-                  width={1024}
-                  height={1024}
-                  className={`${styles.mapImage} ${styles.regionMapImage}`}
-                />
+            <div className={styles.regionOverlayLayout}>
+              <div className={`${styles.mapFrame} ${styles.regionMapFrame}`}>
+                <div className={`${styles.mapWrap} ${styles.regionMapWrap}`}>
+                  <Image
+                    src={activeRegion.mapSrc}
+                    alt={`${activeRegion.name} regional map`}
+                    width={1024}
+                    height={1024}
+                    className={`${styles.mapImage} ${styles.regionMapImage}`}
+                  />
 
-                {activeRegion.locations.map((location) => (
-                  <button
-                    key={location.id}
-                    type="button"
-                    className={styles.hotspot}
-                    style={{
-                      left: `${location.hotspot.left}%`,
-                      top: `${location.hotspot.top}%`,
-                      width: `${location.hotspot.width}%`,
-                      height: `${location.hotspot.height}%`,
-                    }}
-                    aria-label={`Open lore for ${location.name}`}
-                    title={location.name}
-                    onClick={() => setActiveLocationId(location.id)}
-                  >
-                    <span className={styles.hotspotLabel}>{location.name}</span>
-                  </button>
-                ))}
+                  {activeRegionHotspotLocations.map((location) => (
+                    <button
+                      key={location.id}
+                      type="button"
+                      className={`${styles.hotspot} ${styles.regionLocationHotspot}`}
+                      style={{
+                        left: `${location.hotspot.left}%`,
+                        top: `${location.hotspot.top}%`,
+                        width: `${location.hotspot.width}%`,
+                        height: `${location.hotspot.height}%`,
+                      }}
+                      aria-label={`Open lore for ${location.name}`}
+                      onClick={() => setActiveLocationId(location.id)}
+                    >
+                      <span className={styles.hotspotLabel}>{location.name}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
+
+            {activeRegionExtraLocations.length > 0 ? (
+              <section className={styles.unmappedPanel}>
+                <p className={styles.unmappedText}>{EXTRA_LOCATIONS_TEXT}</p>
+                <div className={styles.unmappedButtons}>
+                  {activeRegionExtraLocations.map((location) => (
+                    <button
+                      key={location.id}
+                      type="button"
+                      className={styles.unmappedButton}
+                      onClick={() => setActiveLocationId(location.id)}
+                    >
+                      {location.name}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -220,6 +193,15 @@ export default function ZakzumMapExplorer() {
             className={`${styles.overlayCard} ${styles.locationOverlayCard}`}
             onClick={(event) => event.stopPropagation()}
           >
+            <button
+              type="button"
+              className={styles.closeButton}
+              onClick={closeLocation}
+              aria-label="Close location lore"
+            >
+              Close
+            </button>
+
             <div className={styles.overlayGrid}>
               <div className={styles.locationImageWrap}>
                 <Image

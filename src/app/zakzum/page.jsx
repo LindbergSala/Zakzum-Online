@@ -4,6 +4,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import GameNav from "@/components/game-nav";
 import ZakzumMapExplorer from "@/components/zakzum-map-explorer";
 import { requirePageUser } from "@/lib/page-auth";
+import { getZakzumAtlasData } from "@/lib/zakzum-map-data";
 import styles from "./page.module.css";
 
 const headingFont = Cinzel({
@@ -18,6 +19,7 @@ const bodyFont = Source_Sans_3({
 
 export default async function ZakzumPage() {
   await requirePageUser();
+  const atlasData = await getZakzumAtlasData();
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -33,7 +35,7 @@ export default async function ZakzumPage() {
           </header>
 
           <section className={styles.panel}>
-            <ZakzumMapExplorer />
+            <ZakzumMapExplorer regions={atlasData.regions} worldMapSrc={atlasData.worldMapSrc} />
             <p className={styles.backLink}>
               <Link href="/dashboard" aria-label="Back to dashboard">
                 &larr;
