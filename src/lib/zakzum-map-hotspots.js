@@ -6,22 +6,22 @@ export const WORLD_REGION_HOTSPOTS = {
     "height": 8.4
   },
   "ironspine": {
-    "left": 47.6,
-    "top": 18.2,
-    "width": 24,
-    "height": 8.8
+    "left": 55.2,
+    "top": 18.8,
+    "width": 20.8,
+    "height": 8.2
   },
   "unspeakable_lands": {
-    "left": 76.8,
-    "top": 25.6,
-    "width": 30,
-    "height": 16
+    "left": 80.8,
+    "top": 24.8,
+    "width": 24.8,
+    "height": 14.8
   },
   "lower_holds": {
-    "left": 53.8,
-    "top": 40.2,
-    "width": 16.8,
-    "height": 13.2
+    "left": 66.5,
+    "top": 38,
+    "width": 14.6,
+    "height": 11.8
   },
   "heartlands": {
     "left": 43.4,
@@ -42,10 +42,10 @@ export const WORLD_REGION_HOTSPOTS = {
     "height": 13.2
   },
   "lands_between": {
-    "left": 74.8,
-    "top": 58.2,
-    "width": 19.8,
-    "height": 12.9
+    "left": 82.6,
+    "top": 57.8,
+    "width": 17.8,
+    "height": 11.8
   },
   "green_hollows": {
     "left": 33.2,
@@ -70,6 +70,19 @@ export const WORLD_REGION_HOTSPOTS = {
     "top": 85.4,
     "width": 23.8,
     "height": 13.1
+  }
+};
+
+export const REGION_REGION_LINK_HOTSPOTS = {
+  "lower_holds": {
+    "realms-of-dwarfs": {
+      "label": "Realms of Dwarfs",
+      "targetRegionId": "ironspine",
+      "left": 27,
+      "top": 17,
+      "width": 32,
+      "height": 20
+    }
   }
 };
 

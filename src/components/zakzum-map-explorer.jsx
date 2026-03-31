@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import styles from "./zakzum-map-explorer.module.css";
+import { REGION_REGION_LINK_HOTSPOTS } from "@/lib/zakzum-map-hotspots";
 
 const REGION_HINT_TEXT =
   "Click a name on the map to open its location lore.";
@@ -204,6 +205,55 @@ export default function ZakzumMapExplorer({
     [activeRegion],
   );
 
+  const regionNameById = useMemo(
+    () =>
+      regions.reduce((accumulator, region) => {
+        accumulator[region.id] = region.name;
+        return accumulator;
+      }, {}),
+    [regions],
+  );
+
+  const activeRegionLinkHotspots = useMemo(() => {
+    const rawLinks = REGION_REGION_LINK_HOTSPOTS[activeRegion?.id] ?? {};
+
+    return Object.entries(rawLinks)
+      .map(([linkId, link]) => {
+        const targetRegionName = regionNameById[link.targetRegionId];
+        if (!targetRegionName) {
+          return null;
+        }
+
+        const expandedHotspot = expandHotspot(link, {
+          scaleX: 1.08,
+          scaleY: 1.12,
+          minWidth: 8,
+          minHeight: 6,
+        });
+
+        return {
+          id: linkId,
+          label: link.label ?? targetRegionName,
+          targetRegionId: link.targetRegionId,
+          targetRegionName,
+          hotspot: expandedHotspot,
+          hotspotArea: expandedHotspot.width * expandedHotspot.height,
+        };
+      })
+      .filter((entry) => entry !== null);
+  }, [activeRegion, regionNameById]);
+
+  const regionLinkZIndexById = useMemo(() => {
+    const sortedByArea = [...activeRegionLinkHotspots].sort(
+      (first, second) => second.hotspotArea - first.hotspotArea,
+    );
+
+    return sortedByArea.reduce((accumulator, link, index) => {
+      accumulator[link.id] = 500 + index;
+      return accumulator;
+    }, {});
+  }, [activeRegionLinkHotspots]);
+
   const activeLoreText = activeLocation
     ? activeLocation.lore ?? getFallbackLore(activeLocation.name, activeRegion?.name ?? "Zakzum")
     : "";
@@ -370,6 +420,25 @@ export default function ZakzumMapExplorer({
                       onClick={() => setActiveLocationId(location.id)}
                     >
                       <span className={styles.hotspotLabel}>{location.name}</span>
+                    </button>
+                  ))}
+
+                  {activeRegionLinkHotspots.map((link) => (
+                    <button
+                      key={`region-link-${link.id}`}
+                      type="button"
+                      className={styles.hotspot}
+                      style={{
+                        left: `${link.hotspot.left}%`,
+                        top: `${link.hotspot.top}%`,
+                        width: `${link.hotspot.width}%`,
+                        height: `${link.hotspot.height}%`,
+                        zIndex: regionLinkZIndexById[link.id] ?? 500,
+                      }}
+                      aria-label={`Open regional map for ${link.targetRegionName}`}
+                      onClick={() => openRegion(link.targetRegionId)}
+                    >
+                      <span className={styles.hotspotLabel}>{link.label}</span>
                     </button>
                   ))}
                 </div>
