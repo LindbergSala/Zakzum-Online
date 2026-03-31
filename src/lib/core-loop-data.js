@@ -367,8 +367,38 @@ export const ACTIVITY_DEFINITION_MAP = Object.fromEntries(
   ACTIVITY_DEFINITIONS.map((activity) => [activity.id, activity]),
 );
 
+const ACTIVITY_GROUP_AVAILABILITY = {
+  arena: {
+    isOpen: false,
+    badgeLabel: "Opening soon",
+    reason: "Arena is opening soon and is currently unavailable.",
+  },
+};
+
 export function isActivityGroupId(groupId) {
   return typeof groupId === "string" && Boolean(ACTIVITY_GROUP_MAP[groupId]);
+}
+
+export function getActivityGroupAvailability(groupId) {
+  if (!isActivityGroupId(groupId)) {
+    return {
+      isOpen: false,
+      badgeLabel: "Unavailable",
+      reason: "Activity group not found.",
+    };
+  }
+
+  return (
+    ACTIVITY_GROUP_AVAILABILITY[groupId] ?? {
+      isOpen: true,
+      badgeLabel: "Open",
+      reason: "",
+    }
+  );
+}
+
+export function isActivityGroupOpen(groupId) {
+  return getActivityGroupAvailability(groupId).isOpen;
 }
 
 export function getActivitiesForGroup(groupId) {
@@ -400,6 +430,22 @@ export function resolveActivityGroupId(activityOrId) {
   }
 
   return ACTIVITY_DEFINITION_MAP[activityOrId]?.groupId ?? null;
+}
+
+export function isActivityOpen(activityOrId) {
+  const activity =
+    typeof activityOrId === "object"
+      ? activityOrId
+      : typeof activityOrId === "string"
+        ? ACTIVITY_DEFINITION_MAP[activityOrId]
+        : null;
+
+  if (!activity) {
+    return false;
+  }
+
+  const groupId = activity.groupId ?? activity.id;
+  return isActivityGroupOpen(groupId);
 }
 
 export function getActivityGroup(groupId) {

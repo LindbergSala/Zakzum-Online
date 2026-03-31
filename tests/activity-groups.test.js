@@ -6,6 +6,9 @@ import {
   ACTIVITY_GROUPS,
   getActivitiesForGroup,
   getActivitiesForLocation,
+  getActivityGroupAvailability,
+  isActivityGroupOpen,
+  isActivityOpen,
   resolveActivityGroupId,
 } from "../src/lib/core-loop-data.js";
 import {
@@ -78,4 +81,13 @@ test("activities can be filtered by location id", () => {
   assert.ok(
     kingstonQuestActivities.every((activity) => activity.groupId === "quest"),
   );
+});
+
+test("arena group is marked as opening soon and closed", () => {
+  const availability = getActivityGroupAvailability("arena");
+
+  assert.equal(availability.isOpen, false);
+  assert.match(availability.badgeLabel, /opening soon/i);
+  assert.equal(isActivityGroupOpen("arena"), false);
+  assert.equal(isActivityOpen("arena"), false);
 });

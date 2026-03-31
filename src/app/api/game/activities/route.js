@@ -16,7 +16,9 @@ import {
   ACTIVITY_DEFINITION_MAP,
   ACTIVITY_DEFINITIONS,
   ACTIVITY_GROUPS,
+  getActivityGroupAvailability,
   getActivityLocationContext,
+  isActivityGroupOpen,
 } from "@/lib/core-loop-data";
 import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
@@ -280,6 +282,7 @@ export async function GET() {
   return NextResponse.json(
     {
       groups: ACTIVITY_GROUPS.map((group) => ({
+        availability: getActivityGroupAvailability(group.id),
         id: group.id,
         name: group.name,
         tagline: group.tagline,
@@ -388,6 +391,15 @@ export async function POST(request) {
       );
     }
     const activityGroupId = activity.groupId ?? activity.id;
+    const activityGroupAvailability = getActivityGroupAvailability(activityGroupId);
+
+    if (!isActivityGroupOpen(activityGroupId)) {
+      return NextResponse.json(
+        { message: activityGroupAvailability.reason || "This activity group is currently unavailable." },
+        { status: 403 },
+      );
+    }
+
     const activityContext = buildActivityContext(activity);
 
     const result = await runSerializableTransaction(async (tx) => {

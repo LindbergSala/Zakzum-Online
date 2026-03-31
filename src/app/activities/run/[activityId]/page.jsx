@@ -6,7 +6,7 @@ import ActivityRunner from "@/components/activity-runner";
 import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
 import { getActiveCharacterForUser } from "@/lib/character";
-import { ACTIVITY_DEFINITION_MAP } from "@/lib/core-loop-data";
+import { ACTIVITY_DEFINITION_MAP, isActivityOpen } from "@/lib/core-loop-data";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import styles from "../../page.module.css";
@@ -26,6 +26,10 @@ export default async function ActivityRunPage({ params }) {
   const activity = ACTIVITY_DEFINITION_MAP[resolvedParams.activityId];
 
   if (!activity) {
+    notFound();
+  }
+
+  if (!isActivityOpen(activity)) {
     notFound();
   }
 

@@ -1,17 +1,18 @@
 import Link from "next/link";
 
-import { ACTIVITY_GROUPS } from "@/lib/core-loop-data";
+import { ACTIVITY_GROUPS, getActivityGroupAvailability } from "@/lib/core-loop-data";
 
 export default function ActivityActions() {
   return (
     <ul className="activity-list">
       {ACTIVITY_GROUPS.map((group) => {
+        const availability = getActivityGroupAvailability(group.id);
         const ctaLabel =
           group.id === "quest"
             ? "Open Quest"
             : group.id === "adventure"
               ? "Open Adventure"
-              : "Open Arena";
+              : availability.badgeLabel;
         const groupHref =
           group.id === "quest"
             ? "/quest"
@@ -36,9 +37,15 @@ export default function ActivityActions() {
               ))}
             </div>
             <p className="activity-item-cta">
-              <Link href={groupHref}>
-                {ctaLabel}
-              </Link>
+              {availability.isOpen ? (
+                <Link href={groupHref}>
+                  {ctaLabel}
+                </Link>
+              ) : (
+                <span className="activity-item-cta-disabled" aria-disabled="true" title={availability.reason}>
+                  {ctaLabel}
+                </span>
+              )}
             </p>
           </li>
         );

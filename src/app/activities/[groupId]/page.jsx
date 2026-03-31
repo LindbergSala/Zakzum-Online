@@ -5,7 +5,11 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
 import { getActiveCharacterForUser } from "@/lib/character";
-import { getActivitiesForGroup, getActivityGroup } from "@/lib/core-loop-data";
+import {
+  getActivitiesForGroup,
+  getActivityGroup,
+  getActivityGroupAvailability,
+} from "@/lib/core-loop-data";
 import { getRecommendedStarterActivity } from "@/lib/onboarding";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
@@ -55,10 +59,8 @@ export default async function ActivityGroupPage({ params }) {
     notFound();
   }
 
-  const activities = getActivitiesForGroup(group.id);
+  const availability = getActivityGroupAvailability(group.id);
   const user = await requirePageUser();
-  const activeCharacter = await getActiveCharacterForUser(user.id);
-  const starterActivity = getRecommendedStarterActivity();
   const groupThemeClass = styles[GROUP_THEME_CLASS[group.id] ?? ""];
   const pageShellClassName = [
     styles.pageShell,
@@ -69,6 +71,35 @@ export default async function ActivityGroupPage({ params }) {
   ]
     .filter(Boolean)
     .join(" ");
+
+  if (!availability.isOpen) {
+    return (
+      <div className={pageShellClassName}>
+        <main className={styles.main}>
+          <GameNav />
+          <section className={styles.heroCard}>
+            <header className={styles.heroIntro}>
+              <p className={styles.kicker}>Activity Group</p>
+              <h1 className={`${styles.title} ${headingFont.className}`}>{group.name}</h1>
+              <p className={styles.lead}>{availability.badgeLabel}</p>
+            </header>
+
+            <section className={styles.panel}>
+              <h2>Opening soon</h2>
+              <p className={styles.muted}>{availability.reason}</p>
+              <p className={styles.backLink}>
+                <Link href="/activities">Back to activities</Link>
+              </p>
+            </section>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
+  const activities = getActivitiesForGroup(group.id);
+  const activeCharacter = await getActiveCharacterForUser(user.id);
+  const starterActivity = getRecommendedStarterActivity();
 
   return (
     <div className={pageShellClassName}>
