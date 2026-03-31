@@ -64,15 +64,25 @@ function formatSellPrice(sellValue) {
   return parts.length > 0 ? parts.join(" + ") : "No value";
 }
 
-export default function ShopActions({ items }) {
+export default function ShopActions({ items, marketId = null }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [activeActionKey, setActiveActionKey] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [lastTransaction, setLastTransaction] = useState(null);
 
-  async function handleBuy(itemId) {
+  async function handleBuy(itemId, itemMarketId = null) {
     const actionKey = `buy:${itemId}`;
+    const resolvedMarketId = marketId ?? itemMarketId ?? null;
+
+    if (!resolvedMarketId) {
+      setFeedback({
+        tone: "error",
+        text: "No vendor selected for this purchase.",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setActiveActionKey(actionKey);
     setFeedback(null);
@@ -82,7 +92,7 @@ export default function ShopActions({ items }) {
       const response = await fetch("/api/game/shop", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId, action: "buy" }),
+        body: JSON.stringify({ itemId, action: "buy", marketId: resolvedMarketId }),
       });
 
       const data = await response.json();
@@ -218,7 +228,7 @@ export default function ShopActions({ items }) {
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleBuy(item.id)}
+                    onClick={() => handleBuy(item.id, item.marketId)}
                     disabled={isLoading || (!item.isStackable && item.owned)}
                   >
                     {isLoading && activeActionKey === `buy:${item.id}`

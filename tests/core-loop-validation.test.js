@@ -23,11 +23,23 @@ test("shop schema accepts buy payload with itemId", () => {
   expectValid(shopPurchaseSchema, {
     action: "buy",
     itemId: "iron-sword",
+    marketId: "blacksmith-forge",
   });
 });
 
 test("shop schema rejects empty payload", () => {
   expectInvalid(shopPurchaseSchema, {}, "itemId");
+});
+
+test("shop schema rejects buy payload without marketId", () => {
+  expectInvalid(
+    shopPurchaseSchema,
+    {
+      action: "buy",
+      itemId: "iron-sword",
+    },
+    "marketId",
+  );
 });
 
 test("shop schema rejects buy payload with quantity", () => {
@@ -36,6 +48,7 @@ test("shop schema rejects buy payload with quantity", () => {
     {
       action: "buy",
       itemId: "iron-sword",
+      marketId: "blacksmith-forge",
       quantity: 2,
     },
     "quantity",

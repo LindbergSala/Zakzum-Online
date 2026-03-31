@@ -96,6 +96,10 @@ export default function AccountSettingsPanel({ currentEmail, mode = "all" }) {
       setCurrentPassword("");
       setNextPassword("");
       setConfirmPassword("");
+      if (data.requiresRelogin) {
+        router.push("/login");
+        router.refresh();
+      }
     } catch {
       setPasswordFeedback({ tone: "error", text: "Could not update password." });
     } finally {

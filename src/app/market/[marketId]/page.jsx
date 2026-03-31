@@ -41,6 +41,24 @@ const marketShellClassById = {
   "leathermaker-workshop": "leathermakerPageShell",
 };
 
+function summarizeOwnedByItemId(ownedItems = []) {
+  const summary = {};
+
+  for (const item of ownedItems) {
+    const quantity = Math.max(1, Number(item.quantity) || 1);
+    const current = summary[item.itemId] ?? {
+      quantity: 0,
+      equipped: false,
+    };
+
+    current.quantity += quantity;
+    current.equipped = current.equipped || Boolean(item.isEquipped);
+    summary[item.itemId] = current;
+  }
+
+  return summary;
+}
+
 export default async function MarketVendorPage({ params }) {
   const resolvedParams = await params;
   const market = MARKET_DEFINITION_MAP[resolvedParams.marketId];
@@ -75,9 +93,7 @@ export default async function MarketVendorPage({ params }) {
       })
     : [];
 
-  const ownedById = Object.fromEntries(
-    ownedItemsSummary.map((item) => [item.itemId, item]),
-  );
+  const ownedById = summarizeOwnedByItemId(ownedItemsSummary);
   const carryWeightSummary = activeCharacter
     ? getCharacterCarryWeightSummary(activeCharacter.strength, ownedItemsSummary)
     : null;
@@ -97,7 +113,7 @@ export default async function MarketVendorPage({ params }) {
     effectLabel: formatItemEffectLabel(item.effects),
     owned: (Number(ownedById[item.id]?.quantity) || 0) > 0,
     ownedQuantity: Number(ownedById[item.id]?.quantity) || 0,
-    equipped: Boolean(ownedById[item.id]?.isEquipped),
+    equipped: Boolean(ownedById[item.id]?.equipped),
     sellValue: getShopItemSellValue(item),
     isStackable: isShopItemStackable(item),
   }));
@@ -180,6 +196,7 @@ export default async function MarketVendorPage({ params }) {
                   <div className={styles.actionsWrap}>
                     <ShopActions
                       items={shopItems}
+                      marketId={market.id}
                     />
                   </div>
                 ) : (

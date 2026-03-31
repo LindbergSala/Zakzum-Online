@@ -119,10 +119,28 @@ export async function PATCH(request) {
       data: { passwordHash: nextPasswordHash },
     });
 
-    return NextResponse.json(
-      { message: "Password updated." },
+    await prisma.session.deleteMany({
+      where: { userId: user.id },
+    });
+
+    const response = NextResponse.json(
+      {
+        message: "Password updated. Please log in again.",
+        requiresRelogin: true,
+      },
       { status: 200 },
     );
+    response.cookies.set(
+      SESSION_COOKIE_NAME,
+      "",
+      getExpiredSessionCookieOptions(),
+    );
+    response.cookies.set(
+      HALF_ORC_RELENTLESS_COOKIE_NAME,
+      "",
+      getExpiredSessionCookieOptions(),
+    );
+    return response;
   } catch (caughtError) {
     if (
       caughtError instanceof Prisma.PrismaClientKnownRequestError &&
