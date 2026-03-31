@@ -42,6 +42,13 @@ Open `http://localhost:3000`.
 4. Run `npm run lint`, `npm test`, and `npm run build`.
 5. Open PR.
 
+## Course Evidence (SV)
+
+- Kursmålsunderlag: `docs/kursmal-checklista.md`
+- Projektplan/PM: `docs/PoC-PM.md`
+- User stories/backlog: `docs/user-stories.md`
+- Git-process: `GIT-FLOW.md`
+
 ## Environment Variables
 
 Required:
