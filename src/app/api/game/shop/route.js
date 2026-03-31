@@ -29,6 +29,7 @@ import {
   getCharacterCarryWeightSummary,
   getItemWeightById,
 } from "@/lib/weight-rules";
+import { MARKET_DEFINITION_MAP } from "@/lib/market-data";
 
 const SHOP_CHARACTER_SELECT = {
   id: true,
@@ -260,6 +261,7 @@ export async function POST(request) {
   }
 
   const action = parsed.data.action ?? "buy";
+  const requestedMarketId = parsed.data.marketId ?? null;
   const activeCharacter = await getActiveCharacterForUser(user.id);
 
   if (!activeCharacter) {
@@ -272,6 +274,30 @@ export async function POST(request) {
   if (action === "buy" && !parsed.data.itemId) {
     return NextResponse.json(
       { message: "Buying requires an item id." },
+      { status: 400 },
+    );
+  }
+
+  const requestedMarket =
+    action === "buy" && requestedMarketId
+      ? MARKET_DEFINITION_MAP[requestedMarketId] ?? null
+      : null;
+
+  if (action === "buy" && !requestedMarketId) {
+    return NextResponse.json(
+      { message: "Buying requires a market id." },
+      { status: 400 },
+    );
+  }
+
+  if (
+    action === "buy" &&
+    (!requestedMarket ||
+      requestedMarket.status !== "open" ||
+      !requestedMarket.supportsPurchases)
+  ) {
+    return NextResponse.json(
+      { message: "Selected vendor is not available for purchases." },
       { status: 400 },
     );
   }
@@ -448,11 +474,11 @@ export async function POST(request) {
           resources: getCharacterResourceSnapshot(latestCharacter),
         };
       }
-      if (!canItemBePurchased(itemDefinition)) {
+      if (!canItemBePurchased(itemDefinition, requestedMarket.id)) {
         return {
           ok: false,
           status: 400,
-          message: "This item cannot be purchased from market vendors.",
+          message: "This item is not sold by the selected vendor.",
           resources: getCharacterResourceSnapshot(latestCharacter),
         };
       }
@@ -608,13 +634,13 @@ export async function POST(request) {
           details: {
             action: "buy",
             item: {
-              id: itemDefinition.id,
-              name: itemDefinition.name,
-              itemRecordId: itemRecord.id,
-              marketId: getItemMarketIds(itemDefinition)[0] ?? null,
-              slot: itemDefinition.slot,
-              price: goldCost,
-              renownPrice: renownCost,
+                id: itemDefinition.id,
+                name: itemDefinition.name,
+                itemRecordId: itemRecord.id,
+                marketId: requestedMarket.id,
+                slot: itemDefinition.slot,
+                price: goldCost,
+                renownPrice: renownCost,
               sellValue: getShopItemSellValue(itemDefinition),
               weight: itemDefinition.weight,
               description: itemDefinition.description,

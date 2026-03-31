@@ -18,6 +18,8 @@ import { loginSchema } from "@/lib/validators/auth";
 
 const INVALID_CREDENTIALS_MESSAGE = "Incorrect email or password.";
 const RATE_LIMIT_MESSAGE = "Too many login attempts. Please try again later.";
+const DUMMY_PASSWORD_HASH =
+  "$2b$12$GK1dFUqDAm57Is0AVxiy5uWaqLdqpiQqF.RDBBo1TTw9jmHp4CEDy";
 
 export async function POST(request) {
   const originError = validateWriteRequestOrigin(request);
@@ -71,17 +73,10 @@ export async function POST(request) {
       },
     });
 
-    if (!user) {
-      await recordFailedLoginAttempt(rateLimit.identifierSet);
-      return NextResponse.json(
-        { message: INVALID_CREDENTIALS_MESSAGE },
-        { status: 401 },
-      );
-    }
+    const passwordHashToCheck = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
+    const isPasswordValid = await compare(password, passwordHashToCheck);
 
-    const isPasswordValid = await compare(password, user.passwordHash);
-
-    if (!isPasswordValid) {
+    if (!user || !isPasswordValid) {
       await recordFailedLoginAttempt(rateLimit.identifierSet);
       return NextResponse.json(
         { message: INVALID_CREDENTIALS_MESSAGE },

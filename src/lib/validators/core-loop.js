@@ -4,9 +4,11 @@ import {
   ACTIVITY_DEFINITIONS,
 } from "@/lib/core-loop-data";
 import { ITEM_CATALOG } from "@/lib/items/catalog";
+import { MARKET_DEFINITIONS } from "@/lib/market-data";
 
 const ACTIVITY_IDS = ACTIVITY_DEFINITIONS.map((activity) => activity.id);
 const SHOP_ITEM_IDS = ITEM_CATALOG.map((item) => item.id);
+const MARKET_IDS = MARKET_DEFINITIONS.map((market) => market.id);
 
 export const activityActionSchema = z.object({
   activityId: z.enum(ACTIVITY_IDS),
@@ -31,6 +33,7 @@ function addDisallowedFieldIssue(ctx, fieldName, message) {
 export const shopPurchaseSchema = z.object({
   itemId: z.enum(SHOP_ITEM_IDS).optional(),
   itemRecordId: z.string().cuid().optional(),
+  marketId: z.enum(MARKET_IDS).optional(),
   action: z.enum(["buy", "sell"]).optional(),
   quantity: z.number().int().positive().optional(),
 }).strict().superRefine((data, ctx) => {
@@ -42,6 +45,14 @@ export const shopPurchaseSchema = z.object({
         ctx,
         "itemId",
         "itemId is required when action is buy.",
+      );
+    }
+
+    if (!data.marketId) {
+      addRequiredFieldIssue(
+        ctx,
+        "marketId",
+        "marketId is required when action is buy.",
       );
     }
 
@@ -69,6 +80,14 @@ export const shopPurchaseSchema = z.object({
       ctx,
       "itemRecordId",
       "itemRecordId or itemId is required when action is sell.",
+    );
+  }
+
+  if (data.marketId) {
+    addDisallowedFieldIssue(
+      ctx,
+      "marketId",
+      "marketId is not allowed when action is sell.",
     );
   }
 });
