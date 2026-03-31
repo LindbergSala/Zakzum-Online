@@ -31,7 +31,12 @@ export default async function ActivityRunPage({ params }) {
 
   const user = await requirePageUser();
   const activeCharacter = await getActiveCharacterForUser(user.id);
-  const groupPath = `/activities/${activity.groupId ?? activity.id}`;
+  const groupPath =
+    activity.groupId === "quest"
+      ? "/quest"
+      : activity.groupId === "adventure"
+        ? "/adventure"
+        : `/activities/${activity.groupId ?? activity.id}`;
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -46,6 +51,12 @@ export default async function ActivityRunPage({ params }) {
                 ? `Tier ${activity.tier} in ${activity.groupName}.`
                 : "Run this activity and resolve outcomes through the core roll engine."}
             </p>
+            {activity.locationName ? (
+              <p className={styles.lead}>
+                Location: {activity.locationName}
+                {activity.regionName ? ` (${activity.regionName})` : ""}
+              </p>
+            ) : null}
           </header>
 
           <section className={styles.panel}>

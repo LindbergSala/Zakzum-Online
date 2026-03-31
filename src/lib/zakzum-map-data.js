@@ -3,6 +3,7 @@ import "server-only";
 import path from "node:path";
 import { readdir, stat } from "node:fs/promises";
 import { REGION_LOCATION_HOTSPOTS, WORLD_REGION_HOTSPOTS } from "./zakzum-map-hotspots";
+import { HEARTLANDS_LOCATION_PROFILES, HEARTLANDS_REGION_ID } from "./heartlands-lore";
 
 const WORLD_MAP_SRC = "/images/world_map/worldmap_named.png";
 const LOCATIONS_ROOT = path.join(process.cwd(), "public", "images", "locations");
@@ -28,6 +29,22 @@ const REGION_NAME_OVERRIDES = {
   southern_wastes: "The Southern Wastes",
   unspeakable_lands: "The Unspeakable Lands",
   western_coast: "The Western Coast",
+};
+
+const HEARTLANDS_LOCATION_NAME_BY_ID = Object.fromEntries(
+  Object.values(HEARTLANDS_LOCATION_PROFILES).map((profile) => [profile.id, profile.name]),
+);
+
+const HEARTLANDS_LOCATION_LORE_BY_ID = Object.fromEntries(
+  Object.values(HEARTLANDS_LOCATION_PROFILES).map((profile) => [profile.id, profile.lore]),
+);
+
+const LOCATION_NAME_OVERRIDES_BY_REGION_AND_ID = {
+  [HEARTLANDS_REGION_ID]: HEARTLANDS_LOCATION_NAME_BY_ID,
+};
+
+const LOCATION_LORE_BY_REGION_AND_ID = {
+  [HEARTLANDS_REGION_ID]: HEARTLANDS_LOCATION_LORE_BY_ID,
 };
 
 function isImageFile(fileName) {
@@ -61,7 +78,25 @@ function toDisplayName(rawValue) {
     .join(" ");
 }
 
-function buildLocationLore(locationName, regionName) {
+function resolveLocationName(locationId, rawName, regionId) {
+  const customRegionNames = LOCATION_NAME_OVERRIDES_BY_REGION_AND_ID[regionId];
+  const customLocationName = customRegionNames?.[locationId];
+
+  if (typeof customLocationName === "string" && customLocationName.trim().length > 0) {
+    return customLocationName;
+  }
+
+  return toDisplayName(rawName);
+}
+
+function buildLocationLore(locationId, locationName, regionId, regionName) {
+  const customRegionLore = LOCATION_LORE_BY_REGION_AND_ID[regionId];
+  const customLocationLore = customRegionLore?.[locationId];
+
+  if (typeof customLocationLore === "string" && customLocationLore.trim().length > 0) {
+    return customLocationLore;
+  }
+
   return `${locationName} is a known landmark in ${regionName}, documented in local travel records.`;
 }
 
@@ -105,14 +140,15 @@ async function readRegion(regionFolderName) {
         const fileVersion = await getFileVersion(filePath);
 
         const rawName = stripExtension(fileName);
-        const locationName = toDisplayName(rawName);
+        const locationId = toSlug(rawName);
+        const locationName = resolveLocationName(locationId, rawName, regionFolderName);
 
         return {
-          id: toSlug(rawName),
+          id: locationId,
           name: locationName,
           imageSrc: withVersion(`/images/locations/${regionFolderName}/${fileName}`, fileVersion),
-          lore: buildLocationLore(locationName, regionName),
-          hotspot: REGION_LOCATION_HOTSPOTS[regionFolderName]?.[toSlug(rawName)] ?? null,
+          lore: buildLocationLore(locationId, locationName, regionFolderName, regionName),
+          hotspot: REGION_LOCATION_HOTSPOTS[regionFolderName]?.[locationId] ?? null,
         };
       }),
     )

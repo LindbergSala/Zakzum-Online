@@ -330,6 +330,7 @@
   color: #4e3720;
   font-size: clamp(0.96rem, 1.55vw, 1.08rem);
   line-height: 1.55;
+  white-space: pre-line;
 }
 
 @media (max-width: 900px) {

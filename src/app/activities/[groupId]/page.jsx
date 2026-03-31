@@ -112,6 +112,12 @@ export default async function ActivityGroupPage({ params }) {
                         <h3>{activity.name}</h3>
                       </header>
                       <p className={styles.activityIntro}>{activity.pageIntro}</p>
+                      {activity.locationName ? (
+                        <p>
+                          <strong>Location:</strong> {activity.locationName}
+                          {activity.regionName ? ` (${activity.regionName})` : ""}
+                        </p>
+                      ) : null}
                       <p>
                         <strong>Risk:</strong> {activity.riskProfile}
                       </p>

@@ -122,6 +122,25 @@ function getNextStepHint(lastResult) {
   return "Run another activity to build momentum toward your next level and market purchase.";
 }
 
+function formatActivityContext(activityContext) {
+  if (!activityContext || typeof activityContext !== "object") {
+    return "";
+  }
+
+  const locationName = activityContext.locationName ?? "";
+  const regionName = activityContext.regionName ?? "";
+
+  if (locationName && regionName) {
+    return `${locationName}, ${regionName}`;
+  }
+
+  if (locationName) {
+    return locationName;
+  }
+
+  return regionName;
+}
+
 export default function ActivityRunner({ activity }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -167,6 +186,12 @@ export default function ActivityRunner({ activity }) {
       {typeof activity.tier === "number" ? (
         <p>
           <strong>Tier:</strong> {activity.tier}
+        </p>
+      ) : null}
+      {activity.locationName ? (
+        <p>
+          <strong>Location:</strong> {activity.locationName}
+          {activity.regionName ? ` (${activity.regionName})` : ""}
         </p>
       ) : null}
       <p>{activity.pageIntro}</p>
@@ -223,6 +248,11 @@ export default function ActivityRunner({ activity }) {
             <p className="activity-outcome-line">
               <strong>Action:</strong> {activity.name}
             </p>
+            {formatActivityContext(lastResult.activityContext) ? (
+              <p className="activity-outcome-line">
+                <strong>Location:</strong> {formatActivityContext(lastResult.activityContext)}
+              </p>
+            ) : null}
             <p className="activity-outcome-line">
               <strong>Outcome:</strong>{" "}
               {lastResult.success ? "Success" : "Failure"}

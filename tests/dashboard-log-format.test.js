@@ -58,3 +58,30 @@ test("formatDashboardLogEntry builds compact non-activity entry", () => {
   assert.equal(entry.detailLine, "Iron Sword (weapon, cost 25 Gold)");
   assert.equal(entry.deltaLine, "-25 Gold");
 });
+
+test("formatDashboardLogEntry includes activity location context when available", () => {
+  const entry = formatDashboardLogEntry({
+    id: "run-1",
+    type: "ACTIVITY",
+    activityName: "Quest I: Kingston Courier",
+    success: true,
+    createdAt: "2026-03-20T16:36:00.000Z",
+    roll: 9,
+    rollTotal: 14,
+    successTarget: 11,
+    details: {
+      activityContext: {
+        locationId: "kingston",
+        locationName: "Kingston",
+        regionId: "heartlands",
+        regionName: "The Heartlands",
+      },
+    },
+    delta: {
+      xp: 4,
+    },
+  });
+
+  assert.equal(entry.rollLine, "Roll 9 + 5 = 14 / 11");
+  assert.equal(entry.detailLine, "Kingston, The Heartlands");
+});

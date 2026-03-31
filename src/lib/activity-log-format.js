@@ -76,6 +76,30 @@ function formatLogItemDetails(entry) {
   return `${item.name ?? entry.activityName} (${item.slot ?? "unknown slot"}${pricePart})`;
 }
 
+function formatActivityContextDetails(entry) {
+  if (entry?.type !== "ACTIVITY") {
+    return null;
+  }
+
+  const activityContext = entry?.details?.activityContext;
+  if (!activityContext || typeof activityContext !== "object") {
+    return null;
+  }
+
+  const locationName = activityContext.locationName ?? "";
+  const regionName = activityContext.regionName ?? "";
+
+  if (locationName && regionName) {
+    return `${locationName}, ${regionName}`;
+  }
+
+  if (locationName) {
+    return locationName;
+  }
+
+  return regionName || null;
+}
+
 export function formatDashboardLogStatus(entry) {
   if (entry?.success === true) {
     return "SUCCESS";
@@ -129,13 +153,16 @@ export function formatDashboardDeltaLine(delta) {
 }
 
 export function formatDashboardLogEntry(entry) {
+  const activityContextLine = formatActivityContextDetails(entry);
+
   return {
     id: entry.id,
     activityName: entry.activityName ?? "Unknown action",
     status: formatDashboardLogStatus(entry),
     time: formatDashboardLogTime(entry.createdAt),
     rollLine: formatDashboardRollLine(entry),
-    detailLine: entry.type === "ACTIVITY" ? null : formatLogItemDetails(entry),
+    detailLine:
+      entry.type === "ACTIVITY" ? activityContextLine : formatLogItemDetails(entry),
     deltaLine: formatDashboardDeltaLine(entry.delta),
     isSuccess: entry.success === true,
     isFail: entry.success === false,

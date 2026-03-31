@@ -5,8 +5,14 @@ import {
   ACTIVITY_DEFINITIONS,
   ACTIVITY_GROUPS,
   getActivitiesForGroup,
+  getActivitiesForLocation,
   resolveActivityGroupId,
 } from "../src/lib/core-loop-data.js";
+import {
+  HEARTLANDS_REGION_ID,
+  HEARTLANDS_REGION_NAME,
+  getHeartlandsLocationProfile,
+} from "../src/lib/heartlands-lore.js";
 
 test("quest and adventure are grouped into five concrete activities each", () => {
   const questActivities = getActivitiesForGroup("quest");
@@ -38,4 +44,38 @@ test("adventure one starts above quest five in progression tuning", () => {
   assert.ok(adventureOne.energyCost > questFive.energyCost);
   assert.ok(adventureOne.successReward.gold > questFive.successReward.gold);
   assert.ok(adventureOne.failPenalty.hp < questFive.failPenalty.hp);
+});
+
+test("quest and adventure activities include heartlands location metadata", () => {
+  for (const groupId of ["quest", "adventure"]) {
+    const activities = getActivitiesForGroup(groupId);
+
+    for (const activity of activities) {
+      assert.equal(typeof activity.locationId, "string");
+      assert.equal(typeof activity.locationName, "string");
+      assert.equal(typeof activity.regionId, "string");
+      assert.equal(typeof activity.regionName, "string");
+
+      const profile = getHeartlandsLocationProfile(activity.locationId);
+      assert.ok(profile);
+      assert.equal(activity.locationName, profile.name);
+      assert.equal(activity.locationTitle, profile.title);
+      assert.equal(activity.regionId, HEARTLANDS_REGION_ID);
+      assert.equal(activity.regionName, HEARTLANDS_REGION_NAME);
+    }
+  }
+});
+
+test("activities can be filtered by location id", () => {
+  const kingstonActivities = getActivitiesForLocation("kingston");
+
+  assert.ok(kingstonActivities.length > 0);
+  assert.ok(
+    kingstonActivities.every((activity) => activity.locationId === "kingston"),
+  );
+
+  const kingstonQuestActivities = getActivitiesForLocation("kingston", "quest");
+  assert.ok(
+    kingstonQuestActivities.every((activity) => activity.groupId === "quest"),
+  );
 });

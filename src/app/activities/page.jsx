@@ -32,14 +32,14 @@ export default async function ActivitiesPage() {
             <p className={styles.kicker}>Action Board</p>
             <h1 className={`${styles.title} ${headingFont.className}`}>Activities</h1>
             <p className={styles.lead}>
-              Choose an activity group, then progress through its internal tiers.
+              Choose a Heartlands contract board, then progress through its internal tiers.
             </p>
           </header>
 
           <section className={styles.panel}>
             <h2>Available activity groups</h2>
             <p className={styles.muted}>
-              Quest is the lower-risk track, Adventure is the harder next tier, and Arena stays
+              Quest and Adventure now follow named Heartlands locations and lore. Arena remains
               duel-focused.
             </p>
             {activeCharacter ? (

@@ -16,6 +16,7 @@ import {
   ACTIVITY_DEFINITION_MAP,
   ACTIVITY_DEFINITIONS,
   ACTIVITY_GROUPS,
+  getActivityLocationContext,
 } from "@/lib/core-loop-data";
 import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
@@ -76,6 +77,21 @@ const ACTIVITY_ITEM_SELECT = {
   quantity: true,
   isEquipped: true,
 };
+
+function buildActivityContext(activity) {
+  const context = getActivityLocationContext(activity);
+  if (!context) {
+    return null;
+  }
+
+  return {
+    locationId: context.locationId,
+    locationName: context.locationName,
+    locationTitle: context.locationTitle,
+    regionId: context.regionId,
+    regionName: context.regionName,
+  };
+}
 
 function hashSessionToken(token) {
   return createHash("sha256").update(token).digest("hex");
@@ -268,6 +284,8 @@ export async function GET() {
         name: group.name,
         tagline: group.tagline,
         summary: group.summary,
+        regionId: group.regionId ?? null,
+        regionName: group.regionName ?? null,
         overviewBadges: group.overviewBadges ?? [],
         activities: ACTIVITY_DEFINITIONS.filter(
           (activity) => activity.groupId === group.id,
@@ -278,6 +296,11 @@ export async function GET() {
             groupId: activity.groupId,
             tier: activity.tier,
             name: activity.name,
+            locationId: activity.locationId ?? null,
+            locationName: activity.locationName ?? null,
+            locationTitle: activity.locationTitle ?? null,
+            regionId: activity.regionId ?? null,
+            regionName: activity.regionName ?? null,
             energyCost: activity.energyCost,
             riskProfile: activity.riskProfile,
             successReward: activity.successReward,
@@ -289,6 +312,11 @@ export async function GET() {
         groupId: activity.groupId,
         tier: activity.tier,
         name: activity.name,
+        locationId: activity.locationId ?? null,
+        locationName: activity.locationName ?? null,
+        locationTitle: activity.locationTitle ?? null,
+        regionId: activity.regionId ?? null,
+        regionName: activity.regionName ?? null,
         energyCost: activity.energyCost,
         successReward: activity.successReward,
         failPenalty: activity.failPenalty,
@@ -360,6 +388,7 @@ export async function POST(request) {
       );
     }
     const activityGroupId = activity.groupId ?? activity.id;
+    const activityContext = buildActivityContext(activity);
 
     const result = await runSerializableTransaction(async (tx) => {
       const latestCharacter = await tx.character.findUnique({
@@ -581,6 +610,7 @@ export async function POST(request) {
               consumedNextActivityRollBonus: consumableRollModifier,
               remainingNextActivityRollBonus: 0,
             },
+            activityContext,
             stats: statSummary,
             loot: buildLootLogDetails(lootDrop, loot, lootBlockedByCarry),
           },
@@ -652,11 +682,17 @@ export async function POST(request) {
           id: activity.id,
           groupId: result.activityGroupId,
           name: activity.name,
+          locationId: activityContext?.locationId ?? null,
+          locationName: activityContext?.locationName ?? null,
+          locationTitle: activityContext?.locationTitle ?? null,
+          regionId: activityContext?.regionId ?? null,
+          regionName: activityContext?.regionName ?? null,
           energyCost: result.activityEnergyCost,
         },
         result: {
           success: result.rollResult.success,
           energyCost: result.activityEnergyCost,
+          activityContext,
           progression: {
             leveledUp: result.leveledUp,
             gainedStatPoints: result.gainedStatPoints,

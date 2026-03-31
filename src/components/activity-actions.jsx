@@ -12,6 +12,12 @@ export default function ActivityActions() {
             : group.id === "adventure"
               ? "Open Adventure"
               : "Open Arena";
+        const groupHref =
+          group.id === "quest"
+            ? "/quest"
+            : group.id === "adventure"
+              ? "/adventure"
+              : `/activities/${group.id}`;
         const badges = Array.isArray(group.overviewBadges)
           ? group.overviewBadges.slice(0, 3)
           : [];
@@ -30,7 +36,7 @@ export default function ActivityActions() {
               ))}
             </div>
             <p className="activity-item-cta">
-              <Link href={`/activities/${group.id}`}>
+              <Link href={groupHref}>
                 {ctaLabel}
               </Link>
             </p>
