@@ -8,12 +8,36 @@ import DeleteCharacterForm from "@/components/delete-character-form";
 import styles from "./account-popup-hub.module.css";
 
 const NAV_ITEMS = [
-  { id: "security", label: "Security" },
-  { id: "identity", label: "Identity" },
-  { id: "account", label: "Account" },
-  { id: "delete-character", label: "Delete Character" },
-  { id: "log", label: "Log" },
-  { id: "statistics", label: "Statistics" },
+  {
+    id: "security",
+    label: "Security",
+    description: "Change your password and keep account access protected.",
+  },
+  {
+    id: "identity",
+    label: "Identity",
+    description: "Update the email connected to your account profile.",
+  },
+  {
+    id: "account",
+    label: "Account",
+    description: "Open critical account actions and irreversible account deletion.",
+  },
+  {
+    id: "delete-character",
+    label: "Delete Character",
+    description: "Remove your current active character from this account.",
+  },
+  {
+    id: "log",
+    label: "Log",
+    description: "Browse activity history day by day with outcomes and deltas.",
+  },
+  {
+    id: "statistics",
+    label: "Statistics",
+    description: "Review progression metrics, streaks, and performance trends.",
+  },
 ];
 
 const MODAL_TITLE_MAP = {
@@ -277,7 +301,8 @@ export default function AccountPopupHub({
             }`}
             onClick={() => openModal(item.id)}
           >
-            {item.label}
+            <span className={styles.navButtonLabel}>{item.label}</span>
+            <span className={styles.navButtonDescription}>{item.description}</span>
           </button>
         ))}
       </nav>

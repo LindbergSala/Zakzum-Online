@@ -10,10 +10,9 @@ import styles from "./game-nav.module.css";
 const gameLinks = [
   { href: "/character", label: "Character" },
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/account", label: "Account" },
-  { href: "/zakzum", label: "Zakzum" },
   { href: "/activities", label: "Activities" },
   { href: "/market", label: "Market" },
+  { href: "/zakzum", label: "Zakzum" },
 ];
 
 export default function GameNav() {
@@ -38,6 +37,9 @@ export default function GameNav() {
           inputClassName={styles.volumeSlider}
         />
         <MusicToggleButton className={`music-toggle-button ${styles.musicButton}`} />
+        <Link className={styles.accountButton} href="/account">
+          Account
+        </Link>
         <LogoutButton />
       </div>
     </header>

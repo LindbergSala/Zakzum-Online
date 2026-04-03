@@ -10,7 +10,6 @@ import {
   getActivityGroup,
   getActivityGroupAvailability,
 } from "@/lib/core-loop-data";
-import { getRecommendedStarterActivity } from "@/lib/onboarding";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import styles from "./page.module.css";
@@ -25,18 +24,47 @@ const bodyFont = Source_Sans_3({
   weight: ["400", "600", "700"],
 });
 
-function formatDelta(delta) {
+function formatCompactDelta(delta) {
   if (!delta || typeof delta !== "object") {
     return "None";
   }
 
-  return Object.entries(delta)
+  const orderedKeys = ["gold", "xp", "renown", "hp", "heat", "energy"];
+  const segments = orderedKeys
+    .map((key) => [key, Number(delta[key] ?? 0)])
+    .filter(([, value]) => value !== 0)
     .map(([key, value]) => {
-      const numericValue = Number(value) || 0;
-      const sign = numericValue > 0 ? "+" : "";
-      return `${key.toUpperCase()} ${sign}${numericValue}`;
-    })
-    .join(" | ");
+      const sign = value > 0 ? "+" : "";
+      return `${sign}${value} ${key.toUpperCase()}`;
+    });
+
+  return segments.length ? segments.join(" • ") : "None";
+}
+
+function buildGroupLead(group) {
+  if (group.id === "quest") {
+    return "Chase urgent contracts across roads, courts, and shrines where one bad call can ignite a local crisis.";
+  }
+
+  if (group.id === "adventure") {
+    return "Answer warfront summons at the edge of collapse, where every run can either save the realm or break it further.";
+  }
+
+  return group.description;
+}
+
+function buildActivityTeaser(activity, groupId) {
+  const location = activity.locationName ?? "the Heartlands frontier";
+
+  if (groupId === "quest") {
+    return `Contract in ${location}. Resolve it before road rumors turn into open trouble.`;
+  }
+
+  if (groupId === "adventure") {
+    return `Operation at ${location}. Push forward before the front fully collapses.`;
+  }
+
+  return activity.name;
 }
 
 const GROUP_THEME_CLASS = {
@@ -50,6 +78,85 @@ const GROUP_PAGE_SHELL_CLASS = {
   adventure: "adventurePageShell",
   arena: "arenaPageShell",
 };
+
+function formatTierLabel(tierValue) {
+  const numericTier = Number(tierValue);
+  const ROMAN_NUMERALS = {
+    1: "I",
+    2: "II",
+    3: "III",
+    4: "IV",
+    5: "V",
+  };
+
+  if (ROMAN_NUMERALS[numericTier]) {
+    return ROMAN_NUMERALS[numericTier];
+  }
+
+  return Number.isFinite(numericTier) && numericTier > 0 ? `${numericTier}` : "";
+}
+
+function buildOpenLabel(activity, groupId) {
+  const tierLabel = formatTierLabel(activity.tier);
+
+  if (groupId === "quest") {
+    return tierLabel ? `Open Quest ${tierLabel}` : "Open Quest";
+  }
+
+  if (groupId === "adventure") {
+    return tierLabel ? `Open Adventure ${tierLabel}` : "Open Adventure";
+  }
+
+  return `Open ${activity.name}`;
+}
+
+function buildRunLabel(activity, groupId) {
+  const tierLabel = formatTierLabel(activity.tier);
+
+  if (groupId === "quest") {
+    return tierLabel ? `Quest ${tierLabel}` : "Quest";
+  }
+
+  if (groupId === "adventure") {
+    return tierLabel ? `Adventure ${tierLabel}` : "Adventure";
+  }
+
+  return tierLabel ? `Run ${tierLabel}` : "Run";
+}
+
+function buildActivityTitle(activity, groupId) {
+  if (typeof activity.name !== "string" || activity.name.trim().length === 0) {
+    return "Unnamed run";
+  }
+
+  const tierLabel = formatTierLabel(activity.tier);
+  let strippedName = activity.name.trim();
+
+  if (groupId === "quest") {
+    strippedName = strippedName.replace(
+      new RegExp(`^Quest\\s+${tierLabel || "[IVX0-9]+"}:\\s*`, "i"),
+      "",
+    );
+  }
+
+  if (groupId === "adventure") {
+    strippedName = strippedName.replace(
+      new RegExp(`^Adventure\\s+${tierLabel || "[IVX0-9]+"}:\\s*`, "i"),
+      "",
+    );
+  }
+
+  return strippedName;
+}
+
+function buildRiskBadgeLabel(riskProfile) {
+  if (typeof riskProfile !== "string" || riskProfile.trim().length === 0) {
+    return "Risk unknown";
+  }
+
+  const [primaryClause] = riskProfile.split(",");
+  return primaryClause?.trim() || riskProfile;
+}
 
 export default async function ActivityGroupPage({ params }) {
   const resolvedParams = await params;
@@ -100,8 +207,8 @@ export default async function ActivityGroupPage({ params }) {
   }
 
   const activities = getActivitiesForGroup(group.id);
+  const shouldUseFiveAcrossLayout = group.id === "quest" || group.id === "adventure";
   const activeCharacter = await getActiveCharacterForUser(user.id);
-  const starterActivity = getRecommendedStarterActivity();
 
   return (
     <div className={pageShellClassName}>
@@ -111,60 +218,71 @@ export default async function ActivityGroupPage({ params }) {
           <header className={styles.heroIntro}>
             <p className={styles.kicker}>Activity Group</p>
             <h1 className={`${styles.title} ${headingFont.className}`}>{group.name}</h1>
-            <p className={styles.lead}>{group.description}</p>
-            {group.id === "adventure" ? (
-              <p className={styles.progressionHint}>
-                Adventure I is tuned above Quest V in both difficulty and risk/reward.
-              </p>
-            ) : null}
+            <p className={styles.lead}>{buildGroupLead(group)}</p>
           </header>
 
           <section className={styles.panel}>
-            <h2>Available runs</h2>
-
             {activeCharacter ? (
               <>
                 <div className={styles.metricCard}>
                   <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
                 </div>
 
-                <div className={styles.activityGrid}>
-                  {activities.map((activity) => (
+                <div
+                  className={`${styles.activityGrid} ${
+                    shouldUseFiveAcrossLayout ? styles.activityGridFiveAcross : ""
+                  }`}
+                >
+                  {activities.map((activity, index) => (
                     <article
                       key={activity.id}
                       className={`${styles.activityCard} ${groupThemeClass}`}
+                      style={{ "--card-index": index }}
                     >
                       <header className={styles.activityHeader}>
-                        {starterActivity?.id === activity.id ? (
-                          <p className={styles.recommendedBadge}>Recommended first run</p>
-                        ) : null}
-                        <h3>{activity.name}</h3>
-                      </header>
-                      <p className={styles.activityIntro}>{activity.pageIntro}</p>
-                      {activity.locationName ? (
-                        <p>
-                          <strong>Location:</strong> {activity.locationName}
-                          {activity.regionName ? ` (${activity.regionName})` : ""}
+                        <p className={styles.activityEyebrow}>
+                          {buildRunLabel(activity, group.id)}
                         </p>
-                      ) : null}
-                      <p>
-                        <strong>Risk:</strong> {activity.riskProfile}
+                        <h3>{buildActivityTitle(activity, group.id)}</h3>
+                        {activity.locationName ? (
+                          <p className={styles.activityLocation}>{activity.locationName}</p>
+                        ) : null}
+                      </header>
+                      <p className={styles.activityIntro}>
+                        {buildActivityTeaser(activity, group.id)}
                       </p>
-                      <p>
-                        <strong>Energy:</strong> {activity.energyCost}
-                      </p>
-                      <p>
-                        <strong>Difficulty:</strong> {activity.roll.difficulty}
-                      </p>
-                      <p>
-                        <strong>Success:</strong> {formatDelta(activity.successReward)}
-                      </p>
-                      <p>
-                        <strong>Failure:</strong> {formatDelta(activity.failPenalty)}
-                      </p>
+                      <div className={styles.activityMetaWrap}>
+                        <span className={styles.activityMetaChip}>
+                          {buildRiskBadgeLabel(activity.riskProfile)}
+                        </span>
+                        <span className={styles.activityMetaChip}>
+                          {activity.energyCost} Energy
+                        </span>
+                        <span className={styles.activityMetaChip}>
+                          Difficulty {activity.roll.difficulty}
+                        </span>
+                      </div>
+                      <div className={styles.activityStakesGrid}>
+                        <article
+                          className={`${styles.activityStakeCard} ${styles.activityStakeSuccess}`}
+                        >
+                          <p className={styles.activityStakeLabel}>On success</p>
+                          <p className={styles.activityStakeValue}>
+                            {formatCompactDelta(activity.successReward)}
+                          </p>
+                        </article>
+                        <article
+                          className={`${styles.activityStakeCard} ${styles.activityStakeFailure}`}
+                        >
+                          <p className={styles.activityStakeLabel}>On failure</p>
+                          <p className={styles.activityStakeValue}>
+                            {formatCompactDelta(activity.failPenalty)}
+                          </p>
+                        </article>
+                      </div>
                       <p className={styles.openLink}>
                         <Link href={`/activities/run/${activity.id}`}>
-                          Open {activity.name}
+                          {buildOpenLabel(activity, group.id)}
                         </Link>
                       </p>
                     </article>

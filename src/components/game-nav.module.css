@@ -177,7 +177,16 @@
   outline-offset: 2px;
 }
 
-.logoutWrap :global(button:not(.music-toggle-button)) {
+.accountButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #fff7ea;
+}
+
+.logoutWrap :global(button:not(.music-toggle-button)),
+.accountButton {
   border-radius: 999px;
   min-height: 38px;
   padding: 0.45rem 0.9rem;
@@ -186,8 +195,14 @@
   box-shadow: 0 9px 20px rgba(0, 0, 0, 0.3);
 }
 
-.logoutWrap :global(button:not(.music-toggle-button):hover) {
+.logoutWrap :global(button:not(.music-toggle-button):hover),
+.accountButton:hover {
   filter: brightness(1.05);
+}
+
+.accountButton:focus-visible {
+  outline: 2px solid rgba(255, 215, 164, 0.82);
+  outline-offset: 2px;
 }
 
 .logoutWrap :global(.feedback.error) {

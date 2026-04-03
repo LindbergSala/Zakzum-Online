@@ -13,25 +13,28 @@
       rgba(229, 205, 166, 0.5) 100%
     );
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.44rem;
+  width: min(620px, 100%);
+  margin: 0 auto;
   box-shadow:
     inset 0 1px 0 rgba(255, 250, 238, 0.5),
     0 8px 18px rgba(84, 49, 26, 0.13);
 }
 
 .navButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 36px;
-  border-radius: 999px;
-  padding: 0.34rem 0.84rem;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 0.1rem;
+  min-height: 68px;
+  border-radius: 12px;
+  padding: 0.48rem 0.8rem;
   border: 1px solid rgba(126, 81, 45, 0.36);
   font: inherit;
-  font-weight: 700;
   color: #5b3518;
   background: rgba(255, 247, 230, 0.62);
+  text-align: left;
   cursor: pointer;
   transition:
     transform 130ms ease,
@@ -51,10 +54,30 @@
   color: #fff5e5;
 }
 
+.navButtonLabel {
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.navButtonDescription {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.32;
+  color: #6a4a2e;
+}
+
+.navButtonActive .navButtonDescription {
+  color: rgba(255, 245, 229, 0.94);
+}
+
 .helperText {
   margin: 0.55rem 0 0;
   color: #6a4a2e;
   font-size: 0.9rem;
+  text-align: center;
 }
 
 .overlayRoot {
@@ -382,10 +405,6 @@
 }
 
 @media (max-width: 720px) {
-  .nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .overlayHeader {
     grid-template-columns: 1fr;
   }
