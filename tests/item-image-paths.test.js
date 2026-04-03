@@ -15,6 +15,14 @@ test("weapon item images resolve from the weapons directory", () => {
 });
 
 test("items without mapped artwork return null", () => {
-  assert.equal(getItemImagePath("tower-shield"), null);
+  assert.equal(
+    getItemImagePath("tower-shield"),
+    "/images/items/shields/tower-shield.png",
+  );
+  assert.equal(
+    getItemImagePath("warlord-belt"),
+    "/images/items/betls/warlord-belt.png",
+  );
   assert.equal(getItemImagePath("missing-item"), null);
+  assert.equal(getItemImagePath("focus-charm"), null);
 });

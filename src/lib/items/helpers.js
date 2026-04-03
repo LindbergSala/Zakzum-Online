@@ -24,6 +24,15 @@ const ITEM_IMAGE_DIRECTORY_BY_ID = {
   "reinforced-leather-armor": "armors",
   "shadow-leather-coat": "armors",
   "soft-leather-armor": "armors",
+  "buckler-shield": "shields",
+  "bulwark-tower-shield": "shields",
+  "kite-shield": "shields",
+  "tower-shield": "shields",
+  "field-helm": "helmets",
+  "war-gauntlets": "hands",
+  "iron-greaves": "legs",
+  "warlord-belt": "betls",
+  "iron-ingot": "crafting",
 };
 
 function resolveItem(itemOrId) {
