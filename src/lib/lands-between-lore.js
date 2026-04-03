@@ -1,0 +1,142 @@
+export const LANDS_BETWEEN_REGION_ID = "lands_between";
+export const LANDS_BETWEEN_REGION_NAME = "The Lands Between";
+
+export const LANDS_BETWEEN_LOCATION_ORDER = [
+  "the-singing-court",
+  "the-chapel-of-rebirth",
+  "fort-hope",
+  "graveshade",
+  "the-dead-forest",
+  "citadel-of-bones",
+  "forgotten-archives",
+];
+
+export const LANDS_BETWEEN_LOCATION_PROFILES = {
+  "the-singing-court": {
+    id: "the-singing-court",
+    name: "The Singing Court",
+    title: "The ruined seat of House Black Choir",
+    lore: [
+      "The Singing Court",
+      "",
+      "The ruined seat of House Black Choir",
+      "",
+      "A fallen court of song, pride, and sorrow.",
+      "Its halls are broken, but its voices are said to remain.",
+      "",
+      "The Singing Court was once the noble seat of House Black Choir, a line remembered for refinement, ceremony, and a deep devotion to music, memory, and ancestral prestige. In its glory, the court was known for grand halls, black stone arcades, and voices so perfectly trained that feasts and funerals alike were marked by sacred song. That beauty did not survive the curse that took the land.",
+      "",
+      "Now the court lies in ruin, half-collapsed and open to cold wind and dead silence. Yet silence is not all that lingers there. Travelers speak of faint singing drifting through broken chambers at dusk, voices layered in mournful harmony where no living choir remains. Whether the sound is memory, spirit, or something worse, none stay long enough to learn the full truth.",
+    ].join("\n"),
+  },
+  "the-chapel-of-rebirth": {
+    id: "the-chapel-of-rebirth",
+    name: "The Chapel of Rebirth",
+    title: "Ruins of a once strong fortification",
+    lore: [
+      "The Chapel of Rebirth",
+      "",
+      "Ruins of a once strong fortification",
+      "",
+      "A ruined sanctuary of faith and defiance.",
+      "Built to preserve life, now surrounded by death that will not yield.",
+      "",
+      "The Chapel of Rebirth was once a fortified holy site, raised in a time when the faithful still believed that sacred walls and blessed stone could hold back the corruption spreading across the cursed lands. Part chapel, part fortress, it served as refuge, rally point, and place of last rites for warriors and pilgrims moving too close to the darkness.",
+      "",
+      "Now only ruins remain. Its towers are broken, its courtyards cracked, and its sanctuaries defiled by time and lingering death. Even so, traces of holiness still cling to the place. Some claim its bells ring without touch in the blackest hours before dawn. Others say the chapel still fights in its own way, refusing to fall fully silent even after the faithful were driven out.",
+    ].join("\n"),
+  },
+  "fort-hope": {
+    id: "fort-hope",
+    name: "Castle Hope",
+    title: "The final fortification of the Order of Light before The Unspeakable Lands",
+    lore: [
+      "Castle Hope",
+      "",
+      "The final fortification of the Order of Light before The Unspeakable Lands",
+      "",
+      "The last strong wall before despair.",
+      "A fortress raised in faith, standing where few others would dare.",
+      "",
+      "Castle Hope is the final major stronghold of the Order of Light before the road descends toward the Unspeakable Lands. Built as a bastion against the horrors pressing out from that cursed direction, it stands on severe ground of stone, wind, and old warning. Its walls are thick, its watchtowers stern, and its halls filled with the grim devotion of those who understand exactly what lies beyond.",
+      "",
+      "The fortress is both symbol and burden. To many, it is the last true line between the living world and a darkness too vast to name lightly. Yet hope there is not gentle. It is disciplined, armed, and tired. Every knight, priest, and warden stationed at Castle Hope knows that the walls may hold for years and still never truly win. In that knowledge, the fortress earns its name.",
+    ].join("\n"),
+  },
+  graveshade: {
+    id: "graveshade",
+    name: "Graveshade",
+    title: "The marshes of the dead, where there is no rest to be found",
+    lore: [
+      "Graveshade",
+      "",
+      "The marshes of the dead, where there is no rest to be found",
+      "",
+      "A drowned wasteland of mist, reeds, and rotting memory.",
+      "A place where the dead sink, rise, and never seem to leave.",
+      "",
+      "Graveshade is a vast and miserable marshland spread across the cursed reaches of the Lands Between. Mud, stagnant water, drowned paths, and pale mist make travel there slow and treacherous even without the dead. Countless bodies from wars, plagues, and failed crossings have been swallowed by the marsh over the years, only for many never to remain buried beneath it.",
+      "",
+      "The place is dreaded for good reason. Lights move over the water where no camp should stand, voices seem to carry from fog with no speaker near, and the reeds often hide shapes that do not move like the living. Graveshade is not merely a marsh where death happened. It is a place where death settled in and refused to be disturbed.",
+    ].join("\n"),
+  },
+  "the-dead-forest": {
+    id: "the-dead-forest",
+    name: "The Dead Forest",
+    title: "The forest of the dead, where there is no rest to be found",
+    lore: [
+      "The Dead Forest",
+      "",
+      "The forest of the dead, where there is no rest to be found",
+      "",
+      "A haunted wood of bone-white trunks and endless unease.",
+      "Beautiful only from a distance, and even then not for long.",
+      "",
+      "The Dead Forest marks one of the bleakest stretches of the Lands Between, an ancient woodland where life has withered into a pale and unnatural stillness. Trees stand twisted and thin beneath a dim canopy, their bark faded like old bone and their roots wrapped around graves long broken open by time. No birds sing there, and even wind seems reluctant to stay.",
+      "",
+      "It is said the forest does not forget any who enter it. Tracks vanish, paths shift, and the dead are often glimpsed standing between the trees as though waiting for something they no longer remember. Rangers, priests, and grave-hunters have all tried to map its deeper reaches. None have returned with anything but fragments, fear, and a strong desire never to go back.",
+    ].join("\n"),
+  },
+  "citadel-of-bones": {
+    id: "citadel-of-bones",
+    name: "Citadel of Bones",
+    title: "The fort of the dead, where the Necromancer has his seat",
+    lore: [
+      "Citadel of Bones",
+      "",
+      "The fort of the dead, where the Necromancer has his seat",
+      "",
+      "A black stronghold of death and command.",
+      "Where bone, will, and sorcery are bound into dreadful order.",
+      "",
+      "Citadel of Bones is the dark fortress said to serve as the seat of a powerful Necromancer who rules over much of the restless dead in the Lands Between. Built from old stone and strengthened with grim additions of bone, iron, and burial relics, it rises like a blasphemy against both nature and memory. No living banner flies over it. None are needed.",
+      "",
+      "The citadel is feared not merely as a fortress, but as a source. Many believe the dead of the surrounding lands answer, directly or indirectly, to the will that broods within its halls. Armies have marched against it before and vanished into the curse that surrounds it. To speak of the Citadel of Bones is to speak of a place where death is no longer chaos. It has become rule.",
+    ].join("\n"),
+  },
+  "forgotten-archives": {
+    id: "forgotten-archives",
+    name: "Forgotten Archives",
+    title: "Ruins of the once most important place of secrets and knowledge",
+    lore: [
+      "Forgotten Archives",
+      "",
+      "Ruins of the once most important place of secrets and knowledge",
+      "",
+      "A ruined sanctuary of learning and forbidden truth.",
+      "Where wisdom was gathered, guarded, and ultimately left to rot.",
+      "",
+      "The Forgotten Archives were once among the greatest repositories of secrets, records, lore, and hidden knowledge in all the known realms. Scholars, chroniclers, priests, and keepers of dangerous truths once walked its halls, preserving what kingdoms feared to lose and what rulers feared others might find. In another age, it may have been one of the most important places in Zakzum.",
+      "",
+      "Now it stands as a shattered ruin, its libraries collapsed, its vaults broken, and its knowledge scattered, stolen, or left to decay in darkness. Yet much is said to remain buried within. Lost tomes, sealed chambers, and forbidden truths still draw the desperate and the ambitious to its ruins. Few who seek the Archives do so out of simple curiosity. In a cursed land, knowledge is rarely harmless, and forgotten things are often forgotten for a reason.",
+    ].join("\n"),
+  },
+};
+
+export function getLandsBetweenLocationProfile(locationId) {
+  if (typeof locationId !== "string") {
+    return null;
+  }
+
+  return LANDS_BETWEEN_LOCATION_PROFILES[locationId] ?? null;
+}

@@ -17,6 +17,64 @@
   position: relative;
 }
 
+.realmLoreOverlay {
+  position: absolute;
+  top: clamp(0.55rem, 1.6vw, 0.8rem);
+  right: clamp(0.55rem, 1.6vw, 0.8rem);
+  z-index: 30;
+  width: min(460px, calc(100% - 1.1rem));
+  max-height: min(61dvh, 500px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(104, 65, 36, 0.58);
+  background:
+    linear-gradient(
+      148deg,
+      rgba(248, 236, 212, 0.94) 0%,
+      rgba(234, 213, 177, 0.9) 100%
+    );
+  box-shadow:
+    0 14px 28px rgba(23, 13, 6, 0.27),
+    inset 0 1px 0 rgba(255, 249, 232, 0.58),
+    inset 0 -10px 16px rgba(96, 59, 33, 0.14);
+  padding: clamp(0.65rem, 1.8vw, 0.92rem);
+}
+
+.realmLoreKicker {
+  margin: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #7b4a26;
+}
+
+.realmLoreTitle {
+  margin: 0.35rem 0 0;
+  color: #2f1f0e;
+  font-size: clamp(1.1rem, 2.05vw, 1.4rem);
+  line-height: 1.08;
+}
+
+.realmLoreSubtitle {
+  margin: 0.18rem 0 0;
+  color: #5d3f26;
+  font-size: 0.84rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.realmLoreText {
+  margin: 0.52rem 0 0;
+  color: #4e3720;
+  font-size: clamp(0.84rem, 1.35vw, 0.98rem);
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
 .mapImage {
   display: block;
   width: 100%;
@@ -334,6 +392,13 @@
 }
 
 @media (max-width: 900px) {
+  .realmLoreOverlay {
+    left: 0.55rem;
+    right: 0.55rem;
+    width: auto;
+    max-height: min(44dvh, 370px);
+  }
+
   .regionOverlayCard {
     overflow: auto;
   }
@@ -358,5 +423,11 @@
 
   .locationImage {
     max-height: min(42dvh, 440px);
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .realmLoreOverlay {
+    display: none;
   }
 }

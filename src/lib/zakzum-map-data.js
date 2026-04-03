@@ -2,7 +2,36 @@ import "server-only";
 
 import atlasManifest from "./zakzum-atlas-manifest.json";
 import { REGION_LOCATION_HOTSPOTS, WORLD_REGION_HOTSPOTS } from "./zakzum-map-hotspots";
+import { AMBER_FIELDS_LOCATION_PROFILES, AMBER_FIELDS_REGION_ID } from "./amber-fields-lore";
+import { ASHEN_LANDS_LOCATION_PROFILES, ASHEN_LANDS_REGION_ID } from "./ashen-lands-lore";
+import {
+  DEAD_MANS_LAND_LOCATION_PROFILES,
+  DEAD_MANS_LAND_REGION_ID,
+} from "./dead-mans-land-lore";
 import { HEARTLANDS_LOCATION_PROFILES, HEARTLANDS_REGION_ID } from "./heartlands-lore";
+import {
+  GREEN_HOLLOWS_LOCATION_PROFILES,
+  GREEN_HOLLOWS_REGION_ID,
+} from "./green-hollows-lore";
+import { IRONSPINE_LOCATION_PROFILES, IRONSPINE_REGION_ID } from "./ironspine-lore";
+import {
+  LANDS_BETWEEN_LOCATION_PROFILES,
+  LANDS_BETWEEN_REGION_ID,
+} from "./lands-between-lore";
+import { LOWER_HOLDS_LOCATION_PROFILES, LOWER_HOLDS_REGION_ID } from "./lower-holds-lore";
+import { MIRKVALE_LOCATION_PROFILES, MIRKVALE_REGION_ID } from "./mirkvale-lore";
+import {
+  SOUTHERN_WASTES_LOCATION_PROFILES,
+  SOUTHERN_WASTES_REGION_ID,
+} from "./southern-wastes-lore";
+import {
+  UNSPEAKABLE_LANDS_LOCATION_PROFILES,
+  UNSPEAKABLE_LANDS_REGION_ID,
+} from "./unspeakable-lands-lore";
+import {
+  WESTERN_COAST_LOCATION_PROFILES,
+  WESTERN_COAST_REGION_ID,
+} from "./western-coast-lore";
 
 const REGION_NAME_OVERRIDES = {
   amber_fields: "The Amber Fields",
@@ -19,21 +48,35 @@ const REGION_NAME_OVERRIDES = {
   western_coast: "The Western Coast",
 };
 
-const HEARTLANDS_LOCATION_NAME_BY_ID = Object.fromEntries(
-  Object.values(HEARTLANDS_LOCATION_PROFILES).map((profile) => [profile.id, profile.name]),
-);
+const LOCATION_PROFILE_ENTRIES = [
+  [AMBER_FIELDS_REGION_ID, AMBER_FIELDS_LOCATION_PROFILES],
+  [ASHEN_LANDS_REGION_ID, ASHEN_LANDS_LOCATION_PROFILES],
+  [DEAD_MANS_LAND_REGION_ID, DEAD_MANS_LAND_LOCATION_PROFILES],
+  [GREEN_HOLLOWS_REGION_ID, GREEN_HOLLOWS_LOCATION_PROFILES],
+  [HEARTLANDS_REGION_ID, HEARTLANDS_LOCATION_PROFILES],
+  [IRONSPINE_REGION_ID, IRONSPINE_LOCATION_PROFILES],
+  [LANDS_BETWEEN_REGION_ID, LANDS_BETWEEN_LOCATION_PROFILES],
+  [LOWER_HOLDS_REGION_ID, LOWER_HOLDS_LOCATION_PROFILES],
+  [MIRKVALE_REGION_ID, MIRKVALE_LOCATION_PROFILES],
+  [SOUTHERN_WASTES_REGION_ID, SOUTHERN_WASTES_LOCATION_PROFILES],
+  [UNSPEAKABLE_LANDS_REGION_ID, UNSPEAKABLE_LANDS_LOCATION_PROFILES],
+  [WESTERN_COAST_REGION_ID, WESTERN_COAST_LOCATION_PROFILES],
+];
 
-const HEARTLANDS_LOCATION_LORE_BY_ID = Object.fromEntries(
-  Object.values(HEARTLANDS_LOCATION_PROFILES).map((profile) => [profile.id, profile.lore]),
-);
+const LOCATION_NAME_OVERRIDES_BY_REGION_AND_ID = {};
+const LOCATION_LORE_BY_REGION_AND_ID = {};
 
-const LOCATION_NAME_OVERRIDES_BY_REGION_AND_ID = {
-  [HEARTLANDS_REGION_ID]: HEARTLANDS_LOCATION_NAME_BY_ID,
-};
+for (const [regionId, locationProfiles] of LOCATION_PROFILE_ENTRIES) {
+  const profileEntries = Object.values(locationProfiles);
 
-const LOCATION_LORE_BY_REGION_AND_ID = {
-  [HEARTLANDS_REGION_ID]: HEARTLANDS_LOCATION_LORE_BY_ID,
-};
+  LOCATION_NAME_OVERRIDES_BY_REGION_AND_ID[regionId] = Object.fromEntries(
+    profileEntries.map((profile) => [profile.id, profile.name]),
+  );
+
+  LOCATION_LORE_BY_REGION_AND_ID[regionId] = Object.fromEntries(
+    profileEntries.map((profile) => [profile.id, profile.lore]),
+  );
+}
 
 function stripExtension(fileName) {
   return fileName.replace(/\.[^.]+$/, "");

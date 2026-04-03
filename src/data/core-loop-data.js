@@ -47,7 +47,7 @@ const QUEST_ACTIVITY_STEPS = [
     name: `Quest I: ${HEARTLANDS_LOCATIONS.kingston.locationName} Courier`,
     riskProfile: "Low risk, city dispatch",
     pageIntro:
-      `Track a missing messenger outside ${HEARTLANDS_LOCATIONS.kingston.locationName} and secure your first payout before panic spreads through the lower wards.`,
+      `Take a courier contract through ${HEARTLANDS_LOCATIONS.kingston.locationName}, where crowded wards, noble courts, and royal patrols can turn one missing dispatch into a political spark.`,
     energyCost: 2,
     roll: {
       difficulty: 11,
@@ -65,7 +65,7 @@ const QUEST_ACTIVITY_STEPS = [
     name: `Quest II: ${HEARTLANDS_LOCATIONS.goldmere.locationName} Ledger`,
     riskProfile: "Low risk, stable gains",
     pageIntro:
-      `Settle a trade dispute in ${HEARTLANDS_LOCATIONS.goldmere.locationName} before guild enforcers turn a shipping ledger disagreement into open violence.`,
+      `Broker a ledger dispute in ${HEARTLANDS_LOCATIONS.goldmere.locationName}, where coin, guild pressure, and caravan politics make every handshake feel like a negotiation trap.`,
     energyCost: 3,
     roll: {
       difficulty: 12,
@@ -83,7 +83,7 @@ const QUEST_ACTIVITY_STEPS = [
     name: `Quest III: ${HEARTLANDS_LOCATIONS.mournstead.locationName} Caravan`,
     riskProfile: "Moderate risk, balanced reward",
     pageIntro:
-      `Escort a caravan through ${HEARTLANDS_LOCATIONS.mournstead.locationName}, where every passing trader brings rumors and every delay draws bandits.`,
+      `Ride escort through ${HEARTLANDS_LOCATIONS.mournstead.locationName}, a quiet roadside village where exhausted travelers whisper of danger and bad news never lingers far behind.`,
     energyCost: 3,
     roll: {
       difficulty: 13,
@@ -101,7 +101,7 @@ const QUEST_ACTIVITY_STEPS = [
     name: `Quest IV: Pilgrims of ${HEARTLANDS_LOCATIONS.saintsHollow.locationName}`,
     riskProfile: "Moderate risk, rising pressure",
     pageIntro:
-      `Guard a pilgrim column heading to ${HEARTLANDS_LOCATIONS.saintsHollow.locationName} before raiders test the Order's routes at dusk.`,
+      `Guard pilgrims bound for ${HEARTLANDS_LOCATIONS.saintsHollow.locationName} as bells, shrines, and Order patrols hold the road against raiders testing sacred borders.`,
     energyCost: 4,
     roll: {
       difficulty: 14,
@@ -119,7 +119,7 @@ const QUEST_ACTIVITY_STEPS = [
     name: `Quest V: ${HEARTLANDS_LOCATIONS.elfhome.locationName} Boundary Oath`,
     riskProfile: "High quest risk, strong early rewards",
     pageIntro:
-      `Recover a stolen ward relic on the edge of ${HEARTLANDS_LOCATIONS.elfhome.locationName} before the forest paths close and diplomatic ties fracture.`,
+      `Recover a stolen ward relic near ${HEARTLANDS_LOCATIONS.elfhome.locationName}, where fragile trust between worlds can fracture before dusk if the forest paths close.`,
     energyCost: 4,
     roll: {
       difficulty: 15,
@@ -140,7 +140,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
     name: `Adventure I: ${HEARTLANDS_LOCATIONS.northwatch.locationName} Signal Fire`,
     riskProfile: "Higher risk than Quest V",
     pageIntro:
-      `Push beyond ${HEARTLANDS_LOCATIONS.northwatch.locationName} and relight dead signal towers before unseen threats breach the frozen passes.`,
+      `March beyond ${HEARTLANDS_LOCATIONS.northwatch.locationName} to relight warning fires across wind-cut ridges before whatever moves in the northern dark reaches the Heartlands.`,
     energyCost: 5,
     roll: {
       difficulty: 17,
@@ -158,7 +158,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
     name: `Adventure II: ${HEARTLANDS_LOCATIONS.barrowfield.locationName} Wake`,
     riskProfile: "High risk, high reward",
     pageIntro:
-      `Enter ${HEARTLANDS_LOCATIONS.barrowfield.locationName} to break a grave-surge before the dead organize beneath the mounds.`,
+      `Enter ${HEARTLANDS_LOCATIONS.barrowfield.locationName} and contain restless dead beneath the burial mounds before fear spreads from outer roads into settled lands.`,
     energyCost: 5,
     roll: {
       difficulty: 18,
@@ -176,7 +176,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
     name: `Adventure III: ${HEARTLANDS_LOCATIONS.blackthornHold.locationName} Decree`,
     riskProfile: "Severe risk, major gains",
     pageIntro:
-      `Carry a sealed decree from ${HEARTLANDS_LOCATIONS.blackthornHold.locationName} through hostile ridges where failure can trigger regional reprisals.`,
+      `Carry a sealed Blackthorn decree from ${HEARTLANDS_LOCATIONS.blackthornHold.locationName} through hostile ground where duty is absolute and failure invites ruthless reprisal.`,
     energyCost: 6,
     roll: {
       difficulty: 19,
@@ -194,7 +194,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
     name: `Adventure IV: Siege of ${HEARTLANDS_LOCATIONS.kingston.locationName}`,
     riskProfile: "Extreme risk, elite progression",
     pageIntro:
-      `Hold the walls of ${HEARTLANDS_LOCATIONS.kingston.locationName} during a coordinated breach while commanders decide which district can still be saved.`,
+      `Defend ${HEARTLANDS_LOCATIONS.kingston.locationName} during a coordinated breach, choosing which gates, wards, and noble districts can be held before the capital fractures.`,
     energyCost: 6,
     roll: {
       difficulty: 20,
@@ -212,7 +212,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
     name: "Adventure V: Heartlands Reckoning",
     riskProfile: "Maximum risk, top-tier payout",
     pageIntro:
-      `Follow converging leads from ${HEARTLANDS_LOCATIONS.kingston.locationName}, ${HEARTLANDS_LOCATIONS.northwatch.locationName}, and ${HEARTLANDS_LOCATIONS.barrowfield.locationName} to stop a realm-wide collapse before it reaches the throne.`,
+      `Follow converging threats from ${HEARTLANDS_LOCATIONS.kingston.locationName}, ${HEARTLANDS_LOCATIONS.northwatch.locationName}, and ${HEARTLANDS_LOCATIONS.barrowfield.locationName} to stop a Heartlands collapse where warning, burial, and crown all fail at once.`,
     energyCost: 7,
     roll: {
       difficulty: 21,
@@ -251,9 +251,9 @@ export const ACTIVITY_GROUPS = [
     regionId: HEARTLANDS_REGION_ID,
     regionName: HEARTLANDS_REGION_NAME,
     name: "Heartlands Quest Board",
-    tagline: "Lower risk contracts across The Heartlands",
+    tagline: "Measured contracts on crown roads and trade routes",
     summary:
-      "Reliable contracts from Kingston, Goldmere, and nearby roads to build steady momentum.",
+      "Reliable work from Kingston couriers to Goldmere ledgers and Mournstead road escorts, where caution and judgment matter as much as steel.",
     overviewBadges: [
       "Low Risk",
       "Tier I-V",
@@ -278,7 +278,7 @@ export const ACTIVITY_GROUPS = [
       },
     },
     description:
-      "Steady, lower-risk jobs rooted in The Heartlands. Learn the core loop while working named routes and settlements from the atlas.",
+      "Lower-risk Heartlands contracts tied to living settlements, pilgrim roads, and fragile border paths. Build momentum through diplomacy, escort duty, and local pressure before open war.",
     activities: QUEST_ACTIVITY_STEPS,
   },
   {
@@ -286,9 +286,9 @@ export const ACTIVITY_GROUPS = [
     regionId: HEARTLANDS_REGION_ID,
     regionName: HEARTLANDS_REGION_NAME,
     name: "Heartlands Adventure Board",
-    tagline: "Hard contracts beyond city walls",
+    tagline: "Warfront deployments at the realm's breaking points",
     summary:
-      "Severe deployments from Northwatch to Barrowfield where better rewards always mean higher danger.",
+      "Severe operations from Northwatch ridges through Barrowfield mounds and Blackthorn decrees to Kingston siege lines, where every tier escalates the cost of failure.",
     overviewBadges: [
       "High Risk",
       "Tier I-V",
@@ -313,7 +313,7 @@ export const ACTIVITY_GROUPS = [
       },
     },
     description:
-      "High-risk Heartlands contracts tied to major locations and political flashpoints. Adventure I starts above Quest V in both danger and payout profile.",
+      "High-risk Heartlands contracts across watch towers, burial fields, fortress politics, and capital defense. Adventure I starts above Quest V in both danger and payout, then scales into realm-level crisis response.",
     activities: ADVENTURE_ACTIVITY_STEPS,
   },
   {

@@ -1,0 +1,160 @@
+export const WESTERN_COAST_REGION_ID = "western_coast";
+export const WESTERN_COAST_REGION_NAME = "The Western Coast";
+
+export const WESTERN_COAST_LOCATION_ORDER = [
+  "bayside",
+  "saltmere",
+  "gulls-rest",
+  "stormhook-point",
+  "the-sirens-tavern",
+  "the-drowned-market",
+  "fort-seawall",
+  "hightide-manor",
+];
+
+export const WESTERN_COAST_LOCATION_PROFILES = {
+  bayside: {
+    id: "bayside",
+    name: "Bayside",
+    title: "Capital of the Half-Elfs",
+    lore: [
+      "Bayside",
+      "",
+      "Capital of the Half-Elfs",
+      "",
+      "The shining port of the west.",
+      "A city of sea-glass towers, hidden debts, and noble banners.",
+      "",
+      "Bayside is the proud heart of the Western Coast. Built around a vast natural harbor, it serves as the political and cultural center of the Half-Elfs. Ships from distant shores fill its docks, and the city's upper terraces glow at night with lanterns reflected in polished stone and water.",
+      "",
+      "Though graceful in appearance, Bayside is a city of layered tension. Merchant princes, sea captains, and old bloodlines compete for influence beneath the rule of ancient custom. Outsiders see elegance and wealth. Those who stay longer begin to notice how much of the city is held together by silence, compromise, and carefully buried scandal.",
+    ].join("\n"),
+  },
+  saltmere: {
+    id: "saltmere",
+    name: "Saltmere",
+    title: "Small Trading Post",
+    lore: [
+      "Saltmere",
+      "",
+      "Small Trading Post",
+      "",
+      "A humble harbor of nets, crates, and salt-stained coin.",
+      "Small in size, but vital to the coast.",
+      "",
+      "Saltmere began as little more than a dockside stop for fishing boats and merchant barges. Over time it grew into a modest but dependable trading post, known for salted fish, ropework, whale oil, and supplies bound for larger ports. Nearly every ship traveling the western routes has taken on goods there at least once.",
+      "",
+      "The settlement has no grandeur, but it endures. Its people are practical, suspicious, and deeply loyal to their own. Rumors often pass through Saltmere before they reach any court, and more than one conflict along the coast began as quiet words exchanged over wet wood and cheap ale.",
+    ].join("\n"),
+  },
+  "gulls-rest": {
+    id: "gulls-rest",
+    name: "Gull's Rest",
+    title: "Small Hunting Post",
+    lore: [
+      "Gull's Rest",
+      "",
+      "Small Hunting Post",
+      "",
+      "A lonely outpost where the sea meets stone.",
+      "A place of wind, arrows, and watchful eyes.",
+      "",
+      "Gull's Rest clings to the harsher edge of the coast, where steep cliffs and narrow ledges make farming nearly impossible. Its people live by hunting seabirds, trapping coastal game, and harvesting what the tides leave behind. It is a hard place, but one respected for the toughness of those who call it home.",
+      "",
+      "Travelers rarely linger there long. The winds never seem to stop, and the people speak little unless trust is earned. Yet Gull's Rest has long served as an early warning point for strange sails on the horizon, and many times its hunters have seen danger long before the noble harbors were ready to believe it.",
+    ].join("\n"),
+  },
+  "stormhook-point": {
+    id: "stormhook-point",
+    name: "Stormhook Point",
+    title: "Shipping Route",
+    lore: [
+      "Stormhook Point",
+      "",
+      "Shipping Route",
+      "",
+      "The narrow throat of western trade.",
+      "A sea-lane feared as much as it is needed.",
+      "",
+      "Stormhook Point is not a town, but a deadly stretch of coastal water where currents twist around jagged rock and sudden storms rise with little warning. It is one of the most important shipping routes on the Western Coast, connecting the great harbors to distant realms beyond the sea.",
+      "",
+      "To sail Stormhook Point is to accept risk in exchange for speed and fortune. Countless ships have vanished there, dragged under by reefs, weather, or darker things whispered of by old sailors. Even so, the route remains open, for too much wealth flows through it to ever be abandoned.",
+    ].join("\n"),
+  },
+  "the-sirens-tavern": {
+    id: "the-sirens-tavern",
+    name: "The Sirens Tavern",
+    title: "Pirate Holdout",
+    lore: [
+      "The Sirens Tavern",
+      "",
+      "Pirate Holdout",
+      "",
+      "A refuge for rogues beneath song and smoke.",
+      "No law enters lightly, and few secrets leave.",
+      "",
+      "The Sirens Tavern stands hidden among broken cliffs and concealed coves, far enough from the main roads to avoid official notice and close enough to the sea to welcome those who live outside the law. Pirates, smugglers, deserters, and hired blades have all passed through its doors.",
+      "",
+      "The tavern is infamous along the Western Coast. Some say it is neutral ground where no blood may be spilled without consequence. Others say it is ruled by old pirate custom older than any crown in Bayside. Whatever the truth, many dangerous bargains have begun there, and many missing ships were last spoken of beneath its lantern-light.",
+    ].join("\n"),
+  },
+  "the-drowned-market": {
+    id: "the-drowned-market",
+    name: "The Drowned Market",
+    title: "Black Market",
+    lore: [
+      "The Drowned Market",
+      "",
+      "Black Market",
+      "",
+      "A hidden artery of forbidden trade.",
+      "If it cannot be bought elsewhere, it can be bought here.",
+      "",
+      "The Drowned Market is less a single place and more a secret network hidden beneath warehouses, sea-caves, cellar tunnels, and ruined dock foundations. It deals in contraband, stolen relics, false papers, cursed objects, rare poisons, and information meant for no official ear.",
+      "",
+      "Its name comes from the belief that the market was first built atop flooded ruins from an older harbor swallowed by the sea. Whether true or not, the place thrives in darkness and anonymity. Many nobles publicly condemn it while privately benefiting from its reach, and more than one respected merchant house owes its fortune to deals made below the tide-line.",
+    ].join("\n"),
+  },
+  "fort-seawall": {
+    id: "fort-seawall",
+    name: "Fort Seawall",
+    title: "Coastal Defense Towers",
+    lore: [
+      "Fort Seawall",
+      "",
+      "Coastal Defense Towers",
+      "",
+      "The stone shield of the Western Coast.",
+      "Watchfires against raiders, storms, and worse things from the deep.",
+      "",
+      "Fort Seawall is a chain of coastal towers and fortified walls built to defend the most vulnerable stretches of the realm. Rather than a single fortress, it is a military network stretching across cliffs and harbors, designed to spot hostile sails early and signal danger with flame and horn.",
+      "",
+      "The towers are manned by seasoned lookouts, archers, and marines loyal to the coast above any single house. Though often overlooked by nobles, they have saved the Western Coast countless times from pirate raids and seaborne invasion. The men and women of Seawall are grimly respected, for they are always the first to see what comes out of the fog.",
+    ].join("\n"),
+  },
+  "hightide-manor": {
+    id: "hightide-manor",
+    name: "Hightide Manor",
+    title: "Seat of House Half-Blood",
+    lore: [
+      "Hightide Manor",
+      "",
+      "Seat of House Half-Blood",
+      "",
+      "Ancestral seat of power above the sea.",
+      "Graceful, proud, and filled with old resentment.",
+      "",
+      "Hightide Manor is the ancient home of House Half-Blood, one of the oldest and most influential noble lines of the Western Coast. Built atop high cliffs overlooking the sea, the manor appears almost serene from afar, with silver roofs, sea-worn marble, and gardens shaped by constant wind.",
+      "",
+      "Within its halls, however, beauty conceals division. House Half-Blood has long claimed to embody the strength of mixed heritage, yet its history is marked by bitter disputes over lineage, inheritance, and purity. The manor remains a symbol of noble power, but many whisper that its greatest danger does not come from enemies outside its walls, but from the bloodline seated within them.",
+    ].join("\n"),
+  },
+};
+
+export function getWesternCoastLocationProfile(locationId) {
+  if (typeof locationId !== "string") {
+    return null;
+  }
+
+  return WESTERN_COAST_LOCATION_PROFILES[locationId] ?? null;
+}
