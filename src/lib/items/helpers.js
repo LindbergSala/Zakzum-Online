@@ -58,6 +58,9 @@ const ITEM_IMAGE_DIRECTORY_BY_ID = {
   "apprentice-ring": "jewelry",
   "sage-ring": "jewelry",
   "cured-hide-roll": "crafting",
+  "torn-banner": "junk",
+  "cracked-goblet": "junk",
+  "monster-fang": "junk",
 };
 
 function resolveItem(itemOrId) {

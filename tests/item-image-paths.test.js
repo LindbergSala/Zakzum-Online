@@ -46,6 +46,17 @@ test("mapped and missing artwork cases resolve correctly", () => {
     getItemImagePath("focus-charm"),
     "/images/items/jewelry/focus-charm.png?v=20260403",
   );
+  assert.equal(
+    getItemImagePath("torn-banner"),
+    "/images/items/junk/torn-banner.png?v=20260403",
+  );
+  assert.equal(
+    getItemImagePath("cracked-goblet"),
+    "/images/items/junk/cracked-goblet.png?v=20260403",
+  );
+  assert.equal(
+    getItemImagePath("monster-fang"),
+    "/images/items/junk/monster-fang.png?v=20260403",
+  );
   assert.equal(getItemImagePath("missing-item"), null);
-  assert.equal(getItemImagePath("torn-banner"), null);
 });
