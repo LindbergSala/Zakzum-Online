@@ -1,15 +1,5 @@
 export const LANDS_BETWEEN_REGION_ID = "lands_between";
-export const LANDS_BETWEEN_REGION_NAME = "The Lands Between";
 
-export const LANDS_BETWEEN_LOCATION_ORDER = [
-  "the-singing-court",
-  "the-chapel-of-rebirth",
-  "fort-hope",
-  "graveshade",
-  "the-dead-forest",
-  "citadel-of-bones",
-  "forgotten-archives",
-];
 
 export const LANDS_BETWEEN_LOCATION_PROFILES = {
   "the-singing-court": {
@@ -133,10 +123,3 @@ export const LANDS_BETWEEN_LOCATION_PROFILES = {
   },
 };
 
-export function getLandsBetweenLocationProfile(locationId) {
-  if (typeof locationId !== "string") {
-    return null;
-  }
-
-  return LANDS_BETWEEN_LOCATION_PROFILES[locationId] ?? null;
-}

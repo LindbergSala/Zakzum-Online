@@ -1,14 +1,5 @@
 export const LOWER_HOLDS_REGION_ID = "lower_holds";
-export const LOWER_HOLDS_REGION_NAME = "The Lower Holds";
 
-export const LOWER_HOLDS_LOCATION_ORDER = [
-  "glimmerdeep",
-  "brightburrow",
-  "underhold",
-  "gearforge",
-  "lantern-vale",
-  "the-tower-of-history",
-];
 
 export const LOWER_HOLDS_LOCATION_PROFILES = {
   glimmerdeep: {
@@ -115,10 +106,3 @@ export const LOWER_HOLDS_LOCATION_PROFILES = {
   },
 };
 
-export function getLowerHoldsLocationProfile(locationId) {
-  if (typeof locationId !== "string") {
-    return null;
-  }
-
-  return LOWER_HOLDS_LOCATION_PROFILES[locationId] ?? null;
-}

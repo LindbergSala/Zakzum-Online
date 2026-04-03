@@ -1,15 +1,5 @@
 export const UNSPEAKABLE_LANDS_REGION_ID = "unspeakable_lands";
-export const UNSPEAKABLE_LANDS_REGION_NAME = "The Unspeakable Lands";
 
-export const UNSPEAKABLE_LANDS_LOCATION_ORDER = [
-  "the-citadel-of-yearning",
-  "tower-of-crystals",
-  "the-road-of-emptyness",
-  "the-many-colored-gate",
-  "the-valleys-of-unrest",
-  "weaping-gate",
-  "the-endless-castle",
-];
 
 export const UNSPEAKABLE_LANDS_LOCATION_PROFILES = {
   "the-citadel-of-yearning": {
@@ -133,10 +123,3 @@ export const UNSPEAKABLE_LANDS_LOCATION_PROFILES = {
   },
 };
 
-export function getUnspeakableLandsLocationProfile(locationId) {
-  if (typeof locationId !== "string") {
-    return null;
-  }
-
-  return UNSPEAKABLE_LANDS_LOCATION_PROFILES[locationId] ?? null;
-}

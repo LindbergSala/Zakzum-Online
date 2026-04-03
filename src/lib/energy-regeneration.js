@@ -4,7 +4,6 @@ import { getClassPassiveEnergyRefreshBonus } from "@/lib/class-identity";
 export const DEFAULT_MAX_ENERGY = 20;
 export const ENERGY_REGEN_INTERVAL_SECONDS = 5 * 60;
 export const ENERGY_REGEN_INTERVAL_MS = ENERGY_REGEN_INTERVAL_SECONDS * 1000;
-export const HP_REGEN_INTERVAL_SECONDS = ENERGY_REGEN_INTERVAL_SECONDS;
 export const HP_REGEN_INTERVAL_MS = ENERGY_REGEN_INTERVAL_MS;
 
 const CHARACTER_CLASS_BASE_HP = {

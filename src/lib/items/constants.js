@@ -6,7 +6,6 @@ export const ITEM_CATEGORY = {
   TRASH: "trash",
 };
 
-export const ITEM_CATEGORY_VALUES = Object.values(ITEM_CATEGORY);
 
 export const ITEM_RARITY = {
   TRASH: "trash",
@@ -15,7 +14,6 @@ export const ITEM_RARITY = {
   EPIC: "epic",
 };
 
-export const ITEM_RARITY_VALUES = Object.values(ITEM_RARITY);
 
 export const ITEM_SLOT = {
   WEAPON: "weapon",
@@ -29,7 +27,6 @@ export const ITEM_SLOT = {
   CONSUMABLE: "consumable",
 };
 
-export const ITEM_SLOT_VALUES = Object.values(ITEM_SLOT);
 
 export const EQUIPPABLE_ITEM_SLOTS = [
   ITEM_SLOT.WEAPON,
@@ -48,7 +45,6 @@ export const ARMOR_CLASS = {
   HEAVY: "heavy",
 };
 
-export const ARMOR_CLASS_VALUES = Object.values(ARMOR_CLASS);
 
 export const EQUIPMENT_FAMILY = {
   SWORD: "sword",
@@ -79,7 +75,6 @@ export const EQUIPMENT_FAMILY = {
   GREAVES_BOOTS: "greaves-boots",
 };
 
-export const EQUIPMENT_FAMILY_VALUES = Object.values(EQUIPMENT_FAMILY);
 
 export const ITEM_LOOT_SOURCE = {
   QUEST: "quest",
@@ -88,4 +83,3 @@ export const ITEM_LOOT_SOURCE = {
   MARKET: "market",
 };
 
-export const ITEM_LOOT_SOURCE_VALUES = Object.values(ITEM_LOOT_SOURCE);

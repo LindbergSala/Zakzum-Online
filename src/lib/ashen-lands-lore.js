@@ -1,15 +1,5 @@
 export const ASHEN_LANDS_REGION_ID = "ashen_lands";
-export const ASHEN_LANDS_REGION_NAME = "The Ashen Lands";
 
-export const ASHEN_LANDS_LOCATION_ORDER = [
-  "drakonfyr",
-  "mount-blackscale",
-  "the-ember-wastes",
-  "ashen-crowns",
-  "dragons-landing",
-  "the-smoking-step",
-  "vermithrax-shrine",
-];
 
 export const ASHEN_LANDS_LOCATION_PROFILES = {
   drakonfyr: {
@@ -133,10 +123,3 @@ export const ASHEN_LANDS_LOCATION_PROFILES = {
   },
 };
 
-export function getAshenLandsLocationProfile(locationId) {
-  if (typeof locationId !== "string") {
-    return null;
-  }
-
-  return ASHEN_LANDS_LOCATION_PROFILES[locationId] ?? null;
-}

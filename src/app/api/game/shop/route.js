@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
 import { getActiveCharacterForUser } from "@/lib/character";
-import { SHOP_ITEM_DEFINITIONS } from "@/lib/items/helpers";
+import { ITEM_CATALOG } from "@/lib/items/catalog";
 import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { prisma } from "@/lib/prisma";
@@ -42,7 +42,7 @@ export async function GET() {
 
   return NextResponse.json(
     {
-      items: SHOP_ITEM_DEFINITIONS.map((item) =>
+      items: ITEM_CATALOG.map((item) =>
         buildMarketItemResponse(item, ownedById),
       ),
       resources: activeCharacter ? getCharacterResourceSnapshot(activeCharacter) : null,

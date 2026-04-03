@@ -58,33 +58,9 @@ export function getItemImagePath(itemOrId) {
   return `/images/items/${imageDirectory}/${item.id}.png`;
 }
 
-export function getAllItems() {
-  return ITEM_CATALOG;
-}
 
-export function getItemsByCategory(category) {
-  if (!category) {
-    return [];
-  }
 
-  return ITEM_CATALOG.filter((item) => item.category === category);
-}
 
-export function getItemsByRarity(rarity) {
-  if (!rarity) {
-    return [];
-  }
-
-  return ITEM_CATALOG.filter((item) => item.rarity === rarity);
-}
-
-export function getItemsBySlot(slot) {
-  if (!slot) {
-    return [];
-  }
-
-  return ITEM_CATALOG.filter((item) => item.slot === slot);
-}
 
 export function getItemCategory(itemOrId) {
   return resolveItem(itemOrId)?.category ?? null;
@@ -94,21 +70,9 @@ export function getItemRarity(itemOrId) {
   return resolveItem(itemOrId)?.rarity ?? null;
 }
 
-export function getItemSlot(itemOrId) {
-  return resolveItem(itemOrId)?.slot ?? null;
-}
 
-export function getItemEquipmentFamily(itemOrId) {
-  return resolveItem(itemOrId)?.family ?? null;
-}
 
-export function getItemArmorClass(itemOrId) {
-  return resolveItem(itemOrId)?.armorClass ?? null;
-}
 
-export function getItemEffects(itemOrId) {
-  return resolveItem(itemOrId)?.effects ?? {};
-}
 
 export function getItemWeight(itemOrId) {
   return toNonNegativeInteger(resolveItem(itemOrId)?.weight);
@@ -188,9 +152,6 @@ export function getItemLootSources(itemOrId) {
   return Array.isArray(sources) ? sources : [];
 }
 
-export function getLootableItems() {
-  return ITEM_CATALOG.filter((item) => isItemLootable(item));
-}
 
 export function getLootableItemsForSource(lootSource) {
   if (!lootSource) {
@@ -280,12 +241,3 @@ export function getItemInventorySize(itemOrId) {
     height: height > 0 ? height : 1,
   };
 }
-
-// Backward-compatible names during migration.
-export const SHOP_ITEM_DEFINITIONS = ITEM_CATALOG;
-export const SHOP_ITEM_DEFINITION_MAP = ITEM_CATALOG_MAP;
-export const getShopItemGoldCost = getItemGoldCost;
-export const getShopItemRenownCost = getItemRenownCost;
-export const getShopItemSellValue = getItemSellValue;
-export const isShopItemStackable = isItemStackable;
-export const getShopItemMaxStack = getItemMaxStack;

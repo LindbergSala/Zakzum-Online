@@ -1,16 +1,5 @@
 export const WESTERN_COAST_REGION_ID = "western_coast";
-export const WESTERN_COAST_REGION_NAME = "The Western Coast";
 
-export const WESTERN_COAST_LOCATION_ORDER = [
-  "bayside",
-  "saltmere",
-  "gulls-rest",
-  "stormhook-point",
-  "the-sirens-tavern",
-  "the-drowned-market",
-  "fort-seawall",
-  "hightide-manor",
-];
 
 export const WESTERN_COAST_LOCATION_PROFILES = {
   bayside: {
@@ -151,10 +140,3 @@ export const WESTERN_COAST_LOCATION_PROFILES = {
   },
 };
 
-export function getWesternCoastLocationProfile(locationId) {
-  if (typeof locationId !== "string") {
-    return null;
-  }
-
-  return WESTERN_COAST_LOCATION_PROFILES[locationId] ?? null;
-}

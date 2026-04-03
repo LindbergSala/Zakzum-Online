@@ -1,14 +1,5 @@
 export const SOUTHERN_WASTES_REGION_ID = "southern_wastes";
-export const SOUTHERN_WASTES_REGION_NAME = "The Southern Wastes";
 
-export const SOUTHERN_WASTES_LOCATION_ORDER = [
-  "gorak-hold",
-  "skullforge",
-  "ironhowl-camp",
-  "ashfang-watch",
-  "the-blood-fields",
-  "temple-dominus",
-];
 
 export const SOUTHERN_WASTES_LOCATION_PROFILES = {
   "gorak-hold": {
@@ -115,10 +106,3 @@ export const SOUTHERN_WASTES_LOCATION_PROFILES = {
   },
 };
 
-export function getSouthernWastesLocationProfile(locationId) {
-  if (typeof locationId !== "string") {
-    return null;
-  }
-
-  return SOUTHERN_WASTES_LOCATION_PROFILES[locationId] ?? null;
-}

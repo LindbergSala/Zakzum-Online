@@ -1,14 +1,5 @@
 export const DEAD_MANS_LAND_REGION_ID = "dead_mans_land";
-export const DEAD_MANS_LAND_REGION_NAME = "Dead Man's Land";
 
-export const DEAD_MANS_LAND_LOCATION_ORDER = [
-  "thirsting-wood",
-  "silence-fields",
-  "road-to-hell",
-  "fort-sanguine",
-  "grieving-village",
-  "field-of-sarrow",
-];
 
 export const DEAD_MANS_LAND_LOCATION_PROFILES = {
   "thirsting-wood": {
@@ -115,10 +106,3 @@ export const DEAD_MANS_LAND_LOCATION_PROFILES = {
   },
 };
 
-export function getDeadMansLandLocationProfile(locationId) {
-  if (typeof locationId !== "string") {
-    return null;
-  }
-
-  return DEAD_MANS_LAND_LOCATION_PROFILES[locationId] ?? null;
-}

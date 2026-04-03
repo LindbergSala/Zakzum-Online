@@ -1,14 +1,5 @@
 export const MIRKVALE_REGION_ID = "mirkvale";
-export const MIRKVALE_REGION_NAME = "Mirkvale";
 
-export const MIRKVALE_LOCATION_ORDER = [
-  "elarion",
-  "silvergrove",
-  "the-silver-lake",
-  "thornveil",
-  "ithariels-grove",
-  "the-whispering-forest",
-];
 
 export const MIRKVALE_LOCATION_PROFILES = {
   elarion: {
@@ -115,10 +106,3 @@ export const MIRKVALE_LOCATION_PROFILES = {
   },
 };
 
-export function getMirkvaleLocationProfile(locationId) {
-  if (typeof locationId !== "string") {
-    return null;
-  }
-
-  return MIRKVALE_LOCATION_PROFILES[locationId] ?? null;
-}

@@ -1,16 +1,5 @@
 export const AMBER_FIELDS_REGION_ID = "amber_fields";
-export const AMBER_FIELDS_REGION_NAME = "The Amber Fields";
 
-export const AMBER_FIELDS_LOCATION_ORDER = [
-  "harveston",
-  "outpost-haystack",
-  "barleycross",
-  "sunmeadow",
-  "amber-in",
-  "the-barrow",
-  "freefield-estate",
-  "the-dead-road",
-];
 
 export const AMBER_FIELDS_LOCATION_PROFILES = {
   harveston: {
@@ -151,10 +140,3 @@ export const AMBER_FIELDS_LOCATION_PROFILES = {
   },
 };
 
-export function getAmberFieldsLocationProfile(locationId) {
-  if (typeof locationId !== "string") {
-    return null;
-  }
-
-  return AMBER_FIELDS_LOCATION_PROFILES[locationId] ?? null;
-}

@@ -8,12 +8,12 @@ import ShopActions from "@/components/shop-actions";
 import { getActiveCharacterForUser } from "@/lib/character";
 import {
   getItemById,
+  getItemGoldCost,
   getItemMarketIds,
+  getItemRenownCost,
+  getItemSellValue,
   getItemsForMarket,
-  getShopItemGoldCost,
-  getShopItemRenownCost,
-  getShopItemSellValue,
-  isShopItemStackable,
+  isItemStackable,
 } from "@/lib/items/helpers";
 import { MARKET_DEFINITION_MAP } from "@/lib/market-data";
 import { requirePageUser } from "@/lib/page-auth";
@@ -105,8 +105,8 @@ export default async function MarketVendorPage({ params }) {
     marketId: getItemMarketIds(item)[0] ?? null,
     marketIds: getItemMarketIds(item),
     description: item.description,
-    price: getShopItemGoldCost(item),
-    renownPrice: getShopItemRenownCost(item),
+    price: getItemGoldCost(item),
+    renownPrice: getItemRenownCost(item),
     weight: item.weight,
     slot: item.slot,
     effects: item.effects,
@@ -114,8 +114,8 @@ export default async function MarketVendorPage({ params }) {
     owned: (Number(ownedById[item.id]?.quantity) || 0) > 0,
     ownedQuantity: Number(ownedById[item.id]?.quantity) || 0,
     equipped: Boolean(ownedById[item.id]?.equipped),
-    sellValue: getShopItemSellValue(item),
-    isStackable: isShopItemStackable(item),
+    sellValue: getItemSellValue(item),
+    isStackable: isItemStackable(item),
   }));
   const inventoryItems = ownedItems.map((item) => {
     const definition = getItemById(item.itemId);
@@ -124,7 +124,7 @@ export default async function MarketVendorPage({ params }) {
       slot: definition?.slot ?? "unknown",
       weight: definition?.weight ?? 0,
       effectLabel: formatItemEffectLabel(definition?.effects),
-      sellValue: getShopItemSellValue(definition),
+      sellValue: getItemSellValue(definition),
     };
   });
   const inventoryStateKey = activeCharacter

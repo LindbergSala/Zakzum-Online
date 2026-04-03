@@ -1,16 +1,6 @@
 export const HEARTLANDS_REGION_ID = "heartlands";
 export const HEARTLANDS_REGION_NAME = "The Heartlands";
 
-export const HEARTLANDS_LOCATION_ORDER = [
-  "kingston",
-  "goldmere",
-  "blackthorn-hold",
-  "northwatch",
-  "barrowfield",
-  "saints-hollow",
-  "mournstead",
-  "elfhome",
-];
 
 export const HEARTLANDS_LOCATION_PROFILES = {
   kingston: {
@@ -159,10 +149,4 @@ export function getHeartlandsLocationProfile(locationId) {
   return HEARTLANDS_LOCATION_PROFILES[locationId] ?? null;
 }
 
-export function getHeartlandsLocationName(locationId, fallback = "") {
-  return getHeartlandsLocationProfile(locationId)?.name ?? fallback;
-}
 
-export function getHeartlandsLocationLore(locationId, fallback = "") {
-  return getHeartlandsLocationProfile(locationId)?.lore ?? fallback;
-}

@@ -1,15 +1,5 @@
 export const IRONSPINE_REGION_ID = "ironspine";
-export const IRONSPINE_REGION_NAME = "The Ironspine";
 
-export const IRONSPINE_LOCATION_ORDER = [
-  "khazad-krag",
-  "carmine-bank",
-  "emberfall-forge",
-  "threshold-of-kin",
-  "stonewake-pass",
-  "frostmantle-peak",
-  "rune-vaults",
-];
 
 export const IRONSPINE_LOCATION_PROFILES = {
   "khazad-krag": {
@@ -133,10 +123,3 @@ export const IRONSPINE_LOCATION_PROFILES = {
   },
 };
 
-export function getIronspineLocationProfile(locationId) {
-  if (typeof locationId !== "string") {
-    return null;
-  }
-
-  return IRONSPINE_LOCATION_PROFILES[locationId] ?? null;
-}

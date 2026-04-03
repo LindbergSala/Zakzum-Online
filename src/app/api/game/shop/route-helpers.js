@@ -2,11 +2,11 @@ import {
   canItemBePurchased,
   canItemBeSold,
   getItemMarketIds,
-  getShopItemGoldCost,
-  getShopItemMaxStack,
-  getShopItemRenownCost,
-  getShopItemSellValue,
-  isShopItemStackable,
+  getItemGoldCost,
+  getItemMaxStack,
+  getItemRenownCost,
+  getItemSellValue,
+  isItemStackable,
 } from "@/lib/items/helpers";
 import { formatItemEffectLabel } from "@/lib/stat-effects";
 
@@ -72,7 +72,7 @@ export function summarizeOwnedByItemId(ownedItems) {
 
 export function buildMarketItemResponse(item, ownedById) {
   const ownedEntry = ownedById[item.id] ?? { quantity: 0, equipped: false };
-  const isStackable = isShopItemStackable(item);
+  const isStackable = isItemStackable(item);
   const ownedQuantity = Number(ownedEntry.quantity) || 0;
   const marketIds = getItemMarketIds(item);
 
@@ -82,9 +82,9 @@ export function buildMarketItemResponse(item, ownedById) {
     marketId: marketIds[0] ?? null,
     marketIds,
     description: item.description,
-    price: getShopItemGoldCost(item),
-    renownPrice: getShopItemRenownCost(item),
-    sellValue: getShopItemSellValue(item),
+    price: getItemGoldCost(item),
+    renownPrice: getItemRenownCost(item),
+    sellValue: getItemSellValue(item),
     weight: item.weight,
     slot: item.slot,
     effects: item.effects,
@@ -93,7 +93,7 @@ export function buildMarketItemResponse(item, ownedById) {
     ownedQuantity,
     equipped: Boolean(ownedEntry.equipped),
     isStackable,
-    maxStack: getShopItemMaxStack(item),
+    maxStack: getItemMaxStack(item),
     canBuy: canItemBePurchased(item) && (isStackable ? true : ownedQuantity === 0),
     canSell: ownedQuantity > 0,
   };
@@ -101,8 +101,8 @@ export function buildMarketItemResponse(item, ownedById) {
 
 export function buildBuyDelta(itemDefinition) {
   const delta = {};
-  const goldCost = getShopItemGoldCost(itemDefinition);
-  const renownCost = getShopItemRenownCost(itemDefinition);
+  const goldCost = getItemGoldCost(itemDefinition);
+  const renownCost = getItemRenownCost(itemDefinition);
 
   if (goldCost > 0) {
     delta.gold = -goldCost;
@@ -116,7 +116,7 @@ export function buildBuyDelta(itemDefinition) {
 }
 
 export function buildSellDelta(itemDefinition, quantity) {
-  const sellValue = getShopItemSellValue(itemDefinition);
+  const sellValue = getItemSellValue(itemDefinition);
   const resolvedQuantity = normalizePositiveQuantity(quantity, 1);
   const delta = {};
 

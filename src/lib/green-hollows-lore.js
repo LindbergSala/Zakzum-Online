@@ -1,16 +1,5 @@
 export const GREEN_HOLLOWS_REGION_ID = "green_hollows";
-export const GREEN_HOLLOWS_REGION_NAME = "The Green Hollows";
 
-export const GREEN_HOLLOWS_LOCATION_ORDER = [
-  "hearthollow",
-  "appleburrow",
-  "honeyhill",
-  "mossbrook",
-  "the-old-warren",
-  "wicker-hollow",
-  "bramblefoot",
-  "greenthorn-sealane",
-];
 
 export const GREEN_HOLLOWS_LOCATION_PROFILES = {
   hearthollow: {
@@ -151,10 +140,3 @@ export const GREEN_HOLLOWS_LOCATION_PROFILES = {
   },
 };
 
-export function getGreenHollowsLocationProfile(locationId) {
-  if (typeof locationId !== "string") {
-    return null;
-  }
-
-  return GREEN_HOLLOWS_LOCATION_PROFILES[locationId] ?? null;
-}

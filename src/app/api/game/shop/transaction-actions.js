@@ -1,13 +1,13 @@
 import {
   canItemBePurchased,
+  getItemGoldCost,
+  getItemMaxStack,
   getItemMarketIds,
-  getShopItemGoldCost,
-  getShopItemMaxStack,
-  getShopItemRenownCost,
-  getShopItemSellValue,
-  isShopItemStackable,
-  SHOP_ITEM_DEFINITION_MAP,
+  getItemRenownCost,
+  getItemSellValue,
+  isItemStackable,
 } from "@/lib/items/helpers";
+import { ITEM_CATALOG_MAP } from "@/lib/items/catalog";
 import {
   buildCharacterResourceUpdateInput,
   calculateCharacterResourceResult,
@@ -45,7 +45,7 @@ export async function processSellTransaction({
     };
   }
 
-  const itemDefinition = SHOP_ITEM_DEFINITION_MAP[sellItemRecord.itemId];
+  const itemDefinition = ITEM_CATALOG_MAP[sellItemRecord.itemId];
 
   if (!itemDefinition) {
     return {
@@ -150,7 +150,7 @@ export async function processSellTransaction({
           itemRecordId: sellItemRecord.id,
           marketId: getItemMarketIds(itemDefinition)[0] ?? null,
           slot: itemDefinition.slot,
-          sellValue: getShopItemSellValue(itemDefinition),
+          sellValue: getItemSellValue(itemDefinition),
           quantityChange: -sellQuantity,
           quantityBefore: sellItemRecord.quantity,
           quantityAfter: quantityAfterSell,
@@ -182,7 +182,7 @@ export async function processBuyTransaction({
   parsedData,
   requestedMarket,
 }) {
-  const itemDefinition = SHOP_ITEM_DEFINITION_MAP[parsedData.itemId];
+  const itemDefinition = ITEM_CATALOG_MAP[parsedData.itemId];
 
   if (!itemDefinition) {
     return {
@@ -201,7 +201,7 @@ export async function processBuyTransaction({
     };
   }
 
-  const isStackable = isShopItemStackable(itemDefinition);
+  const isStackable = isItemStackable(itemDefinition);
   const ownedSameItem = ownedItems.filter((item) => item.itemId === itemDefinition.id);
 
   if (!isStackable && ownedSameItem.length > 0) {
@@ -232,8 +232,8 @@ export async function processBuyTransaction({
     };
   }
 
-  const goldCost = getShopItemGoldCost(itemDefinition);
-  const renownCost = getShopItemRenownCost(itemDefinition);
+  const goldCost = getItemGoldCost(itemDefinition);
+  const renownCost = getItemRenownCost(itemDefinition);
 
   if (latestCharacter.gold < goldCost) {
     return {
@@ -286,7 +286,7 @@ export async function processBuyTransaction({
   let previousQuantity = 0;
 
   if (isStackable) {
-    const maxStack = getShopItemMaxStack(itemDefinition.id);
+    const maxStack = getItemMaxStack(itemDefinition.id);
     const targetStack =
       ownedSameItem
         .filter((item) => item.quantity < maxStack)
@@ -359,7 +359,7 @@ export async function processBuyTransaction({
           slot: itemDefinition.slot,
           price: goldCost,
           renownPrice: renownCost,
-          sellValue: getShopItemSellValue(itemDefinition),
+          sellValue: getItemSellValue(itemDefinition),
           weight: itemDefinition.weight,
           description: itemDefinition.description,
           effects: itemDefinition.effects ?? {},

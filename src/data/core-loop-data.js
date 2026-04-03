@@ -1,11 +1,3 @@
-import {
-  getItemGoldCost,
-  getItemMaxStack,
-  getItemRenownCost,
-  getItemSellValue,
-  isItemStackable,
-} from "@/lib/items/helpers";
-import { ITEM_CATALOG, ITEM_CATALOG_MAP } from "@/data/items/catalog";
 import { ITEM_CATEGORY, ITEM_LOOT_SOURCE, ITEM_RARITY } from "@/lib/items/constants";
 import {
   HEARTLANDS_REGION_ID,
@@ -494,12 +486,3 @@ export function getActivitiesForLocation(locationId, groupId = null) {
     return true;
   }).sort((left, right) => (left.tier ?? 0) - (right.tier ?? 0));
 }
-
-// Backward-compatible shop exports.
-export const SHOP_ITEM_DEFINITIONS = ITEM_CATALOG;
-export const SHOP_ITEM_DEFINITION_MAP = ITEM_CATALOG_MAP;
-export const getShopItemGoldCost = getItemGoldCost;
-export const getShopItemRenownCost = getItemRenownCost;
-export const getShopItemSellValue = getItemSellValue;
-export const isShopItemStackable = isItemStackable;
-export const getShopItemMaxStack = getItemMaxStack;

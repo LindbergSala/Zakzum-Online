@@ -33,14 +33,7 @@ export function getAvatarOptionsForRace(
   );
 }
 
-export function hasAvatarOptionsForRace(characterRace) {
-  return Boolean(AVATAR_FILE_RULES_BY_RACE[characterRace]);
-}
 
-export function getDefaultAvatarForRace(characterRace) {
-  const options = getAvatarOptionsForRace(characterRace);
-  return options[0] ?? null;
-}
 
 export function isValidAvatarForRace(characterRace, avatarImage) {
   if (!avatarImage) {
