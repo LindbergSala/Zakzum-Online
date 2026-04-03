@@ -1,8 +1,17 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { normalizeInventoryItems } from "./inventory/inventory-logic";
+import {
+  getInventoryLayoutStorageKey,
+  loadStoredInventoryLayout,
+  resolvePocketSlots,
+} from "./inventory/pocket-layout";
+import { syncInventoryAction } from "./inventory/inventory-utils";
+import { getItemImagePath } from "@/lib/items/helpers";
 import { CHARACTER_STAT_LABELS } from "@/lib/stat-effects";
 
 const MIN_ROLL_ANIMATION_MS = 2000;
@@ -131,14 +140,24 @@ function getRandomNumberInRange(min, max) {
   return min + Math.random() * (max - min);
 }
 
-export default function ActivityRunner({ activity, currentEnergy = 0, requiredEnergy = 0 }) {
+export default function ActivityRunner({
+  activity,
+  characterId,
+  currentEnergy = 0,
+  requiredEnergy = 0,
+}) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isPocketActionLoading, setIsPocketActionLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [lastResult, setLastResult] = useState(null);
   const [rollReveal, setRollReveal] = useState(null);
   const [availableEnergy, setAvailableEnergy] = useState(currentEnergy);
   const [trayMessage, setTrayMessage] = useState(null);
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [inventoryLoadError, setInventoryLoadError] = useState("");
+  const [isInventoryLoading, setIsInventoryLoading] = useState(true);
+  const [pocketPlacements, setPocketPlacements] = useState({});
   const rollingIntervalRef = useRef(null);
   const revealTimeoutsRef = useRef([]);
   const runSequenceRef = useRef(0);
@@ -334,6 +353,68 @@ export default function ActivityRunner({ activity, currentEnergy = 0, requiredEn
   }, [currentEnergy]);
 
   useEffect(() => {
+    if (!characterId) {
+      setPocketPlacements({});
+      setInventoryItems([]);
+      setIsInventoryLoading(false);
+      return undefined;
+    }
+
+    let isCancelled = false;
+
+    async function loadInventorySnapshot() {
+      try {
+        setIsInventoryLoading(true);
+        const response = await fetch("/api/game/inventory", {
+          method: "GET",
+          cache: "no-store",
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message ?? "Could not load inventory pockets.");
+        }
+
+        if (isCancelled) {
+          return;
+        }
+
+        setInventoryItems(normalizeInventoryItems(data.items ?? []));
+        setInventoryLoadError("");
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        setInventoryItems([]);
+        setInventoryLoadError(error.message ?? "Could not load inventory pockets.");
+      } finally {
+        if (!isCancelled) {
+          setIsInventoryLoading(false);
+        }
+      }
+    }
+
+    setPocketPlacements(loadStoredInventoryLayout(characterId).pocketPlacements);
+    void loadInventorySnapshot();
+
+    function handleStorage(event) {
+      if (event.key && event.key !== getInventoryLayoutStorageKey(characterId)) {
+        return;
+      }
+
+      setPocketPlacements(loadStoredInventoryLayout(characterId).pocketPlacements);
+    }
+
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      isCancelled = true;
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [characterId]);
+
+  useEffect(() => {
     if (currentEnergy >= requiredEnergy) {
       setTrayMessage(null);
     }
@@ -347,6 +428,11 @@ export default function ActivityRunner({ activity, currentEnergy = 0, requiredEn
   }, []);
 
   const rollDisplayValue = getRollDisplayValue(rollReveal);
+  const isBusy = isLoading || isPocketActionLoading;
+  const pocketSlots = useMemo(
+    () => resolvePocketSlots({ pocketPlacements, items: inventoryItems }),
+    [inventoryItems, pocketPlacements],
+  );
   const trayVerdict = trayMessage
     ? trayMessage
     : rollReveal?.showOutcome
@@ -361,6 +447,40 @@ export default function ActivityRunner({ activity, currentEnergy = 0, requiredEn
         includeNegative: !lastResult.success,
       })
     : "No resource changes.";
+
+  async function handleUsePocket(slotIndex) {
+    const pocketItem = pocketSlots.find((slot) => slot.slotIndex === slotIndex)?.item;
+
+    if (!pocketItem || isBusy) {
+      return;
+    }
+
+    try {
+      setIsPocketActionLoading(true);
+      const data = await syncInventoryAction({
+        action: "use",
+        itemRecordId: pocketItem.id,
+        quantity: 1,
+      });
+
+      const nextEnergy = Number(data.resources?.energy);
+      setInventoryItems(normalizeInventoryItems(data.items ?? []));
+      setAvailableEnergy(Number.isFinite(nextEnergy) ? nextEnergy : availableEnergy);
+      setTrayMessage(null);
+      setFeedback({
+        tone: "ok",
+        text: data.message ?? `${pocketItem.itemName} used.`,
+      });
+      router.refresh();
+    } catch (error) {
+      setFeedback({
+        tone: "error",
+        text: error.message ?? "Could not use consumable.",
+      });
+    } finally {
+      setIsPocketActionLoading(false);
+    }
+  }
 
   async function runActivity() {
     if (availableEnergy < requiredEnergy) {
@@ -449,6 +569,72 @@ export default function ActivityRunner({ activity, currentEnergy = 0, requiredEn
         </div>
       </section>
 
+      <section className="activity-pockets">
+        <div className="activity-pockets-header">
+          <p className="activity-pockets-kicker">Pockets</p>
+          <p className="activity-pockets-copy">
+            Assigned stackable consumables are available here for fast use before you roll.
+          </p>
+        </div>
+        <div className="activity-pockets-grid">
+          {pocketSlots.map((slot) => (
+            <article
+              className={`activity-pocket-slot ${slot.item ? "activity-pocket-slot-filled" : ""}`}
+              key={`activity-pocket-${slot.slotIndex}`}
+            >
+              <p className="activity-pocket-slot-label">Slot {slot.slotIndex + 1}</p>
+              {slot.item ? (
+                <>
+                  <div className="activity-pocket-slot-media">
+                    <div className="activity-pocket-slot-artwork-wrap" aria-hidden="true">
+                      {getItemImagePath(slot.item.itemId) ? (
+                        <Image
+                          src={getItemImagePath(slot.item.itemId)}
+                          alt=""
+                          fill
+                          unoptimized
+                          sizes="64px"
+                          className="activity-pocket-slot-artwork"
+                        />
+                      ) : (
+                        <span className="activity-pocket-slot-artwork-fallback">?</span>
+                      )}
+                    </div>
+                    <div className="activity-pocket-slot-copy-wrap">
+                      <p className="activity-pocket-slot-name">{slot.item.itemName}</p>
+                      <p className="activity-pocket-slot-meta">Ready x{slot.item.displayQuantity}</p>
+                      <p className="activity-pocket-slot-owned">Owned x{slot.item.quantity}</p>
+                    </div>
+                  </div>
+                  <p className="activity-pocket-slot-effect">{slot.item.effectLabel}</p>
+                  <button
+                    type="button"
+                    className="activity-pocket-slot-button"
+                    onClick={() => handleUsePocket(slot.slotIndex)}
+                    disabled={isBusy}
+                  >
+                    {isPocketActionLoading ? "Using..." : "Use 1"}
+                  </button>
+                </>
+              ) : (
+                <p className="activity-pocket-slot-empty">
+                  {isInventoryLoading
+                    ? "Loading consumables..."
+                    : slot.itemKey
+                      ? "Assigned consumable is out of stock."
+                      : "Assign a stackable consumable in Inventory > Pockets."}
+                </p>
+              )}
+            </article>
+          ))}
+        </div>
+        {inventoryLoadError ? (
+          <p className="feedback error" aria-live="polite">
+            {inventoryLoadError}
+          </p>
+        ) : null}
+      </section>
+
       <section
         className={`roll-theater ${
           !rollReveal
@@ -465,7 +651,7 @@ export default function ActivityRunner({ activity, currentEnergy = 0, requiredEn
             type="button"
             className="roll-theater-button"
             onClick={runActivity}
-            disabled={isLoading}
+            disabled={isBusy}
           >
             {isLoading ? "Running..." : `Roll to Attempt ${activity.name}`}
           </button>

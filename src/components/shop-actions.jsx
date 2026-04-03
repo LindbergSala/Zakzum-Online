@@ -6,36 +6,6 @@ import { useState } from "react";
 import { getItemImagePath } from "@/lib/items/helpers";
 import styles from "./shop-actions.module.css";
 
-function formatResourceLine(resources) {
-  if (!resources || typeof resources !== "object") {
-    return "No resource data.";
-  }
-
-  return [
-    `HP ${resources.hp}`,
-    `Energy ${resources.energy}`,
-    `Gold ${resources.gold}`,
-    `XP ${resources.xp}`,
-    `Level ${resources.level}`,
-    `Renown ${resources.renown}`,
-    `Heat ${resources.heat}`,
-  ].join(" | ");
-}
-
-function formatDelta(delta) {
-  if (!delta || typeof delta !== "object") {
-    return "No delta.";
-  }
-
-  return Object.entries(delta)
-    .map(([key, value]) => {
-      const numericValue = Number(value);
-      const sign = numericValue > 0 ? "+" : "";
-      return `${key}: ${sign}${numericValue}`;
-    })
-    .join(", ");
-}
-
 function formatBuyPrice(item) {
   const parts = [];
 
@@ -69,7 +39,6 @@ export default function ShopActions({ items, marketId = null }) {
   const [isLoading, setIsLoading] = useState(false);
   const [activeActionKey, setActiveActionKey] = useState("");
   const [feedback, setFeedback] = useState(null);
-  const [lastTransaction, setLastTransaction] = useState(null);
 
   async function handleBuy(itemId, itemMarketId = null) {
     const actionKey = `buy:${itemId}`;
@@ -86,7 +55,6 @@ export default function ShopActions({ items, marketId = null }) {
     setIsLoading(true);
     setActiveActionKey(actionKey);
     setFeedback(null);
-    setLastTransaction(null);
 
     try {
       const response = await fetch("/api/game/shop", {
@@ -103,7 +71,6 @@ export default function ShopActions({ items, marketId = null }) {
       }
 
       setFeedback({ tone: "ok", text: data.message });
-      setLastTransaction(data);
       router.refresh();
     } catch {
       setFeedback({
@@ -137,26 +104,6 @@ export default function ShopActions({ items, marketId = null }) {
             {feedback.text}
           </p>
         )
-      ) : null}
-
-      {lastTransaction ? (
-        <section
-          className={`action-result-card action-result-ok ${styles.topFeedback}`}
-          aria-live="polite"
-        >
-          <p>
-            <strong>Item:</strong> {lastTransaction.item?.itemName ?? "Unknown item"}
-          </p>
-          <p>
-            <strong>Delta:</strong> {formatDelta(lastTransaction.resources?.delta)}
-          </p>
-          <p>
-            <strong>Before:</strong> {formatResourceLine(lastTransaction.resources?.before)}
-          </p>
-          <p>
-            <strong>After:</strong> {formatResourceLine(lastTransaction.resources?.after)}
-          </p>
-        </section>
       ) : null}
 
       <div>

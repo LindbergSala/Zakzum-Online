@@ -189,6 +189,174 @@ button:disabled {
   line-height: 1.5;
 }
 
+.activity-pockets {
+  margin: 0 0 0.95rem;
+  border-radius: 16px;
+  border: 1px solid rgba(122, 89, 47, 0.26);
+  background:
+    linear-gradient(180deg, rgba(255, 249, 236, 0.96) 0%, rgba(240, 225, 192, 0.92) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 10px 24px rgba(67, 45, 18, 0.08);
+  padding: 0.9rem 1rem 0.95rem;
+}
+
+.activity-pockets-header {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.activity-pockets-kicker {
+  margin: 0;
+  color: #7a5225;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.activity-pockets-copy {
+  margin: 0;
+  color: #594024;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.activity-pockets-grid {
+  margin-top: 0.7rem;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.activity-pocket-slot {
+  min-height: 132px;
+  border-radius: 14px;
+  border: 1px dashed rgba(157, 116, 71, 0.46);
+  background: linear-gradient(180deg, rgba(255, 251, 242, 0.86) 0%, rgba(239, 226, 198, 0.88) 100%);
+  padding: 0.64rem;
+  display: grid;
+  align-content: start;
+  gap: 0.28rem;
+}
+
+.activity-pocket-slot-filled {
+  border-style: solid;
+  border-color: rgba(159, 119, 70, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    0 10px 18px rgba(65, 42, 18, 0.08);
+}
+
+.activity-pocket-slot-label {
+  margin: 0;
+  color: #7b552a;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.activity-pocket-slot-media {
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.activity-pocket-slot-artwork-wrap {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  border: 1px solid rgba(170, 124, 72, 0.32);
+  background: linear-gradient(165deg, rgba(84, 57, 32, 0.9) 0%, rgba(56, 37, 22, 0.95) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 238, 212, 0.16),
+    0 6px 14px rgba(52, 32, 14, 0.12);
+  overflow: hidden;
+}
+
+.activity-pocket-slot-artwork {
+  object-fit: contain;
+  padding: 0.24rem;
+}
+
+.activity-pocket-slot-artwork-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: #f0d8b4;
+  font-weight: 800;
+}
+
+.activity-pocket-slot-copy-wrap {
+  min-width: 0;
+  display: grid;
+  gap: 0.06rem;
+}
+
+.activity-pocket-slot-name {
+  margin: 0;
+  color: #2c1a0d;
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-pocket-slot-meta {
+  margin: 0;
+  color: #5c4328;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.activity-pocket-slot-owned {
+  margin: 0;
+  color: #7a5a36;
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
+.activity-pocket-slot-effect {
+  margin: 0;
+  color: #6a4a29;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.activity-pocket-slot-empty {
+  margin: 0;
+  color: #76593a;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.activity-pocket-slot-button {
+  margin-top: auto;
+  width: 100%;
+  border: 1px solid rgba(170, 124, 72, 0.5);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(53, 31, 14, 0.94) 0%, rgba(79, 47, 21, 0.92) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 233, 190, 0.18),
+    0 8px 16px rgba(32, 18, 8, 0.16);
+  color: #fff6e0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.activity-pocket-slot-button:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
 .roll-theater {
   margin: 0.85rem 0 0;
   border-radius: 16px;
@@ -664,6 +832,10 @@ button:disabled {
 
   .activity-briefing-stakes {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .activity-pockets-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .roll-theater-stage {

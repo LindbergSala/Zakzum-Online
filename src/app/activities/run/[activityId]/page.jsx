@@ -129,6 +129,7 @@ export default async function ActivityRunPage({ params }) {
                 </div>
                 <ActivityRunner
                   activity={activity}
+                  characterId={activeCharacter.id}
                   currentEnergy={activeCharacter.energy}
                   requiredEnergy={effectiveActivityEnergyCost}
                 />

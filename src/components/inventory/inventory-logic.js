@@ -5,6 +5,10 @@ import {
   getItemDefinition,
   isConsumableStackable,
 } from "./item-types";
+import {
+  isPocketConsumableItem,
+  isValidPocketSlot,
+} from "./pocket-layout";
 
 function isBackpackPlacement(placement) {
   return placement?.zone === "backpack";
@@ -12,6 +16,10 @@ function isBackpackPlacement(placement) {
 
 function isEquipmentPlacement(placement) {
   return placement?.zone === "equipment";
+}
+
+function isPocketPlacement(placement) {
+  return placement?.zone === "pocket";
 }
 
 function cloneInventoryState(state) {
@@ -190,8 +198,20 @@ export function getItemKeyInEquipmentSlot(state, slot) {
   );
 }
 
+export function getItemKeyInPocketSlot(state, slotIndex) {
+  return (
+    Object.entries(state.placements).find(
+      ([, placement]) => isPocketPlacement(placement) && placement.slotIndex === slotIndex,
+    )?.[0] ?? null
+  );
+}
+
 export function isCompatibleWithEquipmentSlot(item, slot) {
   return item.slot === slot;
+}
+
+export function isCompatibleWithPocketSlot(item) {
+  return isPocketConsumableItem(item);
 }
 
 function canFullyStackItem(sourceItem, targetItem) {
@@ -412,6 +432,71 @@ export function moveItemToEquipment({
   };
 }
 
+export function moveItemToPocket({
+  state,
+  itemKey,
+  slotIndex,
+  columns = INVENTORY_GRID_COLUMNS,
+  rows = INVENTORY_GRID_ROWS,
+}) {
+  const item = state.itemsByKey[itemKey];
+  const currentPlacement = state.placements[itemKey];
+
+  if (!item || !currentPlacement) {
+    return { ok: false, reason: "Item not found." };
+  }
+
+  if (!isValidPocketSlot(slotIndex)) {
+    return { ok: false, reason: "Unknown pocket slot." };
+  }
+
+  if (!isCompatibleWithPocketSlot(item)) {
+    return {
+      ok: false,
+      reason: "Only stackable consumables up to 5 can be placed in pockets.",
+    };
+  }
+
+  if (isPocketPlacement(currentPlacement) && currentPlacement.slotIndex === slotIndex) {
+    return { ok: true, nextState: state, fromZone: "pocket", toZone: "pocket" };
+  }
+
+  const nextState = cloneInventoryState(state);
+  const occupyingItemKey = getItemKeyInPocketSlot(nextState, slotIndex);
+
+  if (occupyingItemKey && occupyingItemKey !== itemKey) {
+    const firstFit = findFirstBackpackPosition({
+      state: nextState,
+      itemKey: occupyingItemKey,
+      columns,
+      rows,
+      ignoreItemKey: occupyingItemKey,
+    });
+
+    if (!firstFit) {
+      return { ok: false, reason: "No free backpack space for pocket swap." };
+    }
+
+    nextState.placements[occupyingItemKey] = {
+      zone: "backpack",
+      x: firstFit.x,
+      y: firstFit.y,
+    };
+  }
+
+  nextState.placements[itemKey] = {
+    zone: "pocket",
+    slotIndex,
+  };
+
+  return {
+    ok: true,
+    nextState,
+    fromZone: currentPlacement.zone,
+    toZone: "pocket",
+  };
+}
+
 function buildTempItemKey(itemKey) {
   return `${itemKey}-split-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 }
@@ -498,6 +583,7 @@ export function splitItemStack({
 export function createInventoryState({
   items,
   storedBackpackPlacements = {},
+  storedPocketPlacements = {},
   columns = INVENTORY_GRID_COLUMNS,
   rows = INVENTORY_GRID_ROWS,
 }) {
@@ -519,6 +605,21 @@ export function createInventoryState({
           zone: "equipment",
           slot: item.slot,
         };
+        continue;
+      }
+    }
+
+    const storedPocketSlotIndex = storedPocketPlacements[item.key];
+
+    if (isValidPocketSlot(storedPocketSlotIndex) && isCompatibleWithPocketSlot(item)) {
+      const occupyingPocketItemKey = getItemKeyInPocketSlot(state, storedPocketSlotIndex);
+
+      if (!occupyingPocketItemKey) {
+        state.placements[item.key] = {
+          zone: "pocket",
+          slotIndex: storedPocketSlotIndex,
+        };
+        state.itemsByKey[item.key].isEquipped = false;
         continue;
       }
     }

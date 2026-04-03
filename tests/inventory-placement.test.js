@@ -6,6 +6,7 @@ import {
   createInventoryState,
   moveItemToBackpack,
   moveItemToEquipment,
+  moveItemToPocket,
   normalizeInventoryItems,
   splitItemStack,
   toItemsByKey,
@@ -183,6 +184,73 @@ test("split stack creates a second stack and returns split sync action", () => {
   assert.equal(split.nextState.itemsByKey[split.createdItemKey].quantity, 2);
 });
 
+test("moving a consumable to pocket removes it from backpack", () => {
+  const state = buildState(
+    [
+      {
+        id: "potion-a",
+        itemId: "health-potion",
+        itemName: "Health Potion",
+        slot: "belt",
+        quantity: 3,
+      },
+    ],
+    {
+      "potion-a": { zone: "backpack", x: 0, y: 0 },
+    },
+  );
+
+  const result = moveItemToPocket({
+    state,
+    itemKey: "potion-a",
+    slotIndex: 1,
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.nextState.placements["potion-a"], {
+    zone: "pocket",
+    slotIndex: 1,
+  });
+});
+
+test("pocket swap returns occupying item to backpack", () => {
+  const state = buildState(
+    [
+      {
+        id: "potion-a",
+        itemId: "health-potion",
+        itemName: "Health Potion",
+        slot: "belt",
+        quantity: 2,
+      },
+      {
+        id: "potion-b",
+        itemId: "energy-draught",
+        itemName: "Energy Draught",
+        slot: "belt",
+        quantity: 2,
+      },
+    ],
+    {
+      "potion-a": { zone: "pocket", slotIndex: 0 },
+      "potion-b": { zone: "backpack", x: 0, y: 0 },
+    },
+  );
+
+  const result = moveItemToPocket({
+    state,
+    itemKey: "potion-b",
+    slotIndex: 0,
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.nextState.placements["potion-b"], {
+    zone: "pocket",
+    slotIndex: 0,
+  });
+  assert.equal(result.nextState.placements["potion-a"].zone, "backpack");
+});
+
 test("initial state places equipped item into its equipment slot", () => {
   const state = createInventoryState({
     items: normalizeInventoryItems([
@@ -199,5 +267,27 @@ test("initial state places equipped item into its equipment slot", () => {
   assert.deepEqual(state.placements["sword-1"], {
     zone: "equipment",
     slot: "weapon",
+  });
+});
+
+test("initial state restores stored pocket placements before backpack placement", () => {
+  const state = createInventoryState({
+    items: normalizeInventoryItems([
+      {
+        id: "potion-1",
+        itemId: "health-potion",
+        itemName: "Health Potion",
+        slot: "belt",
+        quantity: 3,
+      },
+    ]),
+    storedPocketPlacements: {
+      "potion-1": 2,
+    },
+  });
+
+  assert.deepEqual(state.placements["potion-1"], {
+    zone: "pocket",
+    slotIndex: 2,
   });
 });

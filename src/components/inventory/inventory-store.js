@@ -4,79 +4,38 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   createInventoryState,
+  findFirstBackpackPosition,
+  getItemKeyInPocketSlot,
   moveItemToBackpack,
   moveItemToEquipment,
+  moveItemToPocket,
   normalizeInventoryItems,
   splitItemStack,
 } from "./inventory-logic";
+import {
+  loadStoredInventoryLayout,
+  resolvePocketSlots,
+  saveStoredInventoryLayout,
+} from "./pocket-layout";
 import {
   EQUIPMENT_SLOT_ORDER,
   INVENTORY_GRID_COLUMNS,
   INVENTORY_GRID_ROWS,
 } from "./item-types";
 
-const STORAGE_PREFIX = "zakzum-inventory-layout";
-const STORAGE_VERSION = 1;
-
-function getStorageKey(characterId) {
-  return `${STORAGE_PREFIX}:${characterId}`;
-}
-
-function loadStoredBackpackPlacements(characterId) {
-  if (!characterId || typeof window === "undefined") {
-    return {};
-  }
-
-  try {
-    const rawValue = window.localStorage.getItem(getStorageKey(characterId));
-
-    if (!rawValue) {
-      return {};
-    }
-
-    const parsed = JSON.parse(rawValue);
-
-    if (parsed?.version !== STORAGE_VERSION) {
-      return {};
-    }
-
-    if (!parsed.backpack || typeof parsed.backpack !== "object") {
-      return {};
-    }
-
-    return parsed.backpack;
-  } catch {
-    return {};
-  }
-}
-
-function saveStoredBackpackPlacements(characterId, placements) {
-  if (!characterId || typeof window === "undefined") {
-    return;
-  }
-
-  const backpackPlacements = Object.fromEntries(
-    Object.entries(placements)
-      .filter(([, placement]) => placement?.zone === "backpack")
-      .map(([itemKey, placement]) => [
-        itemKey,
-        { x: placement.x, y: placement.y },
-      ]),
-  );
-
-  const payload = {
-    version: STORAGE_VERSION,
-    backpack: backpackPlacements,
-  };
-
-  window.localStorage.setItem(getStorageKey(characterId), JSON.stringify(payload));
-}
-
 function getItemsByZone(state) {
   const backpackItems = [];
   const equipmentBySlot = Object.fromEntries(
     EQUIPMENT_SLOT_ORDER.map((slot) => [slot, null]),
   );
+  const pocketSlots = resolvePocketSlots({
+    pocketPlacements: Object.fromEntries(
+      Object.entries(state.placements)
+        .filter(([, placement]) => placement?.zone === "pocket")
+        .map(([itemKey, placement]) => [itemKey, placement.slotIndex]),
+    ),
+    items: Object.values(state.itemsByKey),
+  });
   const unplacedItems = [];
 
   for (const [itemKey, placement] of Object.entries(state.placements)) {
@@ -102,29 +61,39 @@ function getItemsByZone(state) {
       continue;
     }
 
+    if (placement.zone === "pocket") {
+      continue;
+    }
+
     unplacedItems.push(item);
   }
 
   return {
     backpackItems,
     equipmentBySlot,
+    pocketSlots,
     unplacedItems,
   };
 }
 
 export function useInventoryStore({ characterId, items }) {
   const normalizedItems = useMemo(() => normalizeInventoryItems(items), [items]);
-  const [state, setState] = useState(() =>
-    createInventoryState({
+  const [state, setState] = useState(() => {
+    const storedLayout = loadStoredInventoryLayout(characterId);
+
+    return createInventoryState({
       items: normalizedItems,
-      storedBackpackPlacements: loadStoredBackpackPlacements(characterId),
+      storedBackpackPlacements: storedLayout.backpackPlacements,
+      storedPocketPlacements: storedLayout.pocketPlacements,
       columns: INVENTORY_GRID_COLUMNS,
       rows: INVENTORY_GRID_ROWS,
-    }),
-  );
+    });
+  });
 
   useEffect(() => {
-    saveStoredBackpackPlacements(characterId, state.placements);
+    saveStoredInventoryLayout(characterId, {
+      placements: state.placements,
+    });
   }, [characterId, state.placements]);
 
   const moveBackpack = useCallback(
@@ -185,6 +154,59 @@ export function useInventoryStore({ characterId, items }) {
     [state],
   );
 
+  const assignPocket = useCallback(
+    ({ itemKey, slotIndex }) => {
+      const result = moveItemToPocket({
+        state,
+        itemKey,
+        slotIndex,
+        columns: INVENTORY_GRID_COLUMNS,
+        rows: INVENTORY_GRID_ROWS,
+      });
+
+      if (result.ok && result.nextState) {
+        setState(result.nextState);
+      }
+
+      return result;
+    },
+    [state],
+  );
+
+  const clearPocket = useCallback((slotIndex) => {
+    const itemKey = getItemKeyInPocketSlot(state, slotIndex);
+
+    if (!itemKey) {
+      return { ok: false, reason: "Pocket slot is already empty." };
+    }
+
+    const firstFit = findFirstBackpackPosition({
+      state,
+      itemKey,
+      columns: INVENTORY_GRID_COLUMNS,
+      rows: INVENTORY_GRID_ROWS,
+    });
+
+    if (!firstFit) {
+      return { ok: false, reason: "No free backpack space for this item." };
+    }
+
+    const result = moveItemToBackpack({
+      state,
+      itemKey,
+      targetX: firstFit.x,
+      targetY: firstFit.y,
+      columns: INVENTORY_GRID_COLUMNS,
+      rows: INVENTORY_GRID_ROWS,
+    });
+
+    if (result.ok && result.nextState) {
+      setState(result.nextState);
+    }
+
+    return result;
+  }, [state]);
+
   const zoneItems = useMemo(() => getItemsByZone(state), [state]);
 
   return {
@@ -194,8 +216,11 @@ export function useInventoryStore({ characterId, items }) {
     equipmentSlots: EQUIPMENT_SLOT_ORDER,
     backpackItems: zoneItems.backpackItems,
     equipmentBySlot: zoneItems.equipmentBySlot,
+    pocketSlots: zoneItems.pocketSlots,
     unplacedItems: zoneItems.unplacedItems,
     actions: {
+      assignPocket,
+      clearPocket,
       moveBackpack,
       moveEquipment,
       splitStack,

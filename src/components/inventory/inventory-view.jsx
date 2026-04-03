@@ -1,14 +1,17 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { getItemImagePath } from "@/lib/items/helpers";
 import {
   canDropToBackpack,
   isCompatibleWithEquipmentSlot,
 } from "./inventory-logic";
 import InventoryItemCard from "./inventory-item-card";
 import InventoryQuantityModal from "./inventory-quantity-modal";
+import { isPocketConsumableItem } from "./pocket-layout";
 import { useInventoryStore } from "./inventory-store";
 import styles from "./inventory-shell.module.css";
 import {
@@ -33,6 +36,7 @@ export default function Inventory({
     equipmentSlots,
     backpackItems,
     equipmentBySlot,
+    pocketSlots,
     unplacedItems,
     actions,
   } = useInventoryStore({
@@ -42,6 +46,7 @@ export default function Inventory({
   const [dragItemKey, setDragItemKey] = useState("");
   const [backpackPreview, setBackpackPreview] = useState(null);
   const [equipmentPreview, setEquipmentPreview] = useState(null);
+  const [pocketPreview, setPocketPreview] = useState(null);
   const [sellPreview, setSellPreview] = useState(false);
   const [dragAnchor, setDragAnchor] = useState({ x: 0, y: 0 });
   const [feedback, setFeedback] = useState("");
@@ -122,6 +127,7 @@ export default function Inventory({
     setDragItemKey("");
     setBackpackPreview(null);
     setEquipmentPreview(null);
+    setPocketPreview(null);
     setSellPreview(false);
     setDragAnchor({ x: 0, y: 0 });
   }
@@ -360,6 +366,7 @@ export default function Inventory({
       valid: placementCheck.ok,
     });
     setEquipmentPreview(null);
+    setPocketPreview(null);
     setSellPreview(false);
   }
 
@@ -407,7 +414,46 @@ export default function Inventory({
       valid: isCompatibleWithEquipmentSlot(draggedItem, slot),
     });
     setBackpackPreview(null);
+    setPocketPreview(null);
     setSellPreview(false);
+  }
+
+  function handlePocketDragOver(event, slotIndex) {
+    event.preventDefault();
+
+    if (!draggedItem || isSyncing) {
+      return;
+    }
+
+    setPocketPreview({
+      slotIndex,
+      valid: isPocketConsumableItem(draggedItem),
+    });
+    setBackpackPreview(null);
+    setEquipmentPreview(null);
+    setSellPreview(false);
+  }
+
+  function handlePocketDrop(event, slotIndex) {
+    event.preventDefault();
+
+    if (!dragItemKey || isSyncing) {
+      return;
+    }
+
+    const result = actions.assignPocket({
+      itemKey: dragItemKey,
+      slotIndex,
+    });
+
+    if (!result.ok) {
+      setFeedback(result.reason ?? "Could not assign pocket slot.");
+      resetDragState();
+      return;
+    }
+
+    setFeedback("");
+    resetDragState();
   }
 
   async function handleEquipmentDrop(event, slot) {
@@ -446,6 +492,7 @@ export default function Inventory({
     setSellPreview(true);
     setBackpackPreview(null);
     setEquipmentPreview(null);
+    setPocketPreview(null);
   }
 
   async function handleSellDrop(event) {
@@ -629,6 +676,71 @@ export default function Inventory({
               </div>
             ))}
           </div>
+
+          <section className={styles.pocketsPanel}>
+            <div className={styles.pocketsHeader}>
+              <p className={styles.pocketsTitle}>Pockets</p>
+              <p className={styles.pocketsHint}>
+                Drag stackable consumables here for quick access during activities.
+              </p>
+            </div>
+            <div className={styles.pocketsGrid}>
+              {pocketSlots.map((slot) => {
+                const isPreviewed = pocketPreview?.slotIndex === slot.slotIndex;
+                const previewClass = isPreviewed
+                  ? pocketPreview.valid
+                    ? styles.pocketSlotValid
+                    : styles.pocketSlotInvalid
+                  : "";
+
+                return (
+                  <div
+                    key={`pocket-slot-${slot.slotIndex}`}
+                    className={`${styles.pocketSlot} ${slot.item ? styles.pocketSlotFilled : ""} ${previewClass}`}
+                    onDragOver={(event) => handlePocketDragOver(event, slot.slotIndex)}
+                    onDrop={(event) => handlePocketDrop(event, slot.slotIndex)}
+                  >
+                    <p className={styles.pocketSlotLabel}>Slot {slot.slotIndex + 1}</p>
+                    {slot.item ? (
+                      <>
+                        <div className={styles.pocketItemMedia}>
+                          <div className={styles.pocketItemArtworkWrap} aria-hidden="true">
+                            {getItemImagePath(slot.item.itemId) ? (
+                              <Image
+                                src={getItemImagePath(slot.item.itemId)}
+                                alt=""
+                                fill
+                                unoptimized
+                                sizes="56px"
+                                className={styles.pocketItemArtwork}
+                              />
+                            ) : (
+                              <span className={styles.pocketItemArtworkFallback}>?</span>
+                            )}
+                          </div>
+                          <div className={styles.pocketItemInfo}>
+                            <p className={styles.pocketItemName}>{slot.item.itemName}</p>
+                            <p className={styles.pocketItemMeta}>Ready x{slot.item.displayQuantity}</p>
+                            <p className={styles.pocketItemOwned}>Owned x{slot.item.quantity}</p>
+                          </div>
+                        </div>
+                        <button
+                          className={styles.pocketClearButton}
+                          type="button"
+                          onClick={() => actions.clearPocket(slot.slotIndex)}
+                          disabled={isSyncing}
+                        >
+                          Backpack
+                        </button>
+                      </>
+                    ) : (
+                      <p className={styles.pocketEmpty}>Drop consumable</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
 
           {consumableStacks.length > 0 ? (
             <section className={styles.consumablePanel}>
