@@ -14,6 +14,8 @@ const StartPageMusicContext = createContext(null);
 const MARKET_MUSIC_PATH = "/audio/music/Market.wav";
 const HEARTLANDS_MUSIC_PATH = encodeURI("/audio/music/The Heartlands.wav");
 const DEFAULT_MUSIC_VOLUME = 0.62;
+const TRACK_FADE_OUT_MS = 360;
+const TRACK_FADE_IN_MS = 460;
 
 function clampVolume(value) {
   return Math.min(1, Math.max(0, value));
@@ -34,9 +36,18 @@ function resolveTrackByPathname(pathname, fallbackSrc) {
 export default function StartPageMusic({ src, children }) {
   const pathname = usePathname();
   const audioRef = useRef(null);
+  const currentTrackRef = useRef(null);
+  const trackPositionsRef = useRef(new Map());
+  const transitionRef = useRef({
+    switchId: 0,
+    rafId: null,
+    cancelMetadataWait: null,
+    inProgress: false,
+  });
   const [enabled, setEnabled] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(DEFAULT_MUSIC_VOLUME);
+  const volumeRef = useRef(DEFAULT_MUSIC_VOLUME);
   const [trackOverride, setTrackOverride] = useState(null);
   const routeTrack = resolveTrackByPathname(pathname, src);
   const activeSrc = trackOverride ?? routeTrack;
@@ -79,12 +90,158 @@ export default function StartPageMusic({ src, children }) {
     const audio = audioRef.current;
 
     if (!audio) {
-      return;
+      return false;
     }
 
     try {
       await audio.play();
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const cancelOngoingTransition = useCallback(() => {
+    const transitionState = transitionRef.current;
+    transitionState.switchId += 1;
+
+    if (transitionState.rafId !== null) {
+      cancelAnimationFrame(transitionState.rafId);
+      transitionState.rafId = null;
+    }
+
+    if (typeof transitionState.cancelMetadataWait === "function") {
+      transitionState.cancelMetadataWait();
+      transitionState.cancelMetadataWait = null;
+    }
+
+    transitionState.inProgress = false;
+  }, []);
+
+  const saveTrackPosition = useCallback((trackSrc) => {
+    const audio = audioRef.current;
+
+    if (!audio || typeof trackSrc !== "string" || trackSrc.trim() === "") {
+      return;
+    }
+
+    const numericTime = Number(audio.currentTime);
+
+    if (!Number.isFinite(numericTime) || numericTime < 0) {
+      return;
+    }
+
+    trackPositionsRef.current.set(trackSrc, numericTime);
+  }, []);
+
+  const restoreTrackPosition = useCallback((trackSrc) => {
+    const audio = audioRef.current;
+
+    if (!audio || typeof trackSrc !== "string" || trackSrc.trim() === "") {
+      return;
+    }
+
+    const savedTime = trackPositionsRef.current.get(trackSrc);
+
+    if (typeof savedTime !== "number" || !Number.isFinite(savedTime) || savedTime < 0) {
+      try {
+        audio.currentTime = 0;
+      } catch {}
+      return;
+    }
+
+    const duration = Number(audio.duration);
+    const maxSafeTime =
+      Number.isFinite(duration) && duration > 0 ? Math.max(0, duration - 0.05) : null;
+    const nextTime = maxSafeTime === null ? savedTime : Math.min(savedTime, maxSafeTime);
+
+    try {
+      audio.currentTime = Math.max(0, nextTime);
     } catch {}
+  }, []);
+
+  const fadeAudioVolume = useCallback((from, to, durationMs, switchId) => {
+    const audio = audioRef.current;
+
+    if (!audio) {
+      return Promise.resolve(false);
+    }
+
+    const fromVolume = clampVolume(from);
+    const toVolume = clampVolume(to);
+
+    if (durationMs <= 0 || Math.abs(fromVolume - toVolume) < 0.0001) {
+      audio.volume = toVolume;
+      return Promise.resolve(true);
+    }
+
+    return new Promise((resolve) => {
+      const startedAt = performance.now();
+
+      const step = (now) => {
+        if (transitionRef.current.switchId !== switchId) {
+          resolve(false);
+          return;
+        }
+
+        const progress = Math.min(1, (now - startedAt) / durationMs);
+        const nextVolume = fromVolume + (toVolume - fromVolume) * progress;
+        audio.volume = clampVolume(nextVolume);
+
+        if (progress >= 1) {
+          transitionRef.current.rafId = null;
+          resolve(true);
+          return;
+        }
+
+        transitionRef.current.rafId = requestAnimationFrame(step);
+      };
+
+      transitionRef.current.rafId = requestAnimationFrame(step);
+    });
+  }, []);
+
+  const waitForMetadata = useCallback((switchId) => {
+    const audio = audioRef.current;
+
+    if (!audio) {
+      return Promise.resolve(false);
+    }
+
+    if (audio.readyState >= 1) {
+      return Promise.resolve(true);
+    }
+
+    return new Promise((resolve) => {
+      let isSettled = false;
+
+      const cleanup = () => {
+        audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+        audio.removeEventListener("error", handleError);
+
+        if (transitionRef.current.cancelMetadataWait === cancelWait) {
+          transitionRef.current.cancelMetadataWait = null;
+        }
+      };
+
+      const finalize = (result) => {
+        if (isSettled) {
+          return;
+        }
+
+        isSettled = true;
+        cleanup();
+        resolve(result && transitionRef.current.switchId === switchId);
+      };
+
+      const handleLoadedMetadata = () => finalize(true);
+      const handleError = () => finalize(false);
+      const cancelWait = () => finalize(false);
+
+      transitionRef.current.cancelMetadataWait = cancelWait;
+      audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.addEventListener("error", handleError);
+    });
   }, []);
 
   useEffect(() => {
@@ -107,40 +264,124 @@ export default function StartPageMusic({ src, children }) {
   }, []);
 
   useEffect(() => {
+    volumeRef.current = clampVolume(volume);
+
     const audio = audioRef.current;
 
-    if (!audio) {
+    if (!audio || transitionRef.current.inProgress) {
       return;
     }
 
-    if (!enabled) {
-      audio.pause();
-      audio.currentTime = 0;
-      return;
-    }
-
-    tryPlay();
-  }, [enabled, tryPlay]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) {
-      return;
-    }
-
-    audio.volume = clampVolume(volume);
+    audio.volume = volumeRef.current;
   }, [volume]);
 
   useEffect(() => {
     const audio = audioRef.current;
 
-    if (!audio || !enabled) {
+    if (!audio) {
       return;
     }
 
-    audio.currentTime = 0;
-    tryPlay();
-  }, [activeSrc, enabled, tryPlay]);
+    cancelOngoingTransition();
+    const switchId = transitionRef.current.switchId;
+    transitionRef.current.inProgress = true;
+
+    async function transitionTrack() {
+      const currentTrack = currentTrackRef.current;
+      const nextTrack = activeSrc;
+
+      if (!enabled) {
+        if (currentTrack) {
+          saveTrackPosition(currentTrack);
+        }
+
+        audio.pause();
+        return;
+      }
+
+      if (typeof nextTrack !== "string" || nextTrack.trim() === "") {
+        return;
+      }
+
+      if (currentTrack === nextTrack) {
+        audio.volume = volumeRef.current;
+        await tryPlay();
+        return;
+      }
+
+      if (currentTrack) {
+        saveTrackPosition(currentTrack);
+      }
+
+      if (currentTrack && !audio.paused) {
+        const fadedOut = await fadeAudioVolume(
+          audio.volume,
+          0,
+          TRACK_FADE_OUT_MS,
+          switchId,
+        );
+
+        if (!fadedOut || transitionRef.current.switchId !== switchId) {
+          return;
+        }
+      }
+
+      audio.pause();
+      audio.src = nextTrack;
+      currentTrackRef.current = nextTrack;
+      audio.load();
+
+      const metadataReady = await waitForMetadata(switchId);
+
+      if (!metadataReady || transitionRef.current.switchId !== switchId) {
+        return;
+      }
+
+      restoreTrackPosition(nextTrack);
+      audio.volume = 0;
+
+      const didPlay = await tryPlay();
+
+      if (!didPlay || transitionRef.current.switchId !== switchId) {
+        audio.volume = volumeRef.current;
+        return;
+      }
+
+      await fadeAudioVolume(0, volumeRef.current, TRACK_FADE_IN_MS, switchId);
+    }
+
+    void transitionTrack().finally(() => {
+      if (transitionRef.current.switchId === switchId) {
+        transitionRef.current.inProgress = false;
+        transitionRef.current.rafId = null;
+      }
+    });
+
+    return () => {
+      cancelOngoingTransition();
+    };
+  }, [
+    activeSrc,
+    enabled,
+    tryPlay,
+    cancelOngoingTransition,
+    saveTrackPosition,
+    restoreTrackPosition,
+    fadeAudioVolume,
+    waitForMetadata,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      const currentTrack = currentTrackRef.current;
+
+      if (currentTrack) {
+        saveTrackPosition(currentTrack);
+      }
+
+      cancelOngoingTransition();
+    };
+  }, [cancelOngoingTransition, saveTrackPosition]);
 
   useEffect(() => {
     if (!enabled || isPlaying) {
@@ -173,7 +414,6 @@ export default function StartPageMusic({ src, children }) {
     }
 
     setEnabled(true);
-    tryPlay();
   };
 
   const isActive = enabled && isPlaying;
@@ -194,7 +434,7 @@ export default function StartPageMusic({ src, children }) {
   return (
     <StartPageMusicContext.Provider value={contextValue}>
       {children}
-      <audio ref={audioRef} src={activeSrc} loop preload="metadata" />
+      <audio ref={audioRef} loop preload="metadata" />
     </StartPageMusicContext.Provider>
   );
 }
