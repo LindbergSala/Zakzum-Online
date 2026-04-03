@@ -1,70 +1,135 @@
 # Zakzum Online
 
-Zakzum Online is a Next.js + Prisma game prototype with account auth, character progression, activities, and market/inventory systems.
+Zakzum Online är ett webbaserat spel-projekt byggt med Next.js och Prisma.
+Projektet innehåller konto/autentisering, karaktärsskapande, aktiviteter, inventory, market/shop och onboarding-flöden.
 
-## Quick Start
+## Projektöversikt
 
-1. Install dependencies:
+Det här projektet fokuserar på en spelbar proof-of-concept med:
+
+- registrering/inloggning och sessionshantering
+- karaktär med stats, klass/race/background och progression
+- aktiviteter (quest/adventure/arena) med roll/utfall och logg
+- inventory med utrustning, stackning, split/combine, use/sell
+- marknadsplatser med olika sortiment och transaktioner
+- onboarding-system med belöningar och guided flow
+
+## Teknikstack
+
+- Next.js (App Router)
+- React
+- Prisma + PostgreSQL
+- Zod (validering)
+- ESLint + Node test runner (`tsx --test`)
+
+## Kom Igång
+
+### 1. Förutsättningar
+
+- Node.js + npm
+- PostgreSQL igång lokalt eller via extern host
+
+### 2. Installera beroenden
+
 ```bash
 npm ci
 ```
-2. Create local env file:
+
+### 3. Skapa miljöfil
+
 ```bash
 cp .env.example .env
-# Windows PowerShell:
+```
+
+Windows PowerShell:
+
+```powershell
 Copy-Item .env.example .env
 ```
-3. Start PostgreSQL and set `DATABASE_URL` in `.env`.
-4. Sync database schema:
+
+### 4. Sätt databasanslutning
+
+Lägg in `DATABASE_URL` i `.env`.
+
+Exempel:
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/zakzum?schema=public
+```
+
+### 5. Synka schema
+
 ```bash
 npm run prisma:push
 ```
-5. Run the app:
+
+### 6. Starta projektet
+
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Appen körs på `http://localhost:3000`.
 
-## Core Commands
+## Vanliga Kommandon
 
-- `npm run dev`: start development server.
-- `npm run lint`: run ESLint.
-- `npm test`: run full test suite.
-- `npm run test:smoke`: run fast pre-demo smoke tests for core flows.
-- `npm run build`: production build check.
-- `npm run prisma:generate`: regenerate Prisma client.
-- `npm run prisma:push`: push schema changes to your database.
+- `npm run dev` startar utvecklingsservern
+- `npm run dev:turbo` startar dev utan `--webpack`-flaggan
+- `npm run lint` kör ESLint
+- `npm test` kör hela testsviten
+- `npm run test:smoke` kör snabb smoke-svit
+- `npm run test:inventory` kör inventory-specifika tester
+- `npm run build` bygger produktion
+- `npm run start` kör produktionsbuild lokalt
+- `npm run prisma:generate` genererar Prisma client
+- `npm run prisma:push` pushar schema till databas
 
-## Standard Dev Flow
+## Kvalitetssäkring (Rekommenderat flöde)
 
-1. Pull latest changes and install dependencies.
-2. Run `npm run prisma:push` if schema changed.
-3. Implement feature/fix.
-4. Run `npm run lint`, `npm test`, and `npm run build`.
-5. Open PR.
+Kör detta innan merge:
 
-## Course Evidence (SV)
+```bash
+npm run lint
+npm test
+npm run build
+```
 
-- Projektplan/PM: `docs/PoC-PM.md`
-- User stories/backlog: `docs/user-stories.md`
-- Character baseline: `docs/character-base.md`
-- Git-process: `GIT-FLOW.md`
+## Brancharbete (Git)
 
-## Environment Variables
+I projektet har vi arbetat i följande brancher:
 
-Required:
+- `main`
+- `dev_1`
+- `dev_2`
 
-- `DATABASE_URL`: PostgreSQL connection string.
+`main` används för stabil kod och release-ready läge.
+`dev_1` och `dev_2` har använts för löpande utvecklingsarbete i separata spår.
 
-Optional:
+För mer detaljer om arbetsflöde och branchregler, se [GIT-FLOW.md](./GIT-FLOW.md).
 
-- `PRISMA_LOG_QUERIES`: set to `1` or `true` in development to log SQL.
-- `APP_ORIGIN`: allowed origin(s) for write-request origin checks (comma-separated).
-- `DEBUG_PAGE_ENABLED`: set to `1` to enable `/debug` in development.
-- `LATEST_COMMIT_MESSAGE`: optional home page update message shown under “Latest update”.
+## Miljövariabler
+
+### Obligatorisk
+
+- `DATABASE_URL` PostgreSQL connection string
+
+### Valfria
+
+- `PRISMA_LOG_QUERIES` sätt till `1` eller `true` för SQL-loggning i development
+- `APP_ORIGIN` tillåtna origin-domäner för write-request checks (kommaseparerat)
+- `DEBUG_PAGE_ENABLED` sätt till `1` för att aktivera `/debug`
+- `LATEST_COMMIT_MESSAGE` valfri text för startsidans “Latest update”
 - `LOGIN_RATE_LIMIT_WINDOW_MS`
 - `LOGIN_RATE_LIMIT_IP_MAX_FAILURES`
 - `LOGIN_RATE_LIMIT_EMAIL_MAX_FAILURES`
 - `LOGIN_RATE_LIMIT_IP_BLOCK_MS`
 - `LOGIN_RATE_LIMIT_EMAIL_BLOCK_MS`
+
+## Projektfiler (Dokumentation)
+
+- Projektplan/PM: [docs/PoC-PM.md](./docs/PoC-PM.md)
+- Sprintlogg (efterhandsdokumentation): [docs/sprint-log.md](./docs/sprint-log.md)
+- Retrospektiv (efterhandsdokumentation): [docs/retrospective.md](./docs/retrospective.md)
+- User stories/backlog: [docs/user-stories.md](./docs/user-stories.md)
+- Character baseline: [docs/character-base.md](./docs/character-base.md)
+- Git-process: [GIT-FLOW.md](./GIT-FLOW.md)

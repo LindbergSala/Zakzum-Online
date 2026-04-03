@@ -113,21 +113,14 @@ const CLASS_START_BONUS_STATS = {
   },
 };
 
-const CLASS_STAT_LABELS = {
-  strength: "STR",
-  dexterity: "DEX",
-  constitution: "CON",
-  intelligence: "INT",
-  wisdom: "WIS",
-  charisma: "CHA",
-};
-
-const CLASS_STAT_KEYS = Object.keys(CLASS_STAT_LABELS);
-
-function normalizeStatValue(value) {
-  const numericValue = Number(value);
-  return Number.isFinite(numericValue) ? Math.floor(numericValue) : 0;
-}
+const CLASS_STAT_KEYS = [
+  "strength",
+  "dexterity",
+  "constitution",
+  "intelligence",
+  "wisdom",
+  "charisma",
+];
 
 function normalizeDeltaValue(value) {
   const numericValue = Number(value);
@@ -211,17 +204,6 @@ export function getClassStartBonusStats(characterClass) {
 
   return Object.fromEntries(
     CLASS_STAT_KEYS.map((key) => [key, normalizeDeltaValue(configured[key])]),
-  );
-}
-
-export function applyClassStartBonuses(statsInput, characterClass) {
-  const startBonus = getClassStartBonusStats(characterClass);
-
-  return Object.fromEntries(
-    CLASS_STAT_KEYS.map((key) => [
-      key,
-      Math.max(1, Math.min(20, normalizeStatValue(statsInput[key]) + startBonus[key])),
-    ]),
   );
 }
 
@@ -309,18 +291,4 @@ export function applyClassPassiveDelta({
     delta: nextDelta,
     deltaBonus,
   };
-}
-
-export function formatClassStartBonusLabel(characterClass) {
-  const startBonus = getClassStartBonusStats(characterClass);
-  const parts = [];
-
-  for (const key of CLASS_STAT_KEYS) {
-    const value = startBonus[key];
-    if (value > 0) {
-      parts.push(`${CLASS_STAT_LABELS[key]} +${value}`);
-    }
-  }
-
-  return parts.length > 0 ? parts.join(", ") : "No start bonus";
 }

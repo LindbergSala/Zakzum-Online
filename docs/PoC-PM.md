@@ -34,7 +34,7 @@ All data ska sparas i databas (User, Character, Inventory, ActivityLog).
 
 Agilt arbetssätt + avstämningar + deadlines
 Jag arbetar i veckosprintar med sprintmål och tydlig leverans per vecka.
-Jag använder Trello: To do -> In progress -> Review -> Done.
+Jag använder inte trello som 
 Varje sprint avslutas med:
 1. kort status (vad blev klart, vad blockerar)
 2. uppdaterad backlog/prioritering
@@ -53,3 +53,12 @@ Next.js (JavaScript, App Router), CSS: Tailwind CSS eller CSS Modules, Databas: 
 Det va det jag hade i tankarna!
 Ha det bäst!
 //Patrik Iindberg!
+
+Efterhandsnotering (2026-04-03)
+Ursprungsplanen ovan anvande `dev` som integrationsbranch.
+- Jag använder inte trello som först planerat, utan i stället så använde jag "docs\user-stories.md" med epics.
+I faktisk utveckling anvandes brancherna `dev_1` och `dev_v2`.
+Se uppdaterad process i `GIT-FLOW.md` samt dokumentation i:
+- `docs/sprint-log.md`
+- `docs/retrospective.md`
+
