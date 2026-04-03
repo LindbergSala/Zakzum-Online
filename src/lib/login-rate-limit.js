@@ -131,7 +131,7 @@ function resolveActiveBlock(records, config, now) {
     }
 
     if (record.blockedUntil > now) {
-      if (!blockedUntil || record.blockedUntil < blockedUntil) {
+      if (!blockedUntil || record.blockedUntil > blockedUntil) {
         blockedUntil = record.blockedUntil;
       }
     }

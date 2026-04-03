@@ -1,0 +1,17 @@
+Retrospektiv Sammanställd: 2026-04-03
+Underlag: sprintlogg, commit-historik, PR-merges och nuvarande projektstatus.
+Den här retrospektiven är skriven 2026-04-03 och bygger på sprintloggen, commit-historiken, PR-merges och hur projektet ser ut just nu.
+
+Målet med projektet har varit att ta fram en spelbar Proof-of-Concept med funktioner för auth, karaktär, aktiviteter, inventory/shop och logg. När jag tittar på projektet nu ser jag att de viktigaste delarna finns på plats i kodbasen. Projektet har också tagit sig förbi minst en tydlig releasepunkt i form av V_1, och arbetet har därefter fortsatt vidare i dev_v2. Jag kan också se att det finns kvalitetssäkring genom lint, test och build i CI, vilket visar att fokus inte bara har legat på att få funktioner att fungera, utan också på att hålla en bra teknisk nivå.
+
+När det gäller planering och struktur har jag inte använt Trello, utan i stället arbetat med docs\user-stories.md, där jag har utgått från epics för att planera och strukturera arbetet. Det har varit mitt sätt att samla krav, dela upp funktioner och hålla ihop arbetet under projektets gång.
+
+Det jag tycker har gått bra är framför allt att utvecklingen har hållit ett tydligt tempo. Det finns många commits, vilket visar att arbetet har gått framåt löpande under projektets gång. Jag tycker också att viktiga problem har lösts på ett bra sätt i centrala delar av projektet, särskilt inom auth-hardening, CSRF/session och rate limiting. Samarbetet mellan olika brancher har också fungerat bra genom PR-merges. Samtidigt har både UX och innehåll förbättrats steg för steg under flera sprintar, vilket gör att projektet känns mer genomarbetat ju längre arbetet har gått.
+
+Samtidigt finns det saker som jag ser hade kunnat göras bättre. Dokumentationen kring processen har inte alltid hängt med i hur arbetet faktiskt har genomförts. Den planerade branchmodellen med dev stämmer inte helt överens med hur brancherna faktiskt har använts, där dev_1 och dev_v2 förekommer. Det gör att vissa delar av dokumentationen blir otydliga. Jag ser också att sprintavstämningar och retros inte har skrivits löpande i repot, vilket gör det svårare att följa arbetet i efterhand.
+
+Utifrån det här har jag kommit fram till några tydliga åtgärder. Dokumentationen behöver uppdateras så att branchprocessen stämmer med den modell som faktiskt används. CI-triggern behöver också ändras så att den matchar dev_1, dev_2 och dev_v2. För att göra arbetet mer spårbart behöver sprintlogg och retro sparas i docs/. Framöver ser jag också ett behov av att varje sprint avslutas med en kort status och en retroanteckning direkt i repot.
+
+Jag tycker att projektet tydligt visar en progression mot en MVP, eftersom det finns konkreta leveranser under arbetets gång. För att göra arbetet med deadlines ännu tydligare framöver behöver varje sprint innehålla en planerad deadline, det faktiska utfallet och en kort förklaring om något inte blev som tänkt.
+
+Sammanfattningsvis tycker jag att projektet uppfyller stora delar av kraven när det gäller planering, genomförande, Git-samarbete och teknisk leverans. Med den här efterhandsdokumentationen, min planering i docs\user-stories.md och en tydligare processmodell blir det också lättare att bedöma projektet utifrån kursmålen.

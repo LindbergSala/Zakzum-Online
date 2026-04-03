@@ -4,13 +4,15 @@ on:
   push:
     branches:
       - main
-      - dev
-      - feature/**
-      - hotfix/**
+      - dev_1
+      - dev_2
+      - dev_v2
   pull_request:
     branches:
       - main
-      - dev
+      - dev_1
+      - dev_2
+      - dev_v2
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}

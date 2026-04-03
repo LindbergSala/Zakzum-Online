@@ -8,12 +8,12 @@ import {
   moveItemToEquipment,
   normalizeInventoryItems,
   splitItemStack,
-} from "./inventoryLogic";
+} from "./inventory-logic";
 import {
   EQUIPMENT_SLOT_ORDER,
   INVENTORY_GRID_COLUMNS,
   INVENTORY_GRID_ROWS,
-} from "./ItemTypes";
+} from "./item-types";
 
 const STORAGE_PREFIX = "zakzum-inventory-layout";
 const STORAGE_VERSION = 1;

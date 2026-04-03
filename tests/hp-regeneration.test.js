@@ -65,3 +65,26 @@ test("character regeneration restores hp on the same interval as energy", async 
   assert.equal(result.hpMeta.isFull, false);
   assert.equal(result.hpMeta.secondsUntilNextHp, 300);
 });
+
+test("character regeneration normalizes overcapped energy immediately", async () => {
+  const now = new Date("2026-03-31T10:00:00.000Z");
+  const character = {
+    id: "character-2",
+    characterClass: "FIGHTER",
+    constitution: 10,
+    hp: 24,
+    energy: 28,
+    maxEnergy: 20,
+    energyRegenAt: now,
+  };
+
+  const result = await resolveCharacterEnergyRegeneration(character, {
+    now,
+    persist: false,
+  });
+
+  assert.equal(result.changed, true);
+  assert.equal(result.energy.before, 20);
+  assert.equal(result.energy.after, 20);
+  assert.equal(result.character.energy, 20);
+});

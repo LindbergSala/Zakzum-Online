@@ -4,7 +4,7 @@ import {
   INVENTORY_GRID_ROWS,
   getItemDefinition,
   isConsumableStackable,
-} from "./ItemTypes";
+} from "./item-types";
 
 function isBackpackPlacement(placement) {
   return placement?.zone === "backpack";

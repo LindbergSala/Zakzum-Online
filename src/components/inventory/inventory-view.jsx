@@ -1,198 +1,23 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { getItemImagePath, getItemSellValue } from "@/lib/items/helpers";
 import {
   canDropToBackpack,
   isCompatibleWithEquipmentSlot,
-} from "./inventoryLogic";
-import { useInventoryStore } from "./inventoryStore";
-import styles from "./Inventory.module.css";
-
-function formatSlotLabel(slot) {
-  if (!slot) {
-    return "Unknown";
-  }
-
-  return slot.charAt(0).toUpperCase() + slot.slice(1);
-}
-
-function clamp(value, min, max) {
-  if (value < min) {
-    return min;
-  }
-
-  if (value > max) {
-    return max;
-  }
-
-  return value;
-}
-
-function formatSellValueLabel(sellValue) {
-  const parts = [];
-
-  if (Number(sellValue?.gold) > 0) {
-    parts.push(`${sellValue.gold} Gold`);
-  }
-
-  if (Number(sellValue?.renown) > 0) {
-    parts.push(`${sellValue.renown} Renown`);
-  }
-
-  return parts.length > 0 ? parts.join(" + ") : "No value";
-}
-
-function formatInventoryValueLabel(item) {
-  const quantity = Math.max(1, Number(item.quantity) || 1);
-  const sellValue = item.sellValue ?? getItemSellValue(item.itemId);
-  const perItemLabel = formatSellValueLabel(sellValue);
-
-  if (quantity <= 1 || perItemLabel === "No value") {
-    return `Value: ${perItemLabel}`;
-  }
-
-  const stackValue = {
-    gold: (Number(sellValue?.gold) || 0) * quantity,
-    renown: (Number(sellValue?.renown) || 0) * quantity,
-  };
-
-  return `Value: ${perItemLabel} each (${formatSellValueLabel(stackValue)} total)`;
-}
-
-async function syncInventoryAction(payload) {
-  const response = await fetch("/api/game/inventory", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message ?? "Inventory sync failed.");
-  }
-
-  return data;
-}
-
-async function syncMarketSellAction(payload) {
-  const response = await fetch("/api/game/shop", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message ?? "Market sell failed.");
-  }
-
-  return data;
-}
-
-function ItemCard({ item, draggable, onDragStart, onDragEnd, className, compact = false }) {
-  const compactClass = compact ? styles.itemCardCompact : "";
-  const nameClass = compact ? styles.itemNameCompact : styles.itemName;
-  const imagePath = !compact ? getItemImagePath(item.itemId) : null;
-  const statLabel = item.effectLabel || "No stats";
-  const valueLabel = formatInventoryValueLabel(item);
-
-  return (
-    <button
-      className={`${styles.itemCard} ${compactClass} ${className ?? ""}`}
-      type="button"
-      draggable={draggable}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      title={item.itemName}
-    >
-      {!compact ? (
-        <span className={styles.itemInlineArtworkWrap} aria-hidden="true">
-          {imagePath ? (
-            <Image
-              src={imagePath}
-              alt=""
-              fill
-              sizes="(max-width: 640px) 44px, 64px"
-              className={styles.itemInlineArtwork}
-            />
-          ) : (
-            <span className={styles.itemInlineArtworkFallback}>No image</span>
-          )}
-        </span>
-      ) : null}
-      <p className={nameClass} title={item.itemName}>
-        {item.itemName}
-      </p>
-      {!compact && item.quantity > 1 ? (
-        <span className={styles.stackBadge}>x{item.quantity}</span>
-      ) : null}
-      {!compact ? (
-        <span className={styles.itemHoverOverlay} aria-hidden="true">
-          <span className={styles.itemHoverCard}>
-            <span className={styles.itemHoverImageWrap}>
-              {imagePath ? (
-                <Image
-                  src={imagePath}
-                  alt=""
-                  width={320}
-                  height={320}
-                  className={styles.itemHoverImage}
-                />
-              ) : (
-                <span className={styles.itemHoverImageFallback}>No image</span>
-              )}
-            </span>
-            <span className={styles.itemHoverInfo}>
-              <span className={styles.itemHoverName}>{item.itemName}</span>
-              <span className={styles.itemHoverStatLine}>{statLabel}</span>
-              <span className={styles.itemHoverValueLine}>{valueLabel}</span>
-            </span>
-          </span>
-        </span>
-      ) : null}
-    </button>
-  );
-}
-
-function toInventorySyncPayload(syncAction) {
-  if (!syncAction) {
-    return null;
-  }
-
-  if (typeof syncAction === "string") {
-    return {
-      action: syncAction,
-    };
-  }
-
-  if (typeof syncAction !== "object") {
-    return null;
-  }
-
-  const payload = {
-    action: syncAction.type,
-  };
-
-  if (syncAction.itemRecordId) {
-    payload.itemRecordId = syncAction.itemRecordId;
-  }
-
-  if (syncAction.targetItemRecordId) {
-    payload.targetItemRecordId = syncAction.targetItemRecordId;
-  }
-
-  if (Number.isFinite(syncAction.quantity) && syncAction.quantity > 0) {
-    payload.quantity = Math.floor(syncAction.quantity);
-  }
-
-  return payload;
-}
+} from "./inventory-logic";
+import InventoryItemCard from "./inventory-item-card";
+import InventoryQuantityModal from "./inventory-quantity-modal";
+import { useInventoryStore } from "./inventory-store";
+import styles from "./inventory-shell.module.css";
+import {
+  clamp,
+  formatSlotLabel,
+  syncInventoryAction,
+  syncMarketSellAction,
+  toInventorySyncPayload,
+} from "./inventory-utils";
 
 export default function Inventory({
   characterId,
@@ -236,7 +61,7 @@ export default function Inventory({
 
   const draggedItem = dragItemKey ? state.itemsByKey[dragItemKey] : null;
   const consumableStacks = useMemo(
-    () => backpackItems.filter((item) => item.stackable),
+    () => backpackItems.filter((item) => item.kind === "consumable"),
     [backpackItems],
   );
 
@@ -665,6 +490,13 @@ export default function Inventory({
       return;
     }
 
+    if (item.kind !== "consumable") {
+      setFeedback(
+        "This item cannot be used. Only consumables (like potions and tonics) can be used.",
+      );
+      return;
+    }
+
     if (item.quantity > 1) {
       openQuantityModal({
         actionType: "use",
@@ -734,7 +566,7 @@ export default function Inventory({
                 >
                   <p className={styles.slotLabel}>{formatSlotLabel(slot)}</p>
                   {item ? (
-                    <ItemCard
+                    <InventoryItemCard
                       item={item}
                       compact
                       draggable={!isSyncing}
@@ -788,7 +620,7 @@ export default function Inventory({
                   gridRow: `${item.placement.y + 1} / span ${item.height}`,
                 }}
               >
-                <ItemCard
+                <InventoryItemCard
                   item={item}
                   draggable={!isSyncing}
                   onDragStart={(event) => handleDragStart(event, item.key)}
@@ -855,56 +687,15 @@ export default function Inventory({
       {isSyncing ? <p className={styles.syncText}>Syncing inventory...</p> : null}
       {feedback ? <p className={styles.feedbackError}>{feedback}</p> : null}
 
-      {quantityModal ? (
-        <div
-          className={styles.quantityModalRoot}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="inventory-quantity-title"
-          onClick={closeQuantityModal}
-        >
-          <div className={styles.quantityModalBackdrop} />
-          <section
-            className={styles.quantityModalCard}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <p className={styles.quantityModalKicker}>Inventory action</p>
-            <h3 className={styles.quantityModalTitle} id="inventory-quantity-title">
-              {quantityModal.title}
-            </h3>
-            <p className={styles.quantityModalText}>{quantityModal.description}</p>
-            <form className={styles.quantityModalForm} onSubmit={handleQuantityModalSubmit}>
-              <label className={styles.quantityModalLabel} htmlFor="inventory-quantity-input">
-                Quantity
-              </label>
-              <input
-                id="inventory-quantity-input"
-                className={styles.quantityModalInput}
-                type="number"
-                min={1}
-                max={
-                  quantityModal.actionType === "split"
-                    ? Math.max(1, (state.itemsByKey[quantityModal.itemKey]?.quantity ?? 1) - 1)
-                    : Math.max(1, state.itemsByKey[quantityModal.itemKey]?.quantity ?? 1)
-                }
-                step={1}
-                value={quantityInput}
-                onChange={(event) => setQuantityInput(event.target.value)}
-                inputMode="numeric"
-                autoFocus
-              />
-              <div className={styles.quantityModalActions}>
-                <button type="submit" disabled={isSyncing}>
-                  {isSyncing ? "Processing..." : quantityModal.confirmLabel}
-                </button>
-                <button type="button" onClick={closeQuantityModal} disabled={isSyncing}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </section>
-        </div>
-      ) : null}
+      <InventoryQuantityModal
+        modal={quantityModal}
+        itemQuantity={quantityModal ? state.itemsByKey[quantityModal.itemKey]?.quantity : 1}
+        quantityInput={quantityInput}
+        onQuantityChange={setQuantityInput}
+        onSubmit={handleQuantityModalSubmit}
+        onClose={closeQuantityModal}
+        isSyncing={isSyncing}
+      />
     </section>
   );
 }

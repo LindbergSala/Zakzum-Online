@@ -11,6 +11,81 @@ const REGION_HINT_TEXT =
   "Click a name on the map to open its location lore.";
 const NO_REGIONS_TEXT = "No regional map data was found in /public/images/locations.";
 const EXTRA_LOCATIONS_TEXT = "These locations are available but are not labeled in this map image.";
+const REALM_LORE_HOVER_CLEAR_DELAY_MS = 120;
+const REGION_HOVER_LORE_BY_ID = {
+  amber_fields: {
+    title: "The Amber Fields",
+    subtitle: "A breadbasket of the realm",
+    text:
+      "A land of grain, wind, and wide open roads.\nGolden by day, quiet by dusk, and older than it first appears.\n\nThe Amber Fields stretch across fertile plains where wheat, barley, and rye sway beneath endless sky. It is one of the most productive farming regions in the lands of men, feeding towns, armies, and noble households far beyond its borders. At a distance, the region seems peaceful, shaped only by harvest, trade, and the turning of the seasons.\n\nYet the Amber Fields are not as simple as they look. Beneath their beauty lies old tension, forgotten paths, and places where the land remembers darker things. Villages thrive on honest labor, but travelers speak carefully of abandoned roads, buried histories, and lonely places where the fields grow too still.",
+  },
+  ashen_lands: {
+    title: "The Ash Lands",
+    subtitle: "Realm of Dragonborns",
+    text:
+      "A realm of fire, stone, and ancient pride.\nA harsh land of volcanic shadow, sacred mountains, and bloodlines forged in flame.\n\nThe Ash Lands are the homeland of the Dragonborns, a realm shaped by heat, ruin, and endurance. Black mountains rise over scorched plains, ash drifts across old roads, and the air itself often carries the breath of the earth below. To outsiders, it seems like a dead land. To the Dragonborns, it is a proving ground worthy of strong blood and unbroken spirit.\n\nYet the Ash Lands are not merely brutal. They are sacred. Every peak, shrine, and burning pass is tied to memory, ancestry, and the belief that hardship reveals true worth. The Dragonborns rule their realm with discipline, pride, and reverence for ancient strength, but even here the land demands constant respect. Fire gives power. Fire also takes.",
+  },
+  dead_mans_land: {
+    title: "Dead Man's Land",
+    subtitle: "The war-worn land between the Half-Orcs and the Dragonborns",
+    text:
+      "A broken frontier of ash, mud, and old hatred.\nA land where peace died first, and memory never followed.\n\nDead Man's Land lies between the realms of the Half-Orcs and the Dragonborns, a scarred region shaped by endless war, burned earth, and the failure of every lasting truce. Once it was a borderland of movement, trade, and uneasy coexistence. Now it is a place of trenches, ruined paths, shattered timber, and soil so soaked with blood that even the wind seems to carry grief.\n\nNo side truly rules it. Forts change hands, roads collapse, and villages become graves faster than banners can be raised over them. Yet both peoples still fight for it, not because the land is kind, but because too much has already been lost there to allow the other side to claim it. In Dead Man's Land, even victory feels like another form of burial.",
+  },
+  green_hollows: {
+    title: "The Green Hollows",
+    subtitle: "The Realm of Halflings",
+    text:
+      "A gentle land of burrows, fields, and winding waters.\nSmall in scale, but old in comfort, memory, and quiet endurance.\n\nThe Green Hollows are the homeland of the halflings, a realm of soft hills, orchard paths, mossy streams, and deep-rooted communities tucked beneath the earth. At first glance it seems like one of the safest places in Zakzum, a place of warm hearths, growing things, and lives measured by harvest, weather, and family tradition.\n\nYet the Green Hollows are not untouched by the wider world. Trade routes pass along its waters, old halls lie hidden beneath its hills, and border hamlets watch nervously beyond the hedgerows. The halflings endure not through might, but through cleverness, kinship, and the quiet strength of those who know exactly what is worth protecting.",
+  },
+  heartlands: {
+    title: "The Heartlands",
+    subtitle: "The Realm of Men",
+    text:
+      "The old center of crown, road, and law.\nA land of fertile fields, aging keeps, and banners raised against the dark.\n\nThe Heartlands are the beating heart of the realm of men. Wide rivers, open farmlands, ancient roads, and fortified towns bind the region together, making it the strongest seat of organized rule in all Zakzum. Kings have risen here, dynasties have fallen here, and nearly every great war has passed through its soil.\n\nYet beneath its order lies pressure that never truly fades. Noble houses scheme behind stone walls, old burial grounds stir beneath plowed earth, and faith struggles constantly against fear. The Heartlands are prosperous by the standards of the realm, but peace here is never more than a season deep.",
+  },
+  ironspine: {
+    title: "The Ironspine",
+    subtitle: "Realm of Dwarfs",
+    text:
+      "A kingdom of mountain, fire, and stone-bound pride.\nAncient, unyielding, and forged in the belief that what endures must be earned.\n\nThe Ironspine is the realm of the dwarfs, a vast dominion carved into mountains older than kings and deeper than most maps dare claim. Its halls run beneath peaks of snow and black rock, its furnaces burn day and night, and its people measure worth through labor, oath, and endurance. To outsiders, it is a land of iron discipline and impossible stonework.\n\nYet the Ironspine is more than strength alone. Beneath its order lies memory, and dwarven memory is long. Old grudges, ancestral duties, and ancient threats remain as present there as the sound of hammer on anvil. The realm stands as one of the strongest in Zakzum, but even stone may crack where enough weight is placed upon it.",
+  },
+  lands_between: {
+    title: "The Lands Between",
+    subtitle: "The cursed lands, where the dead walk",
+    text:
+      "A realm of ruin, silence, and restless death.\nA place where hope lingers only as memory, and even memory decays.\n\nThe Lands Between lie as a haunted threshold between the living realms and the dread beyond, a cursed expanse where the dead do not remain buried and the land itself seems unwilling to sleep. Once, roads crossed these territories, banners were raised there, and strongholds stood against the dark. Now most of what remains is broken stone, drowned marsh, and the slow certainty that death has claimed too much for any clean recovery.\n\nYet the region is not empty. The dead move through its forests and bogs, ancient strongholds rot beneath unnatural silence, and ruined places still hold fragments of power, faith, and knowledge. The Lands Between are feared by all sensible folk, not only because death is common there, but because it is never final enough.",
+  },
+  lower_holds: {
+    title: "The Lower Holds",
+    subtitle: "Realm of Gnomes",
+    text:
+      "A hidden realm of craft, light, and restless ingenuity.\nSmall in stature, but vast in invention, memory, and ambition.\n\nThe Lower Holds are the homeland of the gnomes, a realm of tunnels, chambers, workshops, and buried roads carved beneath the world with care and curiosity. Unlike the stern grandeur of dwarven halls, the gnomish realm is alive with movement, clever design, and a constant hunger to improve what already works. Gears turn, lamps glow, and ideas travel as quickly as trade.\n\nYet the Lower Holds are not merely playful or strange. Behind their bright inventions lies a people shaped by survival, secrecy, and old loss. Forgotten cities lie in the dark below, ancient wars still cast long shadows, and not every machine built in hope remained harmless. The Lower Holds endure through wit, adaptability, and a belief that knowledge is worth defending at any cost.",
+  },
+  mirkvale: {
+    title: "Mirkvale",
+    subtitle: "The Realm of Elfs",
+    text:
+      "A realm of silver leaves, ancient memory, and quiet power.\nBeautiful to behold, but never simple, and never truly at rest.\n\nMirkvale is the homeland of the elfs, a deep and ancient realm where forest, water, and moonlit stone exist in near-perfect harmony. Its paths are older than most kingdoms, its songs older than many written histories, and its people carry the weight of ages in both beauty and sorrow. To outsiders, it seems like a place untouched by time.\n\nYet Mirkvale is not a dream without shadows. Beneath its grace lie old rivalries, sacred duties, and truths guarded so fiercely that even allies are kept at distance. The realm endures through discipline, memory, and a belief that some things must remain unchanged, even as the wider world grows louder beyond the trees.",
+  },
+  southern_wastes: {
+    title: "The Southern Wastes",
+    subtitle: "Realm of Half-Orcs",
+    text:
+      "A savage land of ash, iron, and unbroken will.\nHarsh, war-shaped, and ruled by those strong enough to keep breathing.\n\nThe Southern Wastes are the homeland of the Half-Orcs, a realm of scorched earth, broken hills, war camps, and brutal strongholds raised where weaker folk would never choose to live. It is a land forged by survival, where strength is respected, weakness is remembered, and every generation is taught that peace is little more than a pause between battles.\n\nYet the Wastes are not mindless ruin. Beneath the violence lies order of a harder kind. Clans, war-leaders, forgekeepers, and temple-chiefs all hold power in a realm where loyalty must be proven and authority defended. To outsiders, the Southern Wastes seem like chaos. To the Half-Orcs, it is simply the truth of the world without decoration.",
+  },
+  unspeakable_lands: {
+    title: "The Unspeakable Lands",
+    subtitle: "Realm of The Nameless King",
+    text:
+      "A realm of dread, silence, and impossible ruin.\nA land where hope is unwelcome, and even death is denied its peace.\n\nThe Unspeakable Lands lie beyond the last sane borders of the living world, a realm of cursed stone, lifeless valleys, unnatural color, and vast malice given shape. It is the domain of the Nameless King, a ruler spoken of only in fear, whose presence hangs over the land like a wound that never closes. Nothing there feels natural. Roads do not end where they should. Fortresses seem older than memory. Even the air carries the sense that the land itself is watching.\n\nYet the horror of the realm is not in desolation alone. The Unspeakable Lands endure with a dreadful order, as though ruin has been perfected into law. Gates shimmer with hostile will, dead things walk without purpose or rest, and those who enter too deeply are often changed long before they are ever found. In Zakzum, many lands are feared. Only this one is spoken of as if it should not exist at all.",
+  },
+  western_coast: {
+    title: "The Western Coast",
+    subtitle: "Realm of Half-Elfs",
+    text:
+      "Where salt, trade, and old blood meet.\nA coast of fog-draped harbors, black cliffs, and restless tides.\n\nThe Western Coast stands between many worlds. It is a realm shaped by sea-winds, mixed lineage, and generations who learned to survive between human ambition and elven memory. Its people are known for their beauty, their sharp tongues, and their talent for turning danger into opportunity.\n\nThe coast is rich in trade, but never truly peaceful. Beneath its polished docks and noble estates lies a world of smugglers, pirates, hidden coves, and private wars. Here, every harbor has a secret, and every noble house keeps one hand on a goblet and the other on a dagger.",
+  },
+};
 const WORLD_MAP_FALLBACK_MAX_DISTANCE = 9;
 const REGION_MAP_FALLBACK_MAX_DISTANCE = 6;
 const DEFAULT_WORLD_REGION_EXPANSION = {
@@ -182,6 +257,7 @@ export default function ZakzumMapExplorer({
   const searchParams = useSearchParams();
   const worldMapWrapRef = useRef(null);
   const regionMapWrapRef = useRef(null);
+  const hoveredRegionClearTimeoutRef = useRef(null);
   const requestedRegionId = normalizeQueryValue(searchParams.get("region"));
   const requestedLocationId = normalizeQueryValue(searchParams.get("location"));
   const initialOverlay = useMemo(
@@ -191,6 +267,7 @@ export default function ZakzumMapExplorer({
   const [activeRegionId, setActiveRegionId] = useState(() => initialOverlay.regionId);
   const [activeLocationId, setActiveLocationId] = useState(() => initialOverlay.locationId);
   const [hasLoggedLoreStep, setHasLoggedLoreStep] = useState(false);
+  const [hoveredRegionId, setHoveredRegionId] = useState(null);
 
   const activeRegion = useMemo(
     () => regions.find((entry) => entry.id === activeRegionId) ?? null,
@@ -330,6 +407,9 @@ export default function ZakzumMapExplorer({
   const activeRegionMusicSrc = activeRegion?.id
     ? REGION_MUSIC_SRC_BY_ID[activeRegion.id] ?? null
     : null;
+  const hoveredRegionLore = hoveredRegionId
+    ? REGION_HOVER_LORE_BY_ID[hoveredRegionId] ?? null
+    : null;
 
   useEffect(() => {
     if (!music) {
@@ -349,6 +429,15 @@ export default function ZakzumMapExplorer({
       music?.clearTrackOverride?.();
     },
     [music],
+  );
+
+  useEffect(
+    () => () => {
+      if (hoveredRegionClearTimeoutRef.current) {
+        clearTimeout(hoveredRegionClearTimeoutRef.current);
+      }
+    },
+    [],
   );
 
   useEffect(() => {
@@ -388,12 +477,31 @@ export default function ZakzumMapExplorer({
     };
   }, [activeLocation, activeRegion, hasLoggedLoreStep]);
 
+  const cancelHoveredRegionClear = () => {
+    if (hoveredRegionClearTimeoutRef.current) {
+      clearTimeout(hoveredRegionClearTimeoutRef.current);
+      hoveredRegionClearTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleHoveredRegionClear = () => {
+    cancelHoveredRegionClear();
+    hoveredRegionClearTimeoutRef.current = setTimeout(() => {
+      setHoveredRegionId(null);
+      hoveredRegionClearTimeoutRef.current = null;
+    }, REALM_LORE_HOVER_CLEAR_DELAY_MS);
+  };
+
   const openRegion = (regionId) => {
+    cancelHoveredRegionClear();
+    setHoveredRegionId(null);
     setActiveRegionId(regionId);
     setActiveLocationId(null);
   };
 
   const closeRegion = () => {
+    cancelHoveredRegionClear();
+    setHoveredRegionId(null);
     setActiveLocationId(null);
     setActiveRegionId(null);
   };
@@ -457,6 +565,10 @@ export default function ZakzumMapExplorer({
           className={styles.mapWrap}
           ref={worldMapWrapRef}
           onClick={handleWorldMapWrapClick}
+          onMouseLeave={() => {
+            cancelHoveredRegionClear();
+            setHoveredRegionId(null);
+          }}
         >
           <Image
             src={worldMapSrc}
@@ -466,6 +578,19 @@ export default function ZakzumMapExplorer({
             className={styles.mapImage}
             priority
           />
+
+          {hoveredRegionLore ? (
+            <article
+              className={styles.realmLoreOverlay}
+              onMouseEnter={cancelHoveredRegionClear}
+              onMouseLeave={scheduleHoveredRegionClear}
+            >
+              <p className={styles.realmLoreKicker}>Realm Lore</p>
+              <h2 className={styles.realmLoreTitle}>{hoveredRegionLore.title}</h2>
+              <p className={styles.realmLoreSubtitle}>{hoveredRegionLore.subtitle}</p>
+              <p className={styles.realmLoreText}>{hoveredRegionLore.text}</p>
+            </article>
+          ) : null}
 
           {mapHotspotRegions.map((region) => (
             <button
@@ -481,6 +606,21 @@ export default function ZakzumMapExplorer({
               }}
               aria-label={`Open regional map for ${region.name}`}
               onClick={() => openRegion(region.id)}
+              onMouseEnter={() => {
+                cancelHoveredRegionClear();
+                setHoveredRegionId(region.id);
+              }}
+              onMouseLeave={scheduleHoveredRegionClear}
+              onFocus={() => {
+                cancelHoveredRegionClear();
+                setHoveredRegionId(region.id);
+              }}
+              onBlur={() => {
+                cancelHoveredRegionClear();
+                setHoveredRegionId((currentId) =>
+                  currentId === region.id ? null : currentId,
+                );
+              }}
             >
               <span className={styles.hotspotLabel}>{region.name}</span>
             </button>

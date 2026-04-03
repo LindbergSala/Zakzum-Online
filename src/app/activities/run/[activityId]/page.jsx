@@ -22,6 +22,8 @@ const bodyFont = Source_Sans_3({
   weight: ["400", "600", "700"],
 });
 
+const ACTIVITY_IMAGE_CACHE_VERSION = "20260403";
+
 const QUEST_ACTIVITY_IMAGE_BY_TIER = {
   1: "/images/activities/quest/heartlands/Quest_I.png",
   2: "/images/activities/quest/heartlands/Quest_II.png",
@@ -48,7 +50,8 @@ function getActivityIllustrationSrc(activity) {
     return null;
   }
 
-  return ACTIVITY_IMAGE_BY_GROUP_AND_TIER[activity.groupId]?.[activity.tier] ?? null;
+  const imagePath = ACTIVITY_IMAGE_BY_GROUP_AND_TIER[activity.groupId]?.[activity.tier] ?? null;
+  return imagePath ? `${imagePath}?v=${ACTIVITY_IMAGE_CACHE_VERSION}` : null;
 }
 
 export default async function ActivityRunPage({ params }) {
@@ -74,6 +77,7 @@ export default async function ActivityRunPage({ params }) {
   const activityIllustrationSrc = getActivityIllustrationSrc(activity);
   const activityIllustrationFrameClassName = [
     styles.activityIllustrationFrame,
+    activity.groupId === "quest" ? styles.activityIllustrationFrameQuest : "",
     activity.groupId === "adventure" ? styles.activityIllustrationFrameAdventure : "",
   ]
     .filter(Boolean)
@@ -128,10 +132,17 @@ export default async function ActivityRunPage({ params }) {
               </p>
             )}
             <p className={styles.backLink}>
-              <Link href={groupPath}>Back to {activity.groupName ?? "group"}</Link>
+              <Link
+                href={groupPath}
+                aria-label={`Back to ${activity.groupName ?? "group"}`}
+              >
+                &larr;
+              </Link>
             </p>
             <p className={styles.backLink}>
-              <Link href="/activities">Back to activities</Link>
+              <Link href="/activities" aria-label="Back to activities">
+                &larr;
+              </Link>
             </p>
           </section>
         </section>

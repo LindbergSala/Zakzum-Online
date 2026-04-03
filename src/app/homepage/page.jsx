@@ -27,10 +27,6 @@ export default function HomePage() {
           <h1 className={`${styles.title} ${headingFont.className}`}>
             Zakzum Online
           </h1>
-          <p className={styles.lead}>
-            Shape your character, chase progression, and keep your journey saved
-            between sessions.
-          </p>
         </div>
         <MusicToggleButton
           className={`music-toggle-button ${styles.homeMusicButton}`}
@@ -52,12 +48,12 @@ export default function HomePage() {
 
         <div className={styles.featureGrid}>
           <article className={styles.featureItem}>
-            <h2>Persistent Hero</h2>
-            <p>Your active character is loaded as soon as you sign in.</p>
+            <h2>Create you own hero</h2>
+            <p>Level up, complete quests and adventures.</p>
           </article>
           <article className={styles.featureItem}>
-            <h2>Fast Progression Loop</h2>
-            <p>Activities, resources, and level growth keep momentum high.</p>
+            <h2>Text based RPG</h2>
+            <p>Bring your character to life and explore the secrets of Zakzum.</p>
           </article>
           <article className={styles.featureItem}>
             <h2>Latest update</h2>

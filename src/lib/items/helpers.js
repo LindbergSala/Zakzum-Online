@@ -1,6 +1,8 @@
 import { ITEM_CATALOG, ITEM_CATALOG_MAP } from "./catalog";
 import { ITEM_CATEGORY } from "./constants";
 
+const ITEM_IMAGE_CACHE_VERSION = "20260403";
+
 const ITEM_IMAGE_DIRECTORY_BY_ID = {
   "apprentice-staff": "weapons",
   "archmage-staff": "weapons",
@@ -24,6 +26,41 @@ const ITEM_IMAGE_DIRECTORY_BY_ID = {
   "reinforced-leather-armor": "armors",
   "shadow-leather-coat": "armors",
   "soft-leather-armor": "armors",
+  "buckler-shield": "shields",
+  "bulwark-tower-shield": "shields",
+  "kite-shield": "shields",
+  "tower-shield": "shields",
+  "field-helm": "helmets",
+  "war-gauntlets": "hands",
+  "iron-greaves": "boots",
+  "warlord-belt": "betls",
+  "iron-ingot": "crafting",
+  "scout-hood": "helmets",
+  "health-potion": "potions",
+  "energy-draught": "potions",
+  "focus-tonic": "potions",
+  "calm-brew": "potions",
+  "leather-wraps": "hands",
+  "duelist-grips": "hands",
+  "pathfinder-boots": "boots",
+  "field-boots": "boots",
+  "utility-belt": "betls",
+  "arcane-dust": "crafting",
+  "focus-charm": "jewelry",
+  "mind-ring": "jewelry",
+  "infernal-charm": "jewelry",
+  "smuggler-pack": "bags",
+  "blood-talisman": "jewelry",
+  "arena-laurel": "trophies",
+  "champion-belt": "trophies",
+  "victors-crest": "trophies",
+  "war-crown": "trophies",
+  "apprentice-ring": "jewelry",
+  "sage-ring": "jewelry",
+  "cured-hide-roll": "crafting",
+  "torn-banner": "junk",
+  "cracked-goblet": "junk",
+  "monster-fang": "junk",
 };
 
 function resolveItem(itemOrId) {
@@ -55,36 +92,12 @@ export function getItemImagePath(itemOrId) {
     return null;
   }
 
-  return `/images/items/${imageDirectory}/${item.id}.png`;
+  return `/images/items/${imageDirectory}/${item.id}.png?v=${ITEM_IMAGE_CACHE_VERSION}`;
 }
 
-export function getAllItems() {
-  return ITEM_CATALOG;
-}
 
-export function getItemsByCategory(category) {
-  if (!category) {
-    return [];
-  }
 
-  return ITEM_CATALOG.filter((item) => item.category === category);
-}
 
-export function getItemsByRarity(rarity) {
-  if (!rarity) {
-    return [];
-  }
-
-  return ITEM_CATALOG.filter((item) => item.rarity === rarity);
-}
-
-export function getItemsBySlot(slot) {
-  if (!slot) {
-    return [];
-  }
-
-  return ITEM_CATALOG.filter((item) => item.slot === slot);
-}
 
 export function getItemCategory(itemOrId) {
   return resolveItem(itemOrId)?.category ?? null;
@@ -94,21 +107,9 @@ export function getItemRarity(itemOrId) {
   return resolveItem(itemOrId)?.rarity ?? null;
 }
 
-export function getItemSlot(itemOrId) {
-  return resolveItem(itemOrId)?.slot ?? null;
-}
 
-export function getItemEquipmentFamily(itemOrId) {
-  return resolveItem(itemOrId)?.family ?? null;
-}
 
-export function getItemArmorClass(itemOrId) {
-  return resolveItem(itemOrId)?.armorClass ?? null;
-}
 
-export function getItemEffects(itemOrId) {
-  return resolveItem(itemOrId)?.effects ?? {};
-}
 
 export function getItemWeight(itemOrId) {
   return toNonNegativeInteger(resolveItem(itemOrId)?.weight);
@@ -188,9 +189,6 @@ export function getItemLootSources(itemOrId) {
   return Array.isArray(sources) ? sources : [];
 }
 
-export function getLootableItems() {
-  return ITEM_CATALOG.filter((item) => isItemLootable(item));
-}
 
 export function getLootableItemsForSource(lootSource) {
   if (!lootSource) {
@@ -280,12 +278,3 @@ export function getItemInventorySize(itemOrId) {
     height: height > 0 ? height : 1,
   };
 }
-
-// Backward-compatible names during migration.
-export const SHOP_ITEM_DEFINITIONS = ITEM_CATALOG;
-export const SHOP_ITEM_DEFINITION_MAP = ITEM_CATALOG_MAP;
-export const getShopItemGoldCost = getItemGoldCost;
-export const getShopItemRenownCost = getItemRenownCost;
-export const getShopItemSellValue = getItemSellValue;
-export const isShopItemStackable = isItemStackable;
-export const getShopItemMaxStack = getItemMaxStack;
