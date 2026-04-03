@@ -61,7 +61,7 @@ export default function Inventory({
 
   const draggedItem = dragItemKey ? state.itemsByKey[dragItemKey] : null;
   const consumableStacks = useMemo(
-    () => backpackItems.filter((item) => item.stackable),
+    () => backpackItems.filter((item) => item.kind === "consumable"),
     [backpackItems],
   );
 
@@ -487,6 +487,13 @@ export default function Inventory({
     const item = state.itemsByKey[itemKey];
 
     if (!item || isSyncing) {
+      return;
+    }
+
+    if (item.kind !== "consumable") {
+      setFeedback(
+        "This item cannot be used. Only consumables (like potions and tonics) can be used.",
+      );
       return;
     }
 

@@ -1,5 +1,6 @@
 import {
   getItemById,
+  getItemCategory,
   getItemMaxStack,
   isItemStackable,
 } from "@/lib/items/helpers";
@@ -274,12 +275,15 @@ async function processUseAction({
   parsedData,
 }) {
   const itemDefinition = getItemById(selectedItem.itemId);
+  const itemCategory = getItemCategory(selectedItem.itemId);
 
-  if (!isItemStackable(selectedItem.itemId)) {
+  if (itemCategory !== "consumable") {
     return {
       ok: false,
       status: 400,
-      message: "Only consumables can be used from inventory.",
+      message:
+        `${selectedItem.itemName} cannot be used. ` +
+        "Only consumables (like potions and tonics) can be used from inventory.",
     };
   }
 
