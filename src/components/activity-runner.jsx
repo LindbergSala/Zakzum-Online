@@ -15,12 +15,11 @@ import { getItemImagePath } from "@/lib/items/helpers";
 import { CHARACTER_STAT_LABELS } from "@/lib/stat-effects";
 
 const MIN_ROLL_ANIMATION_MS = 2000;
-const ROLL_TICK_MS = 84;
+const ROLL_TICK_MS = 56;
 const BONUS_REVEAL_DELAY_MS = 320;
 const TOTAL_REVEAL_DELAY_MS = 700;
 const OUTCOME_REVEAL_DELAY_MS = 980;
 const DICE_THROW_SOUND_PATH = "/audio/sfx/dice-throw.mp3";
-const THROW_ANIMATION_VARIANTS = ["arc-left", "arc-right", "table-bounce"];
 const DICE_THROW_VOLUME_RANGE = [0.82, 0.96];
 const DICE_THROW_PLAYBACK_RATE_RANGE = [0.985, 1.015];
 
@@ -130,12 +129,6 @@ function getRollDisplayValue(rollReveal) {
   return `${rollReveal.totalValue}`;
 }
 
-function getRandomThrowVariant() {
-  return THROW_ANIMATION_VARIANTS[
-    Math.floor(Math.random() * THROW_ANIMATION_VARIANTS.length)
-  ];
-}
-
 function getRandomNumberInRange(min, max) {
   return min + Math.random() * (max - min);
 }
@@ -162,7 +155,6 @@ export default function ActivityRunner({
   const revealTimeoutsRef = useRef([]);
   const runSequenceRef = useRef(0);
   const activeDiceAudioRef = useRef([]);
-  const throwVariantRef = useRef(THROW_ANIMATION_VARIANTS[0]);
 
   function removeActiveDiceAudio(audio) {
     activeDiceAudioRef.current = activeDiceAudioRef.current.filter(
@@ -241,12 +233,9 @@ export default function ActivityRunner({
 
   function startRollingPreview(sequenceId) {
     clearRevealTimers();
-    const throwVariant = getRandomThrowVariant();
-    throwVariantRef.current = throwVariant;
 
     setRollReveal({
       phase: "rolling",
-      throwVariant,
       dieValue: Math.floor(Math.random() * 20) + 1,
       bonusValue: null,
       totalValue: null,
@@ -275,7 +264,6 @@ export default function ActivityRunner({
     const elapsed = Date.now() - startedAt;
     const lockDelay = Math.max(0, MIN_ROLL_ANIMATION_MS - elapsed);
     const resolvedBonus = result.roll.totalRollBonus ?? result.roll.statModifier ?? 0;
-    const activeThrowVariant = throwVariantRef.current;
 
     queueRevealStep(() => {
       if (sequenceId !== runSequenceRef.current) {
@@ -289,7 +277,6 @@ export default function ActivityRunner({
 
       setRollReveal({
         phase: "locked",
-        throwVariant: activeThrowVariant,
         dieValue: result.roll.value,
         bonusValue: resolvedBonus,
         totalValue: result.roll.total,
@@ -440,6 +427,8 @@ export default function ActivityRunner({
         ? "SUCCESS"
         : "FAIL"
       : null;
+  const rollVerdictText = trayVerdict ?? "\u00A0";
+  const isLongTrayVerdict = trayVerdict === "Not enough Energy";
   const outcomeLabel = lastResult?.success ? "Reward" : "Penalty";
   const outcomeDeltaText = lastResult
     ? formatReadableOutcomeDelta(lastResult.delta, {
@@ -661,19 +650,28 @@ export default function ActivityRunner({
         <section
           className={`roll-theater-body ${
             rollReveal.phase === "rolling"
-              ? `roll-theater-body-rolling roll-theater-impact-${rollReveal.throwVariant}`
+              ? "roll-theater-body-rolling"
               : ""
           }`}
           aria-live="polite"
           aria-busy={rollReveal.phase === "rolling"}
         >
           <div className="roll-theater-stage">
-            {trayVerdict ? <p className="roll-theater-verdict">{trayVerdict}</p> : null}
+            <p
+              className={`roll-theater-verdict ${
+                trayVerdict ? "" : "roll-theater-verdict-placeholder"
+              } ${
+                isLongTrayVerdict ? "roll-theater-verdict-compact roll-theater-verdict-warning" : ""
+              }`}
+              aria-hidden={trayVerdict ? undefined : true}
+            >
+              {rollVerdictText}
+            </p>
 
             <div
               className={`d20-display ${
                 rollReveal.phase === "rolling"
-                  ? `d20-display-rolling d20-display-throw-${rollReveal.throwVariant}`
+                  ? "d20-display-rolling"
                   : "d20-display-locked"
               }`}
             >
@@ -706,7 +704,16 @@ export default function ActivityRunner({
             aria-hidden={trayVerdict ? undefined : true}
           >
             <div className="roll-theater-stage">
-              {trayVerdict ? <p className="roll-theater-verdict roll-theater-verdict-warning">{trayVerdict}</p> : null}
+              <p
+                className={`roll-theater-verdict ${
+                  trayVerdict ? "" : "roll-theater-verdict-placeholder"
+                } ${
+                  isLongTrayVerdict ? "roll-theater-verdict-compact roll-theater-verdict-warning" : ""
+                }`}
+                aria-hidden={trayVerdict ? undefined : true}
+              >
+                {rollVerdictText}
+              </p>
               <div className="d20-display d20-display-idle">
                 <div className="d20-display-content d20-display-content-idle">
                   <span className="d20-display-value">{rollDisplayValue}</span>
@@ -723,9 +730,19 @@ export default function ActivityRunner({
       </section>
 
       {isLoading ? (
-        <p className="feedback loading" aria-live="polite">
-          Resolving action...
-        </p>
+        <section className="action-result-card action-result-pending" aria-live="polite">
+          <div className="activity-outcome-summary">
+            <p className="activity-outcome-line">
+              <strong>Status:</strong> Resolving action...
+            </p>
+            <p className="activity-outcome-line activity-outcome-line-placeholder" aria-hidden="true">
+              {"\u00A0"}
+            </p>
+            <p className="activity-outcome-line activity-outcome-line-placeholder" aria-hidden="true">
+              {"\u00A0"}
+            </p>
+          </div>
+        </section>
       ) : null}
 
       {feedback ? (
@@ -749,15 +766,7 @@ export default function ActivityRunner({
         >
           <div className="activity-outcome-summary">
             <p className="activity-outcome-line">
-              <strong>Outcome:</strong>{" "}
-              {rollReveal && !rollReveal.showOutcome
-                ? "Resolving..."
-                : lastResult.success
-                  ? "Success"
-                  : "Failure"}
-            </p>
-            <p className="activity-outcome-line">
-              <strong>Why:</strong> Roll{" "}
+              <strong>Result:</strong> Roll{" "}
               {rollReveal && !rollReveal.showTotal ? "..." : lastResult.roll.total} vs target{" "}
               {rollReveal && !rollReveal.showTotal ? "..." : lastResult.roll.target}.
             </p>
@@ -765,11 +774,14 @@ export default function ActivityRunner({
               <strong>{outcomeLabel}:</strong>{" "}
               {outcomeDeltaText}
             </p>
-            {lastResult.loot ? (
-              <p className="activity-outcome-line">
-                <strong>Loot:</strong> {formatLoot(lastResult.loot)}
-              </p>
-            ) : null}
+            <p
+              className={`activity-outcome-line ${
+                lastResult.loot ? "" : "activity-outcome-line-placeholder"
+              }`}
+              aria-hidden={lastResult.loot ? undefined : true}
+            >
+              <strong>Loot:</strong> {lastResult.loot ? formatLoot(lastResult.loot) : "\u00A0"}
+            </p>
           </div>
           <details className="action-result-details">
             <summary className="action-result-details-summary">
