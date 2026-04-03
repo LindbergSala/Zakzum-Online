@@ -1,9 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { CHARACTER_STAT_LABELS } from "@/lib/stat-effects";
+
+const MIN_ROLL_ANIMATION_MS = 2000;
+const ROLL_TICK_MS = 84;
+const BONUS_REVEAL_DELAY_MS = 320;
+const TOTAL_REVEAL_DELAY_MS = 700;
+const OUTCOME_REVEAL_DELAY_MS = 980;
+const DICE_THROW_SOUND_PATH = "/audio/sfx/dice-throw.mp3";
+const THROW_ANIMATION_VARIANTS = ["arc-left", "arc-right", "table-bounce"];
+const DICE_THROW_VOLUME_RANGE = [0.82, 0.96];
+const DICE_THROW_PLAYBACK_RATE_RANGE = [0.985, 1.015];
 
 function formatDelta(delta) {
   if (!delta || typeof delta !== "object") {
@@ -19,13 +29,28 @@ function formatDelta(delta) {
     .join(", ");
 }
 
-function formatReadableOutcomeDelta(delta) {
+function formatReadableOutcomeDelta(delta, options = {}) {
   if (!delta || typeof delta !== "object") {
     return "No resource changes.";
   }
 
+  const includePositive = options.includePositive ?? true;
+  const includeNegative = options.includeNegative ?? true;
+
   const parts = Object.entries(delta)
-    .filter(([, value]) => Number(value) !== 0)
+    .filter(([, value]) => {
+      const numericValue = Number(value);
+
+      if (numericValue === 0) {
+        return false;
+      }
+
+      if (numericValue > 0) {
+        return includePositive;
+      }
+
+      return includeNegative;
+    })
     .map(([key, value]) => {
       const numericValue = Number(value);
       const sign = numericValue > 0 ? "+" : "";
@@ -42,22 +67,6 @@ function formatStatWithBonus(statKey, stats) {
   }
 
   return `${label} ${stats.base[statKey]} + ${stats.bonus[statKey]} = ${stats.effective[statKey]}`;
-}
-
-function formatTotals(resources) {
-  if (!resources || typeof resources !== "object") {
-    return "No resource data.";
-  }
-
-  return [
-    `HP ${resources.hp}`,
-    `Energy ${resources.energy}`,
-    `Gold ${resources.gold}`,
-    `XP ${resources.xp}`,
-    `Level ${resources.level}`,
-    `Renown ${resources.renown}`,
-    `Heat ${resources.heat}`,
-  ].join(" | ");
 }
 
 function formatDeltaBonus(deltaBonus) {
@@ -87,70 +96,293 @@ function formatLoot(loot) {
   return `${loot.name} x${loot.quantity} (${loot.category}${rarityLabel})`;
 }
 
-function getLootToastClass(loot) {
-  if (!loot) {
-    return "loot-toast-empty";
-  }
-
-  const rarity = typeof loot.rarity === "string" ? loot.rarity.toLowerCase() : "common";
-  return `loot-toast-drop loot-toast-rarity-${rarity}`;
+function formatSignedNumber(value) {
+  const numericValue = Number(value) || 0;
+  return numericValue >= 0 ? `+${numericValue}` : `${numericValue}`;
 }
 
-function getLootHeadline(loot) {
-  if (!loot) {
-    return "No item dropped this run.";
+function getRollDisplayValue(rollReveal) {
+  if (!rollReveal) {
+    return "?";
   }
 
-  const quantity = Number(loot.quantity) || 1;
-  const quantityLabel = quantity > 1 ? ` x${quantity}` : "";
-  return `${loot.name}${quantityLabel}`;
+  if (rollReveal.phase === "rolling") {
+    return `${rollReveal.dieValue}`;
+  }
+
+  if (!rollReveal.showBonus) {
+    return `${rollReveal.dieValue}`;
+  }
+
+  if (!rollReveal.showTotal) {
+    return formatSignedNumber(rollReveal.bonusValue);
+  }
+
+  return `${rollReveal.totalValue}`;
 }
 
-function getNextStepHint(lastResult) {
-  if (!lastResult) {
-    return "";
-  }
-
-  if (!lastResult.success) {
-    return "Try one more low-risk Quest run to stabilize momentum, then reassess HP and Energy.";
-  }
-
-  if (lastResult.loot) {
-    return "Open Inventory to review your drop, then run another activity to chain rewards.";
-  }
-
-  return "Run another activity to build momentum toward your next level and market purchase.";
+function getRandomThrowVariant() {
+  return THROW_ANIMATION_VARIANTS[
+    Math.floor(Math.random() * THROW_ANIMATION_VARIANTS.length)
+  ];
 }
 
-function formatActivityContext(activityContext) {
-  if (!activityContext || typeof activityContext !== "object") {
-    return "";
-  }
-
-  const locationName = activityContext.locationName ?? "";
-  const regionName = activityContext.regionName ?? "";
-
-  if (locationName && regionName) {
-    return `${locationName}, ${regionName}`;
-  }
-
-  if (locationName) {
-    return locationName;
-  }
-
-  return regionName;
+function getRandomNumberInRange(min, max) {
+  return min + Math.random() * (max - min);
 }
 
-export default function ActivityRunner({ activity }) {
+export default function ActivityRunner({ activity, currentEnergy = 0, requiredEnergy = 0 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [lastResult, setLastResult] = useState(null);
+  const [rollReveal, setRollReveal] = useState(null);
+  const [availableEnergy, setAvailableEnergy] = useState(currentEnergy);
+  const [trayMessage, setTrayMessage] = useState(null);
+  const rollingIntervalRef = useRef(null);
+  const revealTimeoutsRef = useRef([]);
+  const runSequenceRef = useRef(0);
+  const activeDiceAudioRef = useRef([]);
+  const throwVariantRef = useRef(THROW_ANIMATION_VARIANTS[0]);
+
+  function removeActiveDiceAudio(audio) {
+    activeDiceAudioRef.current = activeDiceAudioRef.current.filter(
+      (activeAudio) => activeAudio !== audio,
+    );
+  }
+
+  function stopActiveDiceAudio() {
+    activeDiceAudioRef.current.forEach((audio) => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
+    activeDiceAudioRef.current = [];
+  }
+
+  function playDiceThrowSound() {
+    if (typeof Audio === "undefined") {
+      return;
+    }
+
+    const audio = new Audio(DICE_THROW_SOUND_PATH);
+    audio.preload = "auto";
+    audio.volume = getRandomNumberInRange(...DICE_THROW_VOLUME_RANGE);
+    audio.playbackRate = getRandomNumberInRange(...DICE_THROW_PLAYBACK_RATE_RANGE);
+
+    if ("preservesPitch" in audio) {
+      audio.preservesPitch = false;
+    }
+
+    if ("mozPreservesPitch" in audio) {
+      audio.mozPreservesPitch = false;
+    }
+
+    if ("webkitPreservesPitch" in audio) {
+      audio.webkitPreservesPitch = false;
+    }
+
+    const cleanup = () => {
+      audio.removeEventListener("ended", cleanup);
+      audio.removeEventListener("error", cleanup);
+      audio.pause();
+      audio.currentTime = 0;
+      removeActiveDiceAudio(audio);
+    };
+
+    audio.addEventListener("ended", cleanup);
+    audio.addEventListener("error", cleanup);
+    activeDiceAudioRef.current.push(audio);
+
+    void audio.play().catch(() => {
+      cleanup();
+    });
+  }
+
+  function clearRevealTimers() {
+    if (rollingIntervalRef.current) {
+      clearInterval(rollingIntervalRef.current);
+      rollingIntervalRef.current = null;
+    }
+
+    revealTimeoutsRef.current.forEach((timeoutId) => {
+      clearTimeout(timeoutId);
+    });
+    revealTimeoutsRef.current = [];
+  }
+
+  function queueRevealStep(callback, delay) {
+    const timeoutId = setTimeout(() => {
+      revealTimeoutsRef.current = revealTimeoutsRef.current.filter(
+        (activeTimeoutId) => activeTimeoutId !== timeoutId,
+      );
+      callback();
+    }, delay);
+    revealTimeoutsRef.current.push(timeoutId);
+  }
+
+  function startRollingPreview(sequenceId) {
+    clearRevealTimers();
+    const throwVariant = getRandomThrowVariant();
+    throwVariantRef.current = throwVariant;
+
+    setRollReveal({
+      phase: "rolling",
+      throwVariant,
+      dieValue: Math.floor(Math.random() * 20) + 1,
+      bonusValue: null,
+      totalValue: null,
+      targetValue: null,
+      showBonus: false,
+      showTotal: false,
+      showOutcome: false,
+      success: null,
+    });
+
+    rollingIntervalRef.current = setInterval(() => {
+      setRollReveal((current) => {
+        if (!current || sequenceId !== runSequenceRef.current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          dieValue: Math.floor(Math.random() * 20) + 1,
+        };
+      });
+    }, ROLL_TICK_MS);
+  }
+
+  function revealResolvedRoll(result, sequenceId, startedAt) {
+    const elapsed = Date.now() - startedAt;
+    const lockDelay = Math.max(0, MIN_ROLL_ANIMATION_MS - elapsed);
+    const resolvedBonus = result.roll.totalRollBonus ?? result.roll.statModifier ?? 0;
+    const activeThrowVariant = throwVariantRef.current;
+
+    queueRevealStep(() => {
+      if (sequenceId !== runSequenceRef.current) {
+        return;
+      }
+
+      if (rollingIntervalRef.current) {
+        clearInterval(rollingIntervalRef.current);
+        rollingIntervalRef.current = null;
+      }
+
+      setRollReveal({
+        phase: "locked",
+        throwVariant: activeThrowVariant,
+        dieValue: result.roll.value,
+        bonusValue: resolvedBonus,
+        totalValue: result.roll.total,
+        targetValue: result.roll.target,
+        showBonus: false,
+        showTotal: false,
+        showOutcome: false,
+        success: result.success,
+      });
+    }, lockDelay);
+
+    queueRevealStep(() => {
+      if (sequenceId !== runSequenceRef.current) {
+        return;
+      }
+
+      setRollReveal((current) =>
+        current
+          ? {
+              ...current,
+              showBonus: true,
+            }
+          : current,
+      );
+    }, lockDelay + BONUS_REVEAL_DELAY_MS);
+
+    queueRevealStep(() => {
+      if (sequenceId !== runSequenceRef.current) {
+        return;
+      }
+
+      setRollReveal((current) =>
+        current
+          ? {
+              ...current,
+              showTotal: true,
+            }
+          : current,
+      );
+    }, lockDelay + TOTAL_REVEAL_DELAY_MS);
+
+    queueRevealStep(() => {
+      if (sequenceId !== runSequenceRef.current) {
+        return;
+      }
+
+      setRollReveal((current) =>
+        current
+          ? {
+              ...current,
+              showOutcome: true,
+              phase: "resolved",
+            }
+          : current,
+      );
+    }, lockDelay + OUTCOME_REVEAL_DELAY_MS);
+  }
+
+  useEffect(() => {
+    setAvailableEnergy(currentEnergy);
+  }, [currentEnergy]);
+
+  useEffect(() => {
+    if (currentEnergy >= requiredEnergy) {
+      setTrayMessage(null);
+    }
+  }, [currentEnergy, requiredEnergy]);
+
+  useEffect(() => {
+    return () => {
+      clearRevealTimers();
+      stopActiveDiceAudio();
+    };
+  }, []);
+
+  const rollDisplayValue = getRollDisplayValue(rollReveal);
+  const trayVerdict = trayMessage
+    ? trayMessage
+    : rollReveal?.showOutcome
+      ? rollReveal.success
+        ? "SUCCESS"
+        : "FAIL"
+      : null;
+  const outcomeLabel = lastResult?.success ? "Reward" : "Penalty";
+  const outcomeDeltaText = lastResult
+    ? formatReadableOutcomeDelta(lastResult.delta, {
+        includePositive: lastResult.success,
+        includeNegative: !lastResult.success,
+      })
+    : "No resource changes.";
 
   async function runActivity() {
+    if (availableEnergy < requiredEnergy) {
+      clearRevealTimers();
+      stopActiveDiceAudio();
+      setRollReveal(null);
+      setLastResult(null);
+      setFeedback(null);
+      setTrayMessage("Not enough Energy");
+      return;
+    }
+
+    const startedAt = Date.now();
+    const sequenceId = runSequenceRef.current + 1;
+    runSequenceRef.current = sequenceId;
+
     setIsLoading(true);
     setFeedback(null);
     setLastResult(null);
+    setTrayMessage(null);
+    startRollingPreview(sequenceId);
+    playDiceThrowSound();
 
     try {
       const response = await fetch("/api/game/activities", {
@@ -163,15 +395,33 @@ export default function ActivityRunner({ activity }) {
 
       if (!response.ok) {
         setLastResult(null);
+        clearRevealTimers();
+        setRollReveal(null);
+        stopActiveDiceAudio();
+        if (typeof data.message === "string" && data.message.startsWith("Not enough Energy")) {
+          setTrayMessage("Not enough Energy");
+          setFeedback(null);
+          return;
+        }
         setFeedback({ tone: "error", text: data.message });
         return;
       }
 
       setLastResult(data.result ?? null);
+      setAvailableEnergy(data.result?.totals?.after?.energy ?? availableEnergy);
+      if (data.result) {
+        revealResolvedRoll(data.result, sequenceId, startedAt);
+      } else {
+        clearRevealTimers();
+        setRollReveal(null);
+      }
       setFeedback({ tone: "ok", text: data.message });
       router.refresh();
     } catch {
       setLastResult(null);
+      clearRevealTimers();
+      setRollReveal(null);
+      stopActiveDiceAudio();
       setFeedback({
         tone: "error",
         text: "The activity could not be completed. Try again.",
@@ -183,38 +433,108 @@ export default function ActivityRunner({ activity }) {
 
   return (
     <section className={`activity-page-panel activity-theme-${activity.groupId ?? activity.id}`}>
-      {typeof activity.tier === "number" ? (
-        <p>
-          <strong>Tier:</strong> {activity.tier}
-        </p>
-      ) : null}
-      {activity.locationName ? (
-        <p>
-          <strong>Location:</strong> {activity.locationName}
-          {activity.regionName ? ` (${activity.regionName})` : ""}
-        </p>
-      ) : null}
-      <p>{activity.pageIntro}</p>
-      <p>
-        <strong>Risk profile:</strong> {activity.riskProfile}
-      </p>
-      <p>
-        <strong>Energy cost:</strong> {activity.energyCost}
-      </p>
-      <p>
-        <strong>Success reward:</strong>{" "}
-        {formatDelta(activity.successReward)}
-      </p>
-      <p>
-        <strong>Fail penalty:</strong>{" "}
-        {formatDelta(activity.failPenalty)}
-      </p>
+      <section className="activity-briefing">
+        <p className="activity-briefing-kicker">Current Contract</p>
+        <h2 className="activity-runner-title">{activity.name}</h2>
+        <p className="activity-briefing-copy">{activity.pageIntro}</p>
+        <div className="activity-briefing-stakes">
+          <p className="activity-briefing-stake activity-briefing-stake-success">
+            <span className="activity-briefing-stake-label">Success reward</span>
+            <span className="activity-briefing-stake-value">{formatDelta(activity.successReward)}</span>
+          </p>
+          <p className="activity-briefing-stake activity-briefing-stake-fail">
+            <span className="activity-briefing-stake-label">Fail penalty</span>
+            <span className="activity-briefing-stake-value">{formatDelta(activity.failPenalty)}</span>
+          </p>
+        </div>
+      </section>
 
-      <p>
-        <button type="button" onClick={runActivity} disabled={isLoading}>
-          {isLoading ? "Running..." : `Start ${activity.name}`}
-        </button>
-      </p>
+      <section
+        className={`roll-theater ${
+          !rollReveal
+            ? "roll-theater-idle"
+            : rollReveal.showOutcome
+              ? rollReveal.success
+                ? "roll-theater-success"
+                : "roll-theater-failure"
+              : "roll-theater-pending"
+        }`}
+      >
+        <p className="roll-theater-action">
+          <button
+            type="button"
+            className="roll-theater-button"
+            onClick={runActivity}
+            disabled={isLoading}
+          >
+            {isLoading ? "Running..." : `Roll to Attempt ${activity.name}`}
+          </button>
+        </p>
+
+        {rollReveal ? (
+        <section
+          className={`roll-theater-body ${
+            rollReveal.phase === "rolling"
+              ? `roll-theater-body-rolling roll-theater-impact-${rollReveal.throwVariant}`
+              : ""
+          }`}
+          aria-live="polite"
+          aria-busy={rollReveal.phase === "rolling"}
+        >
+          <div className="roll-theater-stage">
+            {trayVerdict ? <p className="roll-theater-verdict">{trayVerdict}</p> : null}
+
+            <div
+              className={`d20-display ${
+                rollReveal.phase === "rolling"
+                  ? `d20-display-rolling d20-display-throw-${rollReveal.throwVariant}`
+                  : "d20-display-locked"
+              }`}
+            >
+              <div
+                className={`d20-display-content ${
+                  rollReveal.phase === "rolling"
+                    ? "d20-display-content-rolling"
+                    : rollReveal.showTotal
+                      ? "d20-display-content-total"
+                      : rollReveal.showBonus
+                        ? "d20-display-content-bonus"
+                        : "d20-display-content-die"
+                }`}
+              >
+                <span className="d20-display-value">{rollDisplayValue}</span>
+              </div>
+            </div>
+
+            <div className="roll-theater-target">
+              <p className="roll-theater-target-label">Target</p>
+              <p className="roll-theater-target-value">
+                {typeof rollReveal.targetValue === "number" ? rollReveal.targetValue : "..."}
+              </p>
+            </div>
+          </div>
+        </section>
+        ) : (
+          <div
+            className="roll-theater-body roll-theater-body-idle"
+            aria-hidden={trayVerdict ? undefined : true}
+          >
+            <div className="roll-theater-stage">
+              {trayVerdict ? <p className="roll-theater-verdict roll-theater-verdict-warning">{trayVerdict}</p> : null}
+              <div className="d20-display d20-display-idle">
+                <div className="d20-display-content d20-display-content-idle">
+                  <span className="d20-display-value">{rollDisplayValue}</span>
+                </div>
+              </div>
+
+              <div className="roll-theater-target roll-theater-target-idle">
+                <p className="roll-theater-target-label">Target</p>
+                <p className="roll-theater-target-value">-</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
 
       {isLoading ? (
         <p className="feedback loading" aria-live="polite">
@@ -223,15 +543,15 @@ export default function ActivityRunner({ activity }) {
       ) : null}
 
       {feedback ? (
-        feedback.tone === "error" ? (
+        feedback.tone === "error" && feedback.text !== "Not enough Energy" ? (
           <section className="action-result-card action-result-error" aria-live="polite">
             <p>{feedback.text}</p>
           </section>
-        ) : (
+        ) : !lastResult ? (
           <p className={`feedback ${feedback.tone}`} aria-live="polite">
             {feedback.text}
           </p>
-        )
+        ) : null
       ) : null}
 
       {lastResult ? (
@@ -243,51 +563,28 @@ export default function ActivityRunner({ activity }) {
         >
           <div className="activity-outcome-summary">
             <p className="activity-outcome-line">
-              <strong>Action:</strong> {activity.name}
-            </p>
-            {formatActivityContext(lastResult.activityContext) ? (
-              <p className="activity-outcome-line">
-                <strong>Location:</strong> {formatActivityContext(lastResult.activityContext)}
-              </p>
-            ) : null}
-            <p className="activity-outcome-line">
               <strong>Outcome:</strong>{" "}
-              {lastResult.success ? "Success" : "Failure"}
+              {rollReveal && !rollReveal.showOutcome
+                ? "Resolving..."
+                : lastResult.success
+                  ? "Success"
+                  : "Failure"}
             </p>
             <p className="activity-outcome-line">
-              <strong>Why:</strong> Roll {lastResult.roll.total} vs target{" "}
-              {lastResult.roll.target}.
+              <strong>Why:</strong> Roll{" "}
+              {rollReveal && !rollReveal.showTotal ? "..." : lastResult.roll.total} vs target{" "}
+              {rollReveal && !rollReveal.showTotal ? "..." : lastResult.roll.target}.
             </p>
             <p className="activity-outcome-line">
-              <strong>Reward/Penalty:</strong>{" "}
-              {formatReadableOutcomeDelta(lastResult.delta)}
+              <strong>{outcomeLabel}:</strong>{" "}
+              {outcomeDeltaText}
             </p>
-            <p className="activity-outcome-line">
-              <strong>Next step:</strong> {getNextStepHint(lastResult)}
-            </p>
-          </div>
-
-          <div className={`loot-toast ${getLootToastClass(lastResult.loot)}`}>
-            <p className="loot-toast-kicker">{lastResult.loot ? "Loot Drop" : "Loot"}</p>
-            <p className="loot-toast-headline">{getLootHeadline(lastResult.loot)}</p>
             {lastResult.loot ? (
-              <p className="loot-toast-meta">
-                {lastResult.loot.category} | {lastResult.loot.rarity} |{" "}
-                {lastResult.loot.stackable ? "stackable" : "unique slot item"}
+              <p className="activity-outcome-line">
+                <strong>Loot:</strong> {formatLoot(lastResult.loot)}
               </p>
             ) : null}
           </div>
-
-          <p>
-            <strong>Progression:</strong> Level {lastResult.progression.levelAfter} | XP{" "}
-            {lastResult.progression.xp.xp} / next level at{" "}
-            {lastResult.progression.xp.nextLevelXpTarget}
-            {lastResult.progression.leveledUp ? " | LEVEL UP!" : ""}
-          </p>
-          <p>
-            <strong>Resources now:</strong>{" "}
-            {formatTotals(lastResult.totals?.after)}
-          </p>
           <details className="action-result-details">
             <summary className="action-result-details-summary">
               Show technical breakdown
@@ -372,6 +669,18 @@ export default function ActivityRunner({ activity }) {
               </p>
               <p>
                 <strong>Loot:</strong> {formatLoot(lastResult.loot)}
+              </p>
+              <p>
+                <strong>Progression:</strong> Level {lastResult.progression.levelAfter} | XP{" "}
+                {lastResult.progression.xp.xp} / next level at{" "}
+                {lastResult.progression.xp.nextLevelXpTarget}
+                {lastResult.progression.leveledUp ? " | LEVEL UP!" : ""}
+              </p>
+              <p>
+                <strong>Resources now:</strong> HP {lastResult.totals?.after?.hp} | Energy{" "}
+                {lastResult.totals?.after?.energy} | Gold {lastResult.totals?.after?.gold} | XP{" "}
+                {lastResult.totals?.after?.xp} | Level {lastResult.totals?.after?.level} | Renown{" "}
+                {lastResult.totals?.after?.renown} | Heat {lastResult.totals?.after?.heat}
               </p>
             </div>
           </details>

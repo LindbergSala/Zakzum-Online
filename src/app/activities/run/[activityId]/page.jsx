@@ -7,6 +7,7 @@ import ActivityRunner from "@/components/activity-runner";
 import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
 import { getActiveCharacterForUser } from "@/lib/character";
+import { getClassPassiveActivityEnergyCost } from "@/lib/class-identity";
 import { ACTIVITY_DEFINITION_MAP, isActivityOpen } from "@/lib/core-loop-data";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
@@ -75,6 +76,9 @@ export default async function ActivityRunPage({ params }) {
         ? "/adventure"
         : `/activities/${activity.groupId ?? activity.id}`;
   const activityIllustrationSrc = getActivityIllustrationSrc(activity);
+  const effectiveActivityEnergyCost = activeCharacter
+    ? getClassPassiveActivityEnergyCost(activeCharacter.characterClass, activity.energyCost)
+    : activity.energyCost;
   const activityIllustrationFrameClassName = [
     styles.activityIllustrationFrame,
     activity.groupId === "quest" ? styles.activityIllustrationFrameQuest : "",
@@ -123,7 +127,11 @@ export default async function ActivityRunPage({ params }) {
                 <div className={styles.metricCard}>
                   <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
                 </div>
-                <ActivityRunner activity={activity} />
+                <ActivityRunner
+                  activity={activity}
+                  currentEnergy={activeCharacter.energy}
+                  requiredEnergy={effectiveActivityEnergyCost}
+                />
               </>
             ) : (
               <p className={styles.emptyState}>
@@ -136,11 +144,6 @@ export default async function ActivityRunPage({ params }) {
                 href={groupPath}
                 aria-label={`Back to ${activity.groupName ?? "group"}`}
               >
-                &larr;
-              </Link>
-            </p>
-            <p className={styles.backLink}>
-              <Link href="/activities" aria-label="Back to activities">
                 &larr;
               </Link>
             </p>
