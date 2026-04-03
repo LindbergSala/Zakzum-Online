@@ -679,7 +679,7 @@ export default function Inventory({
 
           <section className={styles.pocketsPanel}>
             <div className={styles.pocketsHeader}>
-              <p className={styles.pocketsTitle}>Pockets</p>
+              <p className={styles.pocketsTitle}>Quick Slots</p>
               <p className={styles.pocketsHint}>
                 Drag stackable consumables here for quick access during activities.
               </p>

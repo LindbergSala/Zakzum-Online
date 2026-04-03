@@ -571,7 +571,7 @@ export default function ActivityRunner({
 
       <section className="activity-pockets">
         <div className="activity-pockets-header">
-          <p className="activity-pockets-kicker">Pockets</p>
+          <p className="activity-pockets-kicker">Quick Slots</p>
           <p className="activity-pockets-copy">
             Assigned stackable consumables are available here for fast use before you roll.
           </p>
@@ -622,7 +622,7 @@ export default function ActivityRunner({
                     ? "Loading consumables..."
                     : slot.itemKey
                       ? "Assigned consumable is out of stock."
-                      : "Assign a stackable consumable in Inventory > Pockets."}
+                      : "Assign a stackable consumable in Inventory > Quick Slots."}
                 </p>
               )}
             </article>

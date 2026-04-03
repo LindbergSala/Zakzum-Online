@@ -190,20 +190,55 @@ button:disabled {
 }
 
 .activity-pockets {
+  position: relative;
+  width: 100%;
   margin: 0 0 0.95rem;
-  border-radius: 16px;
-  border: 1px solid rgba(122, 89, 47, 0.26);
+  border-radius: 18px;
+  border: 1px solid rgba(122, 89, 47, 0.28);
   background:
-    linear-gradient(180deg, rgba(255, 249, 236, 0.96) 0%, rgba(240, 225, 192, 0.92) 100%);
+    linear-gradient(180deg, rgba(255, 252, 243, 0.96) 0%, rgba(244, 233, 206, 0.92) 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.72),
     0 10px 24px rgba(67, 45, 18, 0.08);
-  padding: 0.9rem 1rem 0.95rem;
+  padding: 0.62rem 0.7rem 0.72rem;
+  overflow: hidden;
+}
+
+.activity-pockets::before,
+.activity-pockets::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.activity-pockets::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(224, 191, 132, 0.16) 0%, rgba(224, 191, 132, 0) 30%);
+}
+
+.activity-pockets::after {
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 24%),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(138, 108, 66, 0.02) 0,
+      rgba(138, 108, 66, 0.02) 8px,
+      rgba(255, 255, 255, 0) 8px,
+      rgba(255, 255, 255, 0) 20px
+    );
 }
 
 .activity-pockets-header {
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: 0.2rem;
+  justify-items: center;
+  text-align: center;
+  margin: 0 auto;
+  padding: 0.16rem 0.4rem 0.24rem;
 }
 
 .activity-pockets-kicker {
@@ -218,39 +253,57 @@ button:disabled {
 .activity-pockets-copy {
   margin: 0;
   color: #594024;
-  font-size: 0.92rem;
-  line-height: 1.55;
+  max-width: 34rem;
+  font-size: 0.84rem;
+  line-height: 1.45;
 }
 
 .activity-pockets-grid {
-  margin-top: 0.7rem;
+  position: relative;
+  z-index: 1;
+  margin-top: 0.56rem;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.65rem;
+  gap: 0.42rem;
 }
 
 .activity-pocket-slot {
-  min-height: 132px;
-  border-radius: 14px;
-  border: 1px dashed rgba(157, 116, 71, 0.46);
-  background: linear-gradient(180deg, rgba(255, 251, 242, 0.86) 0%, rgba(239, 226, 198, 0.88) 100%);
-  padding: 0.64rem;
+  min-height: 112px;
+  border-radius: 15px;
+  border: 1px solid rgba(129, 96, 59, 0.24);
+  background:
+    linear-gradient(180deg, rgba(255, 250, 242, 0.96) 0%, rgba(232, 214, 183, 0.92) 100%);
+  padding: 0.5rem;
   display: grid;
   align-content: start;
-  gap: 0.28rem;
+  gap: 0.18rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    0 6px 14px rgba(73, 49, 22, 0.08);
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    border-color 150ms ease;
 }
 
 .activity-pocket-slot-filled {
-  border-style: solid;
-  border-color: rgba(159, 119, 70, 0.42);
+  border-color: rgba(171, 126, 73, 0.44);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.48),
-    0 10px 18px rgba(65, 42, 18, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 8px 18px rgba(73, 49, 22, 0.12);
+}
+
+.activity-pocket-slot:hover {
+  transform: translateY(-1px);
+  border-color: rgba(191, 145, 89, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 12px 20px rgba(73, 49, 22, 0.14);
 }
 
 .activity-pocket-slot-label {
   margin: 0;
-  color: #7b552a;
+  color: #8a5a28;
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -259,21 +312,21 @@ button:disabled {
 
 .activity-pocket-slot-media {
   display: grid;
-  grid-template-columns: 50px minmax(0, 1fr);
-  gap: 0.5rem;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 0.36rem;
   align-items: center;
 }
 
 .activity-pocket-slot-artwork-wrap {
   position: relative;
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  border: 1px solid rgba(170, 124, 72, 0.32);
-  background: linear-gradient(165deg, rgba(84, 57, 32, 0.9) 0%, rgba(56, 37, 22, 0.95) 100%);
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  border: 1px solid rgba(181, 139, 94, 0.34);
+  background: linear-gradient(165deg, rgba(116, 78, 43, 0.92) 0%, rgba(80, 52, 28, 0.96) 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 238, 212, 0.16),
-    0 6px 14px rgba(52, 32, 14, 0.12);
+    inset 0 1px 0 rgba(255, 238, 212, 0.18),
+    0 4px 10px rgba(49, 31, 15, 0.2);
   overflow: hidden;
 }
 
@@ -299,8 +352,8 @@ button:disabled {
 
 .activity-pocket-slot-name {
   margin: 0;
-  color: #2c1a0d;
-  font-size: 0.88rem;
+  color: #2f1e10;
+  font-size: 0.78rem;
   font-weight: 800;
   line-height: 1.15;
   white-space: nowrap;
@@ -310,28 +363,28 @@ button:disabled {
 
 .activity-pocket-slot-meta {
   margin: 0;
-  color: #5c4328;
-  font-size: 0.72rem;
+  color: #5b3d1d;
+  font-size: 0.69rem;
   font-weight: 700;
 }
 
 .activity-pocket-slot-owned {
   margin: 0;
-  color: #7a5a36;
-  font-size: 0.68rem;
+  color: #8c6a44;
+  font-size: 0.66rem;
   line-height: 1.2;
 }
 
 .activity-pocket-slot-effect {
   margin: 0;
-  color: #6a4a29;
-  font-size: 0.72rem;
-  line-height: 1.35;
+  color: #5f4326;
+  font-size: 0.66rem;
+  line-height: 1.22;
 }
 
 .activity-pocket-slot-empty {
   margin: 0;
-  color: #76593a;
+  color: #6d5031;
   font-size: 0.74rem;
   line-height: 1.35;
 }
@@ -339,17 +392,32 @@ button:disabled {
 .activity-pocket-slot-button {
   margin-top: auto;
   width: 100%;
-  border: 1px solid rgba(170, 124, 72, 0.5);
+  border: 1px solid rgba(193, 138, 79, 0.72);
   border-radius: 12px;
-  background: linear-gradient(180deg, rgba(53, 31, 14, 0.94) 0%, rgba(79, 47, 21, 0.92) 100%);
+  background: linear-gradient(180deg, #bf7a3c 0%, #9d5d2d 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 233, 190, 0.18),
-    0 8px 16px rgba(32, 18, 8, 0.16);
-  color: #fff6e0;
-  font-size: 0.72rem;
+    inset 0 1px 0 rgba(255, 226, 184, 0.42),
+    0 8px 16px rgba(67, 37, 12, 0.22);
+  color: #fff7e8;
+  font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(80, 41, 12, 0.24);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease,
+    filter 140ms ease;
+}
+
+.activity-pocket-slot-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(216, 160, 96, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 235, 198, 0.5),
+    0 10px 18px rgba(67, 37, 12, 0.28);
+  filter: saturate(1.05) brightness(1.03);
 }
 
 .activity-pocket-slot-button:disabled {
@@ -836,6 +904,10 @@ button:disabled {
 
   .activity-pockets-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .activity-pockets {
+    width: 100%;
   }
 
   .roll-theater-stage {

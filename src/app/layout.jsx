@@ -10,7 +10,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <StartPageMusic src="/audio/music/Intro.wav">
+        <StartPageMusic src="/audio/music/Intro.wav.wav">
           {children}
         </StartPageMusic>
       </body>

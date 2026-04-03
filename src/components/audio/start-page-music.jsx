@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
 
 const StartPageMusicContext = createContext(null);
 const MARKET_MUSIC_PATH = "/audio/music/Market.wav";
+const HEARTLANDS_MUSIC_PATH = encodeURI("/audio/music/The Heartlands.wav");
 const DEFAULT_MUSIC_VOLUME = 0.62;
 
 function clampVolume(value) {
@@ -21,6 +22,10 @@ function clampVolume(value) {
 function resolveTrackByPathname(pathname, fallbackSrc) {
   if (typeof pathname === "string" && pathname.startsWith("/market")) {
     return MARKET_MUSIC_PATH;
+  }
+
+  if (typeof pathname === "string" && pathname.startsWith("/activities")) {
+    return HEARTLANDS_MUSIC_PATH;
   }
 
   return fallbackSrc;
