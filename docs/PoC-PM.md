@@ -34,7 +34,7 @@ All data ska sparas i databas (User, Character, Inventory, ActivityLog).
 
 Agilt arbetssätt + avstämningar + deadlines
 Jag arbetar i veckosprintar med sprintmål och tydlig leverans per vecka.
-Jag använder inte trello som 
+Jag använder `docs/user-stories.md` (epics/backlog) som planeringsstöd i stället för Trello.
 Varje sprint avslutas med:
 1. kort status (vad blev klart, vad blockerar)
 2. uppdaterad backlog/prioritering
@@ -44,7 +44,7 @@ Varje sprint avslutas med:
 
 Brancher:
 main = stabil version
-dev = pågående arbete
+dev_1, dev_2, dev_v2 = pågående arbete, integration och stabilisering
 Commits med tydliga prefixes: add:, fix:, feat, update, delete:
 
 Tekniker
@@ -55,10 +55,11 @@ Ha det bäst!
 //Patrik Iindberg!
 
 Efterhandsnotering (2026-04-03)
-Ursprungsplanen ovan anvande `dev` som integrationsbranch.
-- Jag använder inte trello som först planerat, utan i stället så använde jag "docs\user-stories.md" med epics.
-I faktisk utveckling anvandes brancherna `dev_1` och `dev_v2`.
-Se uppdaterad process i `GIT-FLOW.md` samt dokumentation i:
+Ursprungsplanen ovan utgick från `dev` som integrationsbranch.
+I faktisk utveckling användes brancherna `dev_1`, `dev_2` och `dev_v2`.
+Planering och uppföljning dokumenteras i:
+- `docs/user-stories.md` (epics/backlog)
 - `docs/sprint-log.md`
 - `docs/retrospective.md`
+Se uppdaterad process i `GIT-FLOW.md`.
 

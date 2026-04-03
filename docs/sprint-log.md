@@ -1,9 +1,9 @@
 # Sprintlogg (Efterhandsdokumentation)
 
-Sammanställd: 2026-04-03 - Framtaget av COPILOT
+Sammanställd: 2026-04-03 (efterhandsdokumentation)
 Underlag: commit-historik och PR-merge i GitHub-repot.
 
-Syfte med dokumentet: tydliggora avstamningar, malbild och leverans per sprint i efterhand pa ett transparent satt.
+Syfte med dokumentet: tydliggöra avstämningar, målbild och leverans per sprint i efterhand på ett transparent sätt.
 
 ## Sprint 1 (2026-03-23 - 2026-03-26)
 Sprintmal: stabilisera grundsystem for spel-loop och backend-sakerhet.
@@ -66,7 +66,7 @@ Genomfort:
 - `8ee328e` fix: endast anvandbara consumables kan "Use".
 - `e07783d`, `54f3e51`, `dd76974`, `ea3f6c5`, `f5ae695` bild- och innehallspaket.
 - `02a7031` knappforbattring ("Back to"-symbolik).
-- `3de10f7` slutlig innehallsjusteringar.
+- `3de10f7` slutliga innehållsjusteringar.
 
 Avstamning:
 - Klart: version 2 polish, consistency-fixar och innehallsleverans.

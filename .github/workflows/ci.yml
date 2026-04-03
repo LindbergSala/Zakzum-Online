@@ -5,11 +5,13 @@ on:
     branches:
       - main
       - dev_1
+      - dev_2
       - dev_v2
   pull_request:
     branches:
       - main
       - dev_1
+      - dev_2
       - dev_v2
 
 concurrency:

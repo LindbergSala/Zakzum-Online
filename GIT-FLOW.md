@@ -8,6 +8,7 @@ Updated on 2026-04-03 to reflect the actual branch structure used during develop
 ## Branches
 - `main`: stable branch for release-ready code
 - `dev_1`: ongoing feature development track
+- `dev_2`: integration and collaboration branch
 - `dev_v2`: stabilization and release-prep track for version 2
 
 ## Standard Flow
