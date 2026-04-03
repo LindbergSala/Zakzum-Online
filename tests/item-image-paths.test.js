@@ -29,7 +29,7 @@ test("newly added item images resolve in their directories", () => {
   );
 });
 
-test("items without mapped artwork return null", () => {
+test("mapped and missing artwork cases resolve correctly", () => {
   assert.equal(
     getItemImagePath("tower-shield"),
     "/images/items/shields/tower-shield.png",
@@ -38,6 +38,10 @@ test("items without mapped artwork return null", () => {
     getItemImagePath("warlord-belt"),
     "/images/items/betls/warlord-belt.png",
   );
+  assert.equal(
+    getItemImagePath("focus-charm"),
+    "/images/items/jewelry/focus-charm.png",
+  );
   assert.equal(getItemImagePath("missing-item"), null);
-  assert.equal(getItemImagePath("focus-charm"), null);
+  assert.equal(getItemImagePath("torn-banner"), null);
 });

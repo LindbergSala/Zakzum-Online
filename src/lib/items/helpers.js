@@ -44,6 +44,18 @@ const ITEM_IMAGE_DIRECTORY_BY_ID = {
   "field-boots": "boots",
   "utility-belt": "betls",
   "arcane-dust": "crafting",
+  "focus-charm": "jewelry",
+  "mind-ring": "jewelry",
+  "infernal-charm": "jewelry",
+  "smuggler-pack": "bags",
+  "blood-talisman": "jewelry",
+  "arena-laurel": "trophies",
+  "champion-belt": "trophies",
+  "victors-crest": "trophies",
+  "war-crown": "trophies",
+  "apprentice-ring": "jewelry",
+  "sage-ring": "jewelry",
+  "cured-hide-roll": "crafting",
 };
 
 function resolveItem(itemOrId) {

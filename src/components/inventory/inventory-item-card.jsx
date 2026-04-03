@@ -66,6 +66,7 @@ export default function InventoryItemCard({
               src={imagePath}
               alt=""
               fill
+              unoptimized
               sizes="(max-width: 640px) 44px, 64px"
               className={styles.itemInlineArtwork}
             />
@@ -90,6 +91,7 @@ export default function InventoryItemCard({
                   alt=""
                   width={320}
                   height={320}
+                  unoptimized
                   className={styles.itemHoverImage}
                 />
               ) : (

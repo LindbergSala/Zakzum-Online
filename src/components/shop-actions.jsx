@@ -182,6 +182,7 @@ export default function ShopActions({ items, marketId = null }) {
                           alt=""
                           width={88}
                           height={88}
+                          unoptimized
                           className={styles.itemVisual}
                         />
                       ) : (
@@ -197,6 +198,7 @@ export default function ShopActions({ items, marketId = null }) {
                               alt=""
                               width={320}
                               height={320}
+                              unoptimized
                               className={styles.itemHoverImage}
                             />
                           ) : (
