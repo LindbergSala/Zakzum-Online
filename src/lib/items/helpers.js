@@ -1,6 +1,8 @@
 import { ITEM_CATALOG, ITEM_CATALOG_MAP } from "./catalog";
 import { ITEM_CATEGORY } from "./constants";
 
+const ITEM_IMAGE_CACHE_VERSION = "20260403";
+
 const ITEM_IMAGE_DIRECTORY_BY_ID = {
   "apprentice-staff": "weapons",
   "archmage-staff": "weapons",
@@ -30,7 +32,7 @@ const ITEM_IMAGE_DIRECTORY_BY_ID = {
   "tower-shield": "shields",
   "field-helm": "helmets",
   "war-gauntlets": "hands",
-  "iron-greaves": "legs",
+  "iron-greaves": "boots",
   "warlord-belt": "betls",
   "iron-ingot": "crafting",
   "scout-hood": "helmets",
@@ -87,7 +89,7 @@ export function getItemImagePath(itemOrId) {
     return null;
   }
 
-  return `/images/items/${imageDirectory}/${item.id}.png`;
+  return `/images/items/${imageDirectory}/${item.id}.png?v=${ITEM_IMAGE_CACHE_VERSION}`;
 }
 
 
