@@ -14,6 +14,21 @@ test("weapon item images resolve from the weapons directory", () => {
   );
 });
 
+test("newly added item images resolve in their directories", () => {
+  assert.equal(
+    getItemImagePath("health-potion"),
+    "/images/items/potions/health-potion.png",
+  );
+  assert.equal(
+    getItemImagePath("pathfinder-boots"),
+    "/images/items/boots/pathfinder-boots.png",
+  );
+  assert.equal(
+    getItemImagePath("scout-hood"),
+    "/images/items/helmets/scout-hood.png",
+  );
+});
+
 test("items without mapped artwork return null", () => {
   assert.equal(
     getItemImagePath("tower-shield"),

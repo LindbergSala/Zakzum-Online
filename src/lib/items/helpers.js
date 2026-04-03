@@ -33,6 +33,17 @@ const ITEM_IMAGE_DIRECTORY_BY_ID = {
   "iron-greaves": "legs",
   "warlord-belt": "betls",
   "iron-ingot": "crafting",
+  "scout-hood": "helmets",
+  "health-potion": "potions",
+  "energy-draught": "potions",
+  "focus-tonic": "potions",
+  "calm-brew": "potions",
+  "leather-wraps": "hands",
+  "duelist-grips": "hands",
+  "pathfinder-boots": "boots",
+  "field-boots": "boots",
+  "utility-belt": "betls",
+  "arcane-dust": "crafting",
 };
 
 function resolveItem(itemOrId) {
