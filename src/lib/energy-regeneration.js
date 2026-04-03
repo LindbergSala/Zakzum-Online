@@ -174,6 +174,13 @@ export async function resolveCharacterEnergyRegeneration(character, options = {}
 
   const now = options.now ? new Date(options.now) : new Date();
   const shouldPersist = options.persist !== false;
+  const rawEnergy = Number(character?.energy);
+  const rawMaxEnergy = Number(character?.maxEnergy);
+  const rawEnergyRegenAt = character?.energyRegenAt
+    ? new Date(character.energyRegenAt)
+    : null;
+  const hasValidStoredAnchor =
+    rawEnergyRegenAt !== null && !Number.isNaN(rawEnergyRegenAt.getTime());
 
   const maxEnergy = resolveMaxEnergy(character);
   const maxHp = resolveMaxHp(character);
@@ -184,7 +191,12 @@ export async function resolveCharacterEnergyRegeneration(character, options = {}
   let nextEnergy = previousEnergy;
   let nextHp = previousHp;
   let nextAnchor = previousAnchor;
-  let changed = false;
+  let changed =
+    !Number.isFinite(rawEnergy) ||
+    Math.floor(rawEnergy) !== previousEnergy ||
+    !Number.isFinite(rawMaxEnergy) ||
+    Math.floor(rawMaxEnergy) !== maxEnergy ||
+    !hasValidStoredAnchor;
 
   if (nextEnergy < maxEnergy || nextHp < maxHp) {
     const elapsedMs = Math.max(0, now.getTime() - previousAnchor.getTime());
@@ -199,7 +211,10 @@ export async function resolveCharacterEnergyRegeneration(character, options = {}
 
       nextEnergy += gainedEnergyFromIntervals;
       nextHp += gainedHpFromIntervals;
-      changed = gainedEnergyFromIntervals > 0 || gainedHpFromIntervals > 0;
+      changed =
+        changed ||
+        gainedEnergyFromIntervals > 0 ||
+        gainedHpFromIntervals > 0;
       const extraEnergyOnRefresh = getClassPassiveEnergyRefreshBonus(
         character.characterClass,
       );

@@ -11,6 +11,8 @@ npm ci
 2. Create local env file:
 ```bash
 cp .env.example .env
+# Windows PowerShell:
+Copy-Item .env.example .env
 ```
 3. Start PostgreSQL and set `DATABASE_URL` in `.env`.
 4. Sync database schema:
@@ -44,9 +46,9 @@ Open `http://localhost:3000`.
 
 ## Course Evidence (SV)
 
-- Kursmålsunderlag: `docs/kursmal-checklista.md`
 - Projektplan/PM: `docs/PoC-PM.md`
 - User stories/backlog: `docs/user-stories.md`
+- Character baseline: `docs/character-base.md`
 - Git-process: `GIT-FLOW.md`
 
 ## Environment Variables
