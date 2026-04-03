@@ -59,7 +59,9 @@ export default async function CharacterCreatePage() {
                 </Link>
               </p>
               <p className={styles.backLink}>
-                <Link href="/character">Back to character overview</Link>
+                <Link href="/character" aria-label="Back to character overview">
+                  &larr;
+                </Link>
               </p>
             </section>
           </section>

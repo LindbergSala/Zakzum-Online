@@ -132,10 +132,17 @@ export default async function ActivityRunPage({ params }) {
               </p>
             )}
             <p className={styles.backLink}>
-              <Link href={groupPath}>Back to {activity.groupName ?? "group"}</Link>
+              <Link
+                href={groupPath}
+                aria-label={`Back to ${activity.groupName ?? "group"}`}
+              >
+                &larr;
+              </Link>
             </p>
             <p className={styles.backLink}>
-              <Link href="/activities">Back to activities</Link>
+              <Link href="/activities" aria-label="Back to activities">
+                &larr;
+              </Link>
             </p>
           </section>
         </section>

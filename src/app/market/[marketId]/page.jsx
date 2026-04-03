@@ -207,7 +207,9 @@ export default async function MarketVendorPage({ params }) {
               <p>This vendor is currently unavailable. Check back after restock rotation.</p>
             )}
             <p className={styles.backLink}>
-              <Link href="/market">Back to market</Link>
+              <Link href="/market" aria-label="Back to market">
+                &larr;
+              </Link>
             </p>
           </section>
         </section>

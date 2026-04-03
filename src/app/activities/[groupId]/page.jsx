@@ -88,7 +88,9 @@ export default async function ActivityGroupPage({ params }) {
               <h2>Opening soon</h2>
               <p className={styles.muted}>{availability.reason}</p>
               <p className={styles.backLink}>
-                <Link href="/activities">Back to activities</Link>
+                <Link href="/activities" aria-label="Back to activities">
+                  &larr;
+                </Link>
               </p>
             </section>
           </section>
@@ -181,7 +183,9 @@ export default async function ActivityGroupPage({ params }) {
             )}
 
             <p className={styles.backLink}>
-              <Link href="/activities">Back to activities</Link>
+              <Link href="/activities" aria-label="Back to activities">
+                &larr;
+              </Link>
             </p>
           </section>
         </section>
