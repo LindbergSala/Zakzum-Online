@@ -99,8 +99,7 @@ npm run build
 I projektet har vi arbetat i följande brancher:
 
 - `main`
-- `dev_1`
-- `dev_2`
+
 
 `main` används för stabil kod och release-ready läge.
 `dev_1` och `dev_2` har använts för löpande utvecklingsarbete i separata spår.
