@@ -519,10 +519,6 @@
   transform: translateY(-1px);
 }
 
-.backLink {
-  margin: 0.9rem 0 0;
-}
-
 .carrySummary {
   margin: 0.75rem 0 0;
   color: var(--ink-soft);
@@ -530,11 +526,6 @@
 
 .inventorySection {
   scroll-margin-top: 6.2rem;
-}
-
-.backLink a {
-  color: #6a3f20;
-  font-weight: 700;
 }
 
 @keyframes riseIn {

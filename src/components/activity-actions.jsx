@@ -9,9 +9,9 @@ export default function ActivityActions() {
         const availability = getActivityGroupAvailability(group.id);
         const ctaLabel =
           group.id === "quest"
-            ? "Open Quest"
+            ? "Open Quest Board"
             : group.id === "adventure"
-              ? "Open Adventure"
+              ? "Open Adventure Board"
               : availability.badgeLabel;
         const groupHref =
           group.id === "quest"
@@ -20,7 +20,13 @@ export default function ActivityActions() {
               ? "/adventure"
               : `/activities/${group.id}`;
         const badges = Array.isArray(group.overviewBadges)
-          ? group.overviewBadges.slice(0, 3)
+          ? group.overviewBadges
+              .filter(
+                (badge) =>
+                  typeof badge === "string" &&
+                  !badge.toLowerCase().includes("tier"),
+              )
+              .slice(0, 3)
           : [];
 
         return (

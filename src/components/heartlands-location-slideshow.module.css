@@ -1,0 +1,215 @@
+.galleryCard {
+  margin-top: 0.86rem;
+  border-radius: 12px;
+  padding: 0.74rem;
+  border: 1px solid rgba(103, 64, 35, 0.3);
+  background: rgba(255, 248, 232, 0.68);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 251, 242, 0.56),
+    inset 0 -8px 14px rgba(106, 64, 35, 0.14);
+}
+
+.galleryHeadingRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 2.2rem;
+}
+
+.galleryTitle {
+  margin: 0;
+  padding: 0.22rem 0.82rem;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 83, 48, 0.34);
+  background: linear-gradient(
+    154deg,
+    rgba(255, 251, 242, 0.82) 0%,
+    rgba(244, 226, 193, 0.72) 100%
+  );
+  color: #5d3819;
+  font-size: clamp(0.78rem, 1.55vw, 0.97rem);
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 250, 241, 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 252, 245, 0.72),
+    0 5px 12px rgba(82, 49, 25, 0.12);
+}
+
+.galleryMeta {
+  margin: 0;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.1rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.48rem;
+  border: 1px solid rgba(120, 77, 43, 0.32);
+  background: rgba(255, 247, 229, 0.78);
+  color: #6a4a2e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.gallerySwipeStage {
+  margin-top: 0.62rem;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 83, 48, 0.34);
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255, 244, 223, 0.35) 0%, transparent 60%),
+    linear-gradient(160deg, rgba(219, 182, 132, 0.44) 0%, rgba(190, 146, 95, 0.34) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 249, 237, 0.6),
+    inset 0 -8px 14px rgba(109, 70, 39, 0.12);
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.6fr) minmax(0, 0.95fr);
+  align-items: center;
+  gap: clamp(0.25rem, 1vw, 0.68rem);
+  padding: 0.7rem;
+  overflow: hidden;
+  min-height: clamp(360px, 54vh, 680px);
+}
+
+.gallerySwipeCard {
+  border: 1px solid rgba(123, 79, 45, 0.4);
+  border-radius: 10px;
+  padding: 0.12rem;
+  background: rgba(255, 248, 236, 0.82);
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    opacity 120ms ease,
+    filter 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.gallerySwipeCenter {
+  border-color: rgba(160, 92, 37, 0.82);
+  box-shadow: 0 0 0 2px rgba(183, 109, 51, 0.24);
+}
+
+.gallerySwipeSide {
+  opacity: 0.54;
+  transform: scale(0.84);
+  filter: saturate(0.78);
+}
+
+.gallerySwipeSide:hover {
+  opacity: 0.74;
+}
+
+.gallerySwipeCenter:hover {
+  transform: translateY(-1px);
+}
+
+.gallerySwipeImage {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
+.galleryControls {
+  margin-top: 0.68rem;
+  display: flex;
+  gap: 0.52rem;
+}
+
+.galleryControlButton {
+  flex: 1;
+  min-height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(141, 91, 50, 0.42);
+  background: linear-gradient(145deg, #d38a48 0%, #ac612f 100%);
+  color: #fff8eb;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.galleryRail {
+  margin-top: 0.64rem;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 64px;
+  justify-content: center;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0.14rem 0.04rem 0.18rem;
+}
+
+.galleryRail::-webkit-scrollbar {
+  height: 8px;
+}
+
+.galleryRail::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(136, 85, 46, 0.45);
+}
+
+.galleryRailItem {
+  border: 1px solid rgba(123, 79, 45, 0.36);
+  border-radius: 8px;
+  padding: 0.12rem;
+  background: rgba(255, 248, 236, 0.78);
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease;
+}
+
+.galleryRailItem:hover {
+  transform: translateY(-1px);
+}
+
+.galleryRailItemActive {
+  border-color: rgba(161, 90, 34, 0.86);
+  box-shadow: 0 0 0 2px rgba(185, 114, 56, 0.24);
+}
+
+.galleryRailImage {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .galleryHeadingRow {
+    min-height: auto;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .galleryMeta {
+    position: static;
+    transform: none;
+  }
+
+  .galleryControls {
+    flex-direction: column;
+  }
+
+  .gallerySwipeStage {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.25fr) minmax(0, 0.85fr);
+    gap: 0.2rem;
+    padding: 0.45rem 0.35rem;
+    min-height: clamp(300px, 48vh, 500px);
+  }
+}

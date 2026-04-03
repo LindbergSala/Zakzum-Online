@@ -121,9 +121,6 @@ export default async function ActivityGroupPage({ params }) {
 
           <section className={styles.panel}>
             <h2>Available runs</h2>
-            <p className={styles.muted}>
-              Progression order is tiered inside this category.
-            </p>
 
             {activeCharacter ? (
               <>
@@ -138,7 +135,6 @@ export default async function ActivityGroupPage({ params }) {
                       className={`${styles.activityCard} ${groupThemeClass}`}
                     >
                       <header className={styles.activityHeader}>
-                        <p className={styles.activityTier}>Tier {activity.tier ?? 1}</p>
                         {starterActivity?.id === activity.id ? (
                           <p className={styles.recommendedBadge}>Recommended first run</p>
                         ) : null}

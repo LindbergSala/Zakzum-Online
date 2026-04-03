@@ -3,6 +3,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import ActivityActions from "@/components/activity-actions";
 import GameNav from "@/components/game-nav";
+import HeartlandsLocationSlideshow from "@/components/heartlands-location-slideshow";
 import ResourceStrip from "@/components/resource-strip";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { requirePageUser } from "@/lib/page-auth";
@@ -18,6 +19,41 @@ const bodyFont = Source_Sans_3({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 });
+
+const HEARTLANDS_LOCATION_SLIDES = [
+  {
+    src: "/images/locations/heartlands/Kingston.png",
+    label: "Kingston",
+  },
+  {
+    src: "/images/locations/heartlands/Goldmere.png",
+    label: "Goldmere",
+  },
+  {
+    src: "/images/locations/heartlands/Mournstead.png",
+    label: "Mournstead",
+  },
+  {
+    src: "/images/locations/heartlands/Saints_Hollow.png",
+    label: "Saint's Hollow",
+  },
+  {
+    src: "/images/locations/heartlands/Elfhome.png",
+    label: "Elfhome",
+  },
+  {
+    src: "/images/locations/heartlands/Northwatch.png",
+    label: "Northwatch",
+  },
+  {
+    src: "/images/locations/heartlands/Barrowfield.png",
+    label: "Barrowfield",
+  },
+  {
+    src: "/images/locations/heartlands/Blackthorn_Hold.png",
+    label: "Blackthorn Hold",
+  },
+];
 
 export default async function ActivitiesPage() {
   const user = await requirePageUser();
@@ -62,6 +98,7 @@ export default async function ActivitiesPage() {
                 <Link href="/character/create">Create character</Link>.
               </p>
             )}
+            <HeartlandsLocationSlideshow slides={HEARTLANDS_LOCATION_SLIDES} />
             <p className={styles.backLink}>
               <Link href="/dashboard" aria-label="Back to dashboard">
                 &larr;

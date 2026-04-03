@@ -392,15 +392,6 @@
   color: #2f1f0e;
 }
 
-.activityTier {
-  margin: 0;
-  font-size: 0.78rem;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: #7b4b1f;
-}
-
 .recommendedBadge {
   margin: 0.25rem 0 0;
   display: inline-flex;

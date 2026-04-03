@@ -344,6 +344,7 @@
   color: #fff7e6;
   font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .actionsWrap :global(.activity-item-cta-disabled) {

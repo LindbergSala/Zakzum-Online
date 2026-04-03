@@ -163,7 +163,7 @@ export default async function CharacterPage() {
           <GameNav />
           <section className={styles.heroCard}>
             <header className={styles.heroIntro}>
-              <p className={styles.kicker}>Hero Profile</p>
+              <p className={styles.kicker}>Character Overview</p>
               <h1 className={`${styles.title} ${headingFont.className}`}>
                 Character overview
               </h1>
@@ -194,7 +194,7 @@ export default async function CharacterPage() {
         <GameNav />
         <section className={styles.heroCard}>
           <header className={styles.heroIntro}>
-            <p className={styles.kicker}>Hero Profile</p>
+            <p className={styles.kicker}>Character Overview</p>
             <h1 className={`${styles.title} ${headingFont.className}`}>{character.name}</h1>
             {characterAvatarImage ? (
               <div className={styles.headerPortraitWrap}>
@@ -288,9 +288,7 @@ export default async function CharacterPage() {
             {character.unspentStatPoints > 0 ? (
               <StatPointAllocator character={character} />
             ) : (
-              <p className={styles.mutedSecondary}>
-                No unspent stat points. Gain XP and level up to earn +1 stat point.
-              </p>
+              <p className={styles.mutedSecondary}>No unspent stat points.</p>
             )}
 
             <hr className={styles.sectionDivider} />
@@ -300,14 +298,6 @@ export default async function CharacterPage() {
               showResources={false}
               equippedItems={items.filter((item) => item.isEquipped)}
             />
-            <p className={styles.backLink}>
-              <Link href="/dashboard" aria-label="Back to dashboard">
-                &larr;
-              </Link>
-            </p>
-            <p className={styles.backLink}>
-              <Link href="/account#account">Manage account and character deletion</Link>
-            </p>
           </section>
 
           <section id="inventory" className={styles.inventorySection}>
