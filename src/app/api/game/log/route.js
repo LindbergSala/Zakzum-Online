@@ -29,7 +29,7 @@ export async function GET() {
       activityId: true,
       activityName: true,
       success: true,
-      energyCost: true,
+      staminaCost: true,
       roll: true,
       rollTotal: true,
       successTarget: true,

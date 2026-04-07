@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { resolveActivityRoll, getStatModifier } from "../src/lib/roll-engine.js";
+import {
+  getHeatRollModifier,
+  getStatModifier,
+  resolveActivityRoll,
+} from "../src/lib/roll-engine.js";
 import { ACTIVITY_DEFINITION_MAP } from "../src/lib/core-loop-data.js";
 
 test("linear stat modifier gives immediate +1 per +1 effective stat", () => {
@@ -86,6 +90,38 @@ test("quest baseline chance is tuned around early game balance", () => {
   assert.equal(result.chancePercent, 65);
 });
 
+test("heat threshold modifiers scale from 0 to -4", () => {
+  assert.equal(getHeatRollModifier(0), 0);
+  assert.equal(getHeatRollModifier(19), 0);
+  assert.equal(getHeatRollModifier(20), -1);
+  assert.equal(getHeatRollModifier(40), -2);
+  assert.equal(getHeatRollModifier(60), -3);
+  assert.equal(getHeatRollModifier(80), -4);
+  assert.equal(getHeatRollModifier(120), -4);
+});
+
+test("heat penalty reduces total roll bonus", () => {
+  const quest = ACTIVITY_DEFINITION_MAP["quest-1"];
+  const result = resolveActivityRoll(
+    {
+      wisdom: 5,
+      dexterity: 4,
+    },
+    quest,
+    {
+      level: 3,
+      passiveRollModifier: 1,
+      heat: 45,
+      random: () => 0,
+    },
+  );
+
+  assert.equal(result.calculations.heat, 45);
+  assert.equal(result.calculations.heatRollModifier, -2);
+  assert.equal(result.totalRollBonus, 15);
+  assert.equal(result.rollTotal, 16);
+});
+
 test("quest uses its own level scaling for target difficulty", () => {
   const quest = ACTIVITY_DEFINITION_MAP["quest-3"];
   const result = resolveActivityRoll(
@@ -130,7 +166,7 @@ test("adventure 1 baseline difficulty starts above quest 5", () => {
   const adventureOne = ACTIVITY_DEFINITION_MAP["adventure-1"];
 
   assert.ok(adventureOne.roll.difficulty > questFive.roll.difficulty);
-  assert.ok(adventureOne.energyCost > questFive.energyCost);
+  assert.ok(adventureOne.staminaCost > questFive.staminaCost);
   assert.ok(adventureOne.failPenalty.hp < questFive.failPenalty.hp);
   assert.ok(adventureOne.successReward.gold > questFive.successReward.gold);
 });

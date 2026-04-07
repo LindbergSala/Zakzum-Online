@@ -35,7 +35,7 @@ export function getRecommendedStarterActivity() {
       return tierDiff;
     }
 
-    return (left.energyCost ?? 0) - (right.energyCost ?? 0);
+    return (left.staminaCost ?? 0) - (right.staminaCost ?? 0);
   });
 
   return sortedCandidates[0];

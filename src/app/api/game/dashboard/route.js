@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/api-auth";
 import { getUserWithResolvedActiveCharacter } from "@/lib/character";
 import {
-  getEnergyRegenerationMeta,
+  getStaminaRegenerationMeta,
   getHpRegenerationMeta,
-} from "@/lib/energy-regeneration";
+} from "@/lib/stamina-regeneration";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 
 export async function GET() {
@@ -26,7 +26,7 @@ export async function GET() {
         email: user.email,
       },
       activeCharacter,
-      energy: activeCharacter ? getEnergyRegenerationMeta(activeCharacter) : null,
+      stamina: activeCharacter ? getStaminaRegenerationMeta(activeCharacter) : null,
       hp: activeCharacter ? getHpRegenerationMeta(activeCharacter) : null,
       progression: activeCharacter
         ? getLevelProgressMeta(activeCharacter.level, activeCharacter.xp)

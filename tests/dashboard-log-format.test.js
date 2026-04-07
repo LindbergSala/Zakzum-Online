@@ -13,12 +13,12 @@ test("formatDashboardDeltaLine filters out zero values", () => {
     gold: 7,
     renown: 1,
     hp: 0,
-    energy: -2,
+    stamina: -2,
     level: 0,
     heat: 0,
   });
 
-  assert.equal(line, "+5 XP, +7 Gold, +1 Renown, -2 Energy");
+  assert.equal(line, "+5 XP, +7 Gold, +1 Renown, -2 Stamina");
 });
 
 test("formatDashboardRollLine uses compact activity format", () => {

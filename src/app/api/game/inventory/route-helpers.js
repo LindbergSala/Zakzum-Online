@@ -17,9 +17,9 @@ export const CHARACTER_SELECT = {
   wisdom: true,
   charisma: true,
   hp: true,
-  energy: true,
-  maxEnergy: true,
-  energyRegenAt: true,
+  stamina: true,
+  maxStamina: true,
+  staminaRegenAt: true,
   gold: true,
   xp: true,
   level: true,
@@ -85,7 +85,7 @@ export function buildConsumableDelta(itemDefinition, quantity) {
 
   return {
     hp: (Number(consumable.hpRestore) || 0) * usedQuantity,
-    energy: (Number(consumable.energyRestore) || 0) * usedQuantity,
+    stamina: (Number(consumable.staminaRestore) || 0) * usedQuantity,
     heat: -1 * (Number(consumable.heatReduction) || 0) * usedQuantity,
   };
 }

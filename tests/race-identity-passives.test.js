@@ -43,19 +43,19 @@ test("dwarf and halfling failure passives apply correctly", () => {
     characterRace: "DWARF",
     success: false,
     activityId: "arena",
-    delta: { hp: -5, energy: 0 },
+    delta: { hp: -5, stamina: 0 },
   });
   const halflingFail = applyRacePassiveDelta({
     characterRace: "HALFLING",
     success: false,
     activityId: "arena",
-    delta: { hp: -5, energy: 0 },
+    delta: { hp: -5, stamina: 0 },
   });
 
   assert.equal(dwarfFail.delta.hp, -3);
   assert.deepEqual(dwarfFail.deltaBonus, { hp: 2 });
-  assert.equal(halflingFail.delta.energy, 1);
-  assert.deepEqual(halflingFail.deltaBonus, { energy: 1 });
+  assert.equal(halflingFail.delta.stamina, 1);
+  assert.deepEqual(halflingFail.deltaBonus, { stamina: 1 });
 });
 
 test("tiefling gold bonus only applies on adventure and arena success", () => {

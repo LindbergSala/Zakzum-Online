@@ -28,11 +28,16 @@ function formatDelta(delta) {
     return "No delta.";
   }
 
+  const labelMap = {
+    stamina: "STAMINA",
+  };
+
   return Object.entries(delta)
     .map(([key, value]) => {
       const numericValue = Number(value);
       const sign = numericValue > 0 ? "+" : "";
-      return `${key}: ${sign}${numericValue}`;
+      const label = labelMap[key] ?? key;
+      return `${label}: ${sign}${numericValue}`;
     })
     .join(", ");
 }
@@ -62,7 +67,8 @@ function formatReadableOutcomeDelta(delta, options = {}) {
     .map(([key, value]) => {
       const numericValue = Number(value);
       const sign = numericValue > 0 ? "+" : "";
-      return `${key.toUpperCase()} ${sign}${numericValue}`;
+      const label = key === "stamina" ? "STAMINA" : key.toUpperCase();
+      return `${label} ${sign}${numericValue}`;
     });
 
   return parts.length > 0 ? parts.join(" | ") : "No resource changes.";
@@ -87,7 +93,8 @@ function formatDeltaBonus(deltaBonus) {
     .map(([key, value]) => {
       const numericValue = Number(value);
       const sign = numericValue > 0 ? "+" : "";
-      return `${key}: ${sign}${numericValue}`;
+      const label = key === "stamina" ? "stamina" : key;
+      return `${label}: ${sign}${numericValue}`;
     });
 
   return parts.length > 0
@@ -136,8 +143,8 @@ function getRandomNumberInRange(min, max) {
 export default function ActivityRunner({
   activity,
   characterId,
-  currentEnergy = 0,
-  requiredEnergy = 0,
+  currentStamina = 0,
+  requiredStamina = 0,
 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -145,7 +152,7 @@ export default function ActivityRunner({
   const [feedback, setFeedback] = useState(null);
   const [lastResult, setLastResult] = useState(null);
   const [rollReveal, setRollReveal] = useState(null);
-  const [availableEnergy, setAvailableEnergy] = useState(currentEnergy);
+  const [availableStamina, setAvailableStamina] = useState(currentStamina);
   const [trayMessage, setTrayMessage] = useState(null);
   const [inventoryItems, setInventoryItems] = useState([]);
   const [inventoryLoadError, setInventoryLoadError] = useState("");
@@ -336,8 +343,8 @@ export default function ActivityRunner({
   }
 
   useEffect(() => {
-    setAvailableEnergy(currentEnergy);
-  }, [currentEnergy]);
+    setAvailableStamina(currentStamina);
+  }, [currentStamina]);
 
   useEffect(() => {
     if (!characterId) {
@@ -402,10 +409,10 @@ export default function ActivityRunner({
   }, [characterId]);
 
   useEffect(() => {
-    if (currentEnergy >= requiredEnergy) {
+    if (currentStamina >= requiredStamina) {
       setTrayMessage(null);
     }
-  }, [currentEnergy, requiredEnergy]);
+  }, [currentStamina, requiredStamina]);
 
   useEffect(() => {
     return () => {
@@ -428,7 +435,7 @@ export default function ActivityRunner({
         : "FAIL"
       : null;
   const rollVerdictText = trayVerdict ?? "\u00A0";
-  const isLongTrayVerdict = trayVerdict === "Not enough Energy";
+  const isLongTrayVerdict = trayVerdict === "Not enough Stamina";
   const outcomeLabel = lastResult?.success ? "Reward" : "Penalty";
   const outcomeDeltaText = lastResult
     ? formatReadableOutcomeDelta(lastResult.delta, {
@@ -455,9 +462,9 @@ export default function ActivityRunner({
         quantity: 1,
       });
 
-      const nextEnergy = Number(data.resources?.energy);
+      const nextStamina = Number(data.resources?.stamina);
       setInventoryItems(normalizeInventoryItems(data.items ?? []));
-      setAvailableEnergy(Number.isFinite(nextEnergy) ? nextEnergy : availableEnergy);
+      setAvailableStamina(Number.isFinite(nextStamina) ? nextStamina : availableStamina);
       setTrayMessage(null);
       setFeedback({
         tone: "ok",
@@ -475,13 +482,13 @@ export default function ActivityRunner({
   }
 
   async function runActivity() {
-    if (availableEnergy < requiredEnergy) {
+    if (availableStamina < requiredStamina) {
       clearRevealTimers();
       stopActiveDiceAudio();
       setRollReveal(null);
       setLastResult(null);
       setFeedback(null);
-      setTrayMessage("Not enough Energy");
+      setTrayMessage("Not enough Stamina");
       return;
     }
 
@@ -510,8 +517,8 @@ export default function ActivityRunner({
         clearRevealTimers();
         setRollReveal(null);
         stopActiveDiceAudio();
-        if (typeof data.message === "string" && data.message.startsWith("Not enough Energy")) {
-          setTrayMessage("Not enough Energy");
+        if (typeof data.message === "string" && data.message.startsWith("Not enough Stamina")) {
+          setTrayMessage("Not enough Stamina");
           setFeedback(null);
           return;
         }
@@ -520,7 +527,7 @@ export default function ActivityRunner({
       }
 
       setLastResult(data.result ?? null);
-      setAvailableEnergy(data.result?.totals?.after?.energy ?? availableEnergy);
+      setAvailableStamina(data.result?.totals?.after?.stamina ?? availableStamina);
       if (data.result) {
         revealResolvedRoll(data.result, sequenceId, startedAt);
       } else {
@@ -750,7 +757,7 @@ export default function ActivityRunner({
       ) : null}
 
       {feedback ? (
-        feedback.tone === "error" && feedback.text !== "Not enough Energy" ? (
+        feedback.tone === "error" && feedback.text !== "Not enough Stamina" ? (
           <section className="action-result-card action-result-error" aria-live="polite">
             <p>{feedback.text}</p>
           </section>
@@ -797,7 +804,7 @@ export default function ActivityRunner({
                 {lastResult.success ? "SUCCESS" : "FAIL"}
               </p>
               <p>
-                <strong>Energy cost:</strong> {lastResult.energyCost}
+                <strong>Stamina cost:</strong> {lastResult.staminaCost}
               </p>
               <p>
                 <strong>Roll:</strong> {lastResult.roll.value} + bonus{" "}
@@ -823,7 +830,16 @@ export default function ActivityRunner({
                 {typeof lastResult.roll.totalPassiveRollModifier === "number"
                   ? ` (total ${lastResult.roll.totalPassiveRollModifier})`
                   : ""}
+                {typeof lastResult.roll.heatRollModifier === "number"
+                  ? ` + Heat ${lastResult.roll.heatRollModifier}`
+                  : ""}
               </p>
+              {typeof lastResult.roll.heat === "number" ? (
+                <p>
+                  <strong>Heat effect:</strong> Current Heat {lastResult.roll.heat} gives roll modifier{" "}
+                  {lastResult.roll.heatRollModifier ?? 0}
+                </p>
+              ) : null}
               <p>
                 <strong>Stats in roll:</strong>{" "}
                 {formatStatWithBonus(lastResult.roll.primaryStat, lastResult.stats)} and{" "}
@@ -837,8 +853,8 @@ export default function ActivityRunner({
               <p>
                 <strong>Class effect this action:</strong>{" "}
                 Roll +{lastResult.classIdentity.passiveRollModifier},{" "}
-                Energy cost reduction{" "}
-                {lastResult.classIdentity.passiveEnergyCostReduction ?? 0},{" "}
+                Stamina cost reduction{" "}
+                {lastResult.classIdentity.passiveStaminaCostReduction ?? 0},{" "}
                 {formatDeltaBonus(lastResult.classIdentity.passiveDeltaBonus)}
               </p>
               {lastResult.raceIdentity ? (
@@ -879,8 +895,8 @@ export default function ActivityRunner({
                 {lastResult.progression.leveledUp ? " | LEVEL UP!" : ""}
               </p>
               <p>
-                <strong>Resources now:</strong> HP {lastResult.totals?.after?.hp} | Energy{" "}
-                {lastResult.totals?.after?.energy} | Gold {lastResult.totals?.after?.gold} | XP{" "}
+                <strong>Resources now:</strong> HP {lastResult.totals?.after?.hp} | Stamina{" "}
+                {lastResult.totals?.after?.stamina} | Gold {lastResult.totals?.after?.gold} | XP{" "}
                 {lastResult.totals?.after?.xp} | Level {lastResult.totals?.after?.level} | Renown{" "}
                 {lastResult.totals?.after?.renown} | Heat {lastResult.totals?.after?.heat}
               </p>

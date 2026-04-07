@@ -21,7 +21,7 @@ export const CHARACTER_STAT_LABELS = {
 
 const RESOURCE_DELTA_KEYS = [
   "hp",
-  "energy",
+  "stamina",
   "gold",
   "xp",
   "level",
@@ -279,8 +279,8 @@ export function formatItemEffectLabel(effects = {}) {
     parts.push(`Use: restore ${consumable.hpRestore} HP`);
   }
 
-  if (toNumericStatValue(consumable.energyRestore) > 0) {
-    parts.push(`Use: restore ${consumable.energyRestore} Energy`);
+  if (toNumericStatValue(consumable.staminaRestore) > 0) {
+    parts.push(`Use: restore ${consumable.staminaRestore} Stamina`);
   }
 
   if (toNumericStatValue(consumable.activityRollModifier) !== 0) {

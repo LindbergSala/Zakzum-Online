@@ -225,8 +225,8 @@ test("pocket swap returns occupying item to backpack", () => {
       },
       {
         id: "potion-b",
-        itemId: "energy-draught",
-        itemName: "Energy Draught",
+        itemId: "stamina-draught",
+        itemName: "Stamina Draught",
         slot: "belt",
         quantity: 2,
       },

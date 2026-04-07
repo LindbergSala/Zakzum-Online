@@ -7,7 +7,7 @@ import ActivityRunner from "@/components/activity-runner";
 import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
 import { getActiveCharacterForUser } from "@/lib/character";
-import { getClassPassiveActivityEnergyCost } from "@/lib/class-identity";
+import { getClassPassiveActivityStaminaCost } from "@/lib/class-identity";
 import { ACTIVITY_DEFINITION_MAP, isActivityOpen } from "@/lib/core-loop-data";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
@@ -76,9 +76,9 @@ export default async function ActivityRunPage({ params }) {
         ? "/adventure"
         : `/activities/${activity.groupId ?? activity.id}`;
   const activityIllustrationSrc = getActivityIllustrationSrc(activity);
-  const effectiveActivityEnergyCost = activeCharacter
-    ? getClassPassiveActivityEnergyCost(activeCharacter.characterClass, activity.energyCost)
-    : activity.energyCost;
+  const effectiveActivityStaminaCost = activeCharacter
+    ? getClassPassiveActivityStaminaCost(activeCharacter.characterClass, activity.staminaCost)
+    : activity.staminaCost;
   const activityIllustrationFrameClassName = [
     styles.activityIllustrationFrame,
     activity.groupId === "quest" ? styles.activityIllustrationFrameQuest : "",
@@ -130,8 +130,8 @@ export default async function ActivityRunPage({ params }) {
                 <ActivityRunner
                   activity={activity}
                   characterId={activeCharacter.id}
-                  currentEnergy={activeCharacter.energy}
-                  requiredEnergy={effectiveActivityEnergyCost}
+                  currentStamina={activeCharacter.stamina}
+                  requiredStamina={effectiveActivityStaminaCost}
                 />
               </>
             ) : (

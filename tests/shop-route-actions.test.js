@@ -35,7 +35,7 @@ test("shop sell transaction rejects missing owned item", async () => {
     latestCharacter: {
       id: "character-1",
       hp: 20,
-      energy: 20,
+      stamina: 20,
       gold: 50,
       xp: 0,
       level: 1,

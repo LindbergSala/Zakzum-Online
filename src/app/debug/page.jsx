@@ -96,7 +96,7 @@ export default async function DebugPage() {
         characterBackground: true,
         level: true,
         hp: true,
-        energy: true,
+        stamina: true,
         gold: true,
         xp: true,
         renown: true,
@@ -176,7 +176,7 @@ export default async function DebugPage() {
             <li key={character.id}>
               {character.name} ({character.characterRace} {character.characterClass},{" "}
               {character.characterBackground}) | Lvl {character.level} | HP{" "}
-              {character.hp} | Energy {character.energy} | Gold {character.gold} | XP{" "}
+              {character.hp} | Stamina {character.stamina} | Gold {character.gold} | XP{" "}
               {character.xp} | Renown {character.renown} | Heat {character.heat} | Equipped{" "}
               {character.items.length}
             </li>

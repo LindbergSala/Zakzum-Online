@@ -37,7 +37,7 @@ const ITEM_IMAGE_DIRECTORY_BY_ID = {
   "iron-ingot": "crafting",
   "scout-hood": "helmets",
   "health-potion": "potions",
-  "energy-draught": "potions",
+  "stamina-draught": "potions",
   "focus-tonic": "potions",
   "calm-brew": "potions",
   "leather-wraps": "hands",

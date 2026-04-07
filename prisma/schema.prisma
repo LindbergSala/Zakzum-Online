@@ -105,9 +105,9 @@ model Character {
   wisdom            Int
   charisma          Int
   hp                Int             @default(20)
-  energy            Int             @default(20)
-  maxEnergy         Int             @default(20)
-  energyRegenAt     DateTime        @default(now())
+  stamina           Int             @default(20)
+  maxStamina        Int             @default(20)
+  staminaRegenAt    DateTime        @default(now())
   gold              Int             @default(0)
   xp                Int             @default(0)
   renown            Int             @default(0)
@@ -150,7 +150,7 @@ model ActivityLog {
   activityId      String          @db.VarChar(32)
   activityName    String          @db.VarChar(64)
   success         Boolean
-  energyCost      Int
+  staminaCost     Int
   roll            Int
   rollTotal       Int
   successTarget   Int

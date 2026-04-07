@@ -44,7 +44,7 @@ test("adventure one starts above quest five in progression tuning", () => {
   const adventureOne = getActivitiesForGroup("adventure")[0];
 
   assert.ok(adventureOne.roll.difficulty > questFive.roll.difficulty);
-  assert.ok(adventureOne.energyCost > questFive.energyCost);
+  assert.ok(adventureOne.staminaCost > questFive.staminaCost);
   assert.ok(adventureOne.successReward.gold > questFive.successReward.gold);
   assert.ok(adventureOne.failPenalty.hp < questFive.failPenalty.hp);
 });

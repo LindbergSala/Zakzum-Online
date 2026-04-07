@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import CharacterOverview from "@/components/character-overview";
-import EnergyTimer from "@/components/energy-timer";
+import StaminaTimer from "@/components/stamina-timer";
 import GameNav from "@/components/game-nav";
 import InventoryHydrated from "@/components/inventory/inventory-hydrated";
 import StatPointAllocator from "@/components/stat-point-allocator";
@@ -13,9 +13,9 @@ import {
 } from "@/lib/character";
 import { getResolvedCharacterAvatar } from "@/lib/character-avatars";
 import {
-  getEnergyRegenerationMeta,
+  getStaminaRegenerationMeta,
   getHpRegenerationMeta,
-} from "@/lib/energy-regeneration";
+} from "@/lib/stamina-regeneration";
 import { getItemById } from "@/lib/items/helpers";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
@@ -48,11 +48,11 @@ function getCharacterMaxResources(character) {
 
   return {
     maxHp: Math.max(1, baseResources.hp, Number(character.hp) || 0),
-    maxEnergy: Math.max(
+    maxStamina: Math.max(
       1,
-      baseResources.maxEnergy,
-      Number(character.maxEnergy) || 0,
-      Number(character.energy) || 0,
+      baseResources.maxStamina,
+      Number(character.maxStamina) || 0,
+      Number(character.stamina) || 0,
     ),
   };
 }
@@ -132,8 +132,8 @@ export default async function CharacterPage() {
   const levelProgress = character
     ? getLevelProgressMeta(character.level, character.xp)
     : null;
-  const energyMeta = character
-    ? getEnergyRegenerationMeta(character)
+  const staminaMeta = character
+    ? getStaminaRegenerationMeta(character)
     : null;
   const hpMeta = character
     ? getHpRegenerationMeta(character)
@@ -142,8 +142,8 @@ export default async function CharacterPage() {
   const hpPercent = maxResources
     ? clampPercent((character.hp / maxResources.maxHp) * 100)
     : 0;
-  const energyPercent = maxResources
-    ? clampPercent((character.energy / maxResources.maxEnergy) * 100)
+  const staminaPercent = maxResources
+    ? clampPercent((character.stamina / maxResources.maxStamina) * 100)
     : 0;
   const goalCards =
     character && levelProgress && carryWeightSummary
@@ -224,7 +224,7 @@ export default async function CharacterPage() {
                 <div className={styles.resourceTop}>
                   <p className={styles.resourceLabel}>
                     HP{" "}
-                    <EnergyTimer
+                    <StaminaTimer
                       key={hpMeta?.nextHpAt ?? "hp-full-inline-character"}
                       resourceMeta={hpMeta}
                       resourceLabel="HP"
@@ -248,22 +248,23 @@ export default async function CharacterPage() {
               <article className={styles.resourceCard}>
                 <div className={styles.resourceTop}>
                   <p className={styles.resourceLabel}>
-                    Energy{" "}
-                    <EnergyTimer
-                      key={energyMeta?.nextEnergyAt ?? "energy-full-inline-character"}
-                      energyMeta={energyMeta}
+                    Stamina{" "}
+                    <StaminaTimer
+                      key={staminaMeta?.nextStaminaAt ?? "stamina-full-inline-character"}
+                      staminaMeta={staminaMeta}
+                      resourceLabel="Stamina"
                       variant="inline"
                       className={styles.resourceLabelMeta}
                     />
                   </p>
                   <p className={styles.resourceValue}>
-                    {character.energy}/{maxResources.maxEnergy}
+                    {character.stamina}/{maxResources.maxStamina}
                   </p>
                 </div>
                 <div className={styles.goalTrack} aria-hidden="true">
                   <span
                     className={`${styles.goalFill} ${styles.energyFill}`}
-                    style={{ width: `${energyPercent}%` }}
+                    style={{ width: `${staminaPercent}%` }}
                   />
                 </div>
               </article>

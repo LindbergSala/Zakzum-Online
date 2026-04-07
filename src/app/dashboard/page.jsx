@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import CharacterOverview from "@/components/character-overview";
-import EnergyTimer from "@/components/energy-timer";
+import StaminaTimer from "@/components/stamina-timer";
 import GameNav from "@/components/game-nav";
 import OnboardingPanel from "@/components/onboarding-panel";
 import { formatDashboardLogEntry } from "@/lib/activity-log-format";
@@ -13,9 +13,9 @@ import {
   getUserWithResolvedActiveCharacter,
 } from "@/lib/character";
 import {
-  getEnergyRegenerationMeta,
+  getStaminaRegenerationMeta,
   getHpRegenerationMeta,
-} from "@/lib/energy-regeneration";
+} from "@/lib/stamina-regeneration";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import {
   buildOnboardingViewModel,
@@ -95,11 +95,11 @@ function getCharacterMaxResources(character) {
 
   return {
     maxHp: Math.max(1, baseResources.hp, Number(character.hp) || 0),
-    maxEnergy: Math.max(
+    maxStamina: Math.max(
       1,
-      baseResources.maxEnergy,
-      Number(character.maxEnergy) || 0,
-      Number(character.energy) || 0,
+      baseResources.maxStamina,
+      Number(character.maxStamina) || 0,
+      Number(character.stamina) || 0,
     ),
   };
 }
@@ -121,8 +121,8 @@ export default async function DashboardPage() {
       })
     : [];
   const equippedItems = ownedItems.filter((item) => item.isEquipped);
-  const energyMeta = effectiveCharacter
-    ? getEnergyRegenerationMeta(effectiveCharacter)
+  const staminaMeta = effectiveCharacter
+    ? getStaminaRegenerationMeta(effectiveCharacter)
     : null;
   const hpMeta = effectiveCharacter
     ? getHpRegenerationMeta(effectiveCharacter)
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
           type: true,
           activityName: true,
           success: true,
-          energyCost: true,
+          staminaCost: true,
           roll: true,
           rollTotal: true,
           successTarget: true,
@@ -164,8 +164,8 @@ export default async function DashboardPage() {
   const hpPercent = maxResources
     ? clampPercent((effectiveCharacter.hp / maxResources.maxHp) * 100)
     : 0;
-  const energyPercent = maxResources
-    ? clampPercent((effectiveCharacter.energy / maxResources.maxEnergy) * 100)
+  const staminaPercent = maxResources
+    ? clampPercent((effectiveCharacter.stamina / maxResources.maxStamina) * 100)
     : 0;
   const characterAvatarImage = getResolvedCharacterAvatar(effectiveCharacter);
 
@@ -208,7 +208,7 @@ export default async function DashboardPage() {
                     <div className={styles.resourceTop}>
                       <p className={styles.resourceLabel}>
                         HP{" "}
-                        <EnergyTimer
+                        <StaminaTimer
                           key={hpMeta?.nextHpAt ?? "hp-full-inline-dashboard"}
                           resourceMeta={hpMeta}
                           resourceLabel="HP"
@@ -232,22 +232,23 @@ export default async function DashboardPage() {
                   <article className={styles.resourceCard}>
                     <div className={styles.resourceTop}>
                       <p className={styles.resourceLabel}>
-                        Energy{" "}
-                        <EnergyTimer
-                          key={energyMeta?.nextEnergyAt ?? "energy-full-inline-dashboard"}
-                          energyMeta={energyMeta}
+                        Stamina{" "}
+                        <StaminaTimer
+                          key={staminaMeta?.nextStaminaAt ?? "stamina-full-inline-dashboard"}
+                          staminaMeta={staminaMeta}
+                          resourceLabel="Stamina"
                           variant="inline"
                           className={styles.resourceLabelMeta}
                         />
                       </p>
                       <p className={styles.resourceValue}>
-                        {effectiveCharacter.energy}/{maxResources.maxEnergy}
+                        {effectiveCharacter.stamina}/{maxResources.maxStamina}
                       </p>
                     </div>
                     <div className={styles.goalTrack} aria-hidden="true">
                       <span
                         className={`${styles.goalFill} ${styles.energyFill}`}
-                        style={{ width: `${energyPercent}%` }}
+                        style={{ width: `${staminaPercent}%` }}
                       />
                     </div>
                   </article>

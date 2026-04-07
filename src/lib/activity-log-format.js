@@ -1,6 +1,6 @@
 const DELTA_LABELS = {
   hp: "HP",
-  energy: "Energy",
+  stamina: "Stamina",
   gold: "Gold",
   xp: "XP",
   level: "Level",
@@ -13,7 +13,7 @@ const DELTA_DISPLAY_ORDER = [
   "gold",
   "renown",
   "hp",
-  "energy",
+  "stamina",
   "heat",
   "level",
 ];

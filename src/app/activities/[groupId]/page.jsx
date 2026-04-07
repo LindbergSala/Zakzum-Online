@@ -29,13 +29,16 @@ function formatCompactDelta(delta) {
     return "None";
   }
 
-  const orderedKeys = ["gold", "xp", "renown", "hp", "heat", "energy"];
+  const orderedKeys = ["gold", "xp", "renown", "hp", "heat", "stamina"];
+  const labelMap = {
+    stamina: "STAMINA",
+  };
   const segments = orderedKeys
     .map((key) => [key, Number(delta[key] ?? 0)])
     .filter(([, value]) => value !== 0)
     .map(([key, value]) => {
       const sign = value > 0 ? "+" : "";
-      return `${sign}${value} ${key.toUpperCase()}`;
+      return `${sign}${value} ${labelMap[key] ?? key.toUpperCase()}`;
     });
 
   return segments.length ? segments.join(" • ") : "None";
@@ -256,7 +259,7 @@ export default async function ActivityGroupPage({ params }) {
                           {buildRiskBadgeLabel(activity.riskProfile)}
                         </span>
                         <span className={styles.activityMetaChip}>
-                          {activity.energyCost} Energy
+                          {activity.staminaCost} Stamina
                         </span>
                         <span className={styles.activityMetaChip}>
                           Difficulty {activity.roll.difficulty}

@@ -2,6 +2,16 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+function toFiniteInteger(value, fallback = 0) {
+  const numericValue = Number(value);
+
+  if (!Number.isFinite(numericValue)) {
+    return fallback;
+  }
+
+  return Math.floor(numericValue);
+}
+
 const DEFAULT_ACTIVITY_LEVEL_DIFFICULTY_SCALING = 2;
 const SUCCESS_PRIMARY_MODIFIER_SCALE = 0.04;
 const SUCCESS_SECONDARY_MODIFIER_SCALE = 0.02;
@@ -13,6 +23,28 @@ const FAIL_PRIMARY_MODIFIER_SCALE = 0.02;
 const FAIL_SECONDARY_MODIFIER_SCALE = 0.01;
 const FAIL_SCALE_MIN = 0.7;
 const FAIL_SCALE_MAX = 1.6;
+
+export function getHeatRollModifier(heatInput) {
+  const heat = clamp(toFiniteInteger(heatInput, 0), 0, 100);
+
+  if (heat >= 80) {
+    return -4;
+  }
+
+  if (heat >= 60) {
+    return -3;
+  }
+
+  if (heat >= 40) {
+    return -2;
+  }
+
+  if (heat >= 20) {
+    return -1;
+  }
+
+  return 0;
+}
 
 function toEffectiveStatValue(statValue) {
   const numericValue = Number(statValue);
@@ -97,8 +129,10 @@ export function resolveActivityRoll(characterStats, activityDefinition, options 
     levelContribution * activityLevelScaling;
   const adjustedDifficulty = baseDifficulty + difficultyLevelScaling;
   const passiveRollModifier = Number(options.passiveRollModifier) || 0;
+  const heat = clamp(toFiniteInteger(options.heat, 0), 0, 100);
+  const heatRollModifier = getHeatRollModifier(heat);
   const totalRollBonus =
-    statContribution + levelContribution + passiveRollModifier;
+    statContribution + levelContribution + passiveRollModifier + heatRollModifier;
 
   const random =
     typeof options.random === "function" ? options.random : Math.random;
@@ -153,6 +187,8 @@ export function resolveActivityRoll(characterStats, activityDefinition, options 
       adjustedDifficulty,
       difficultyLevelScaling,
       passiveRollModifier,
+      heat,
+      heatRollModifier,
       totalRollBonus,
       // Backward-compatible aliases.
       primaryStatValue: effectivePrimaryStat,

@@ -308,8 +308,8 @@ export const ITEM_CATALOG = [
     inventorySize: { width: 1, height: 1 },
   }),
   defineItem({
-    id: "energy-draught",
-    name: "Energy Draught",
+    id: "stamina-draught",
+    name: "Stamina Draught",
     category: ITEM_CATEGORY.CONSUMABLE,
     rarity: ITEM_RARITY.COMMON,
     slot: ITEM_SLOT.CONSUMABLE,
@@ -317,14 +317,14 @@ export const ITEM_CATALOG = [
     maxStack: 5,
     weight: 1,
     price: 12,
-    description: "Concentrated tonic that restores spent Energy.",
+    description: "Concentrated tonic that restores spent Stamina.",
     lootable: true,
     lootSources: [ITEM_LOOT_SOURCE.QUEST, ITEM_LOOT_SOURCE.ADVENTURE],
     marketIds: ["alchemist-lab"],
     marketRules: { buy: true, sell: true },
     effects: {
       consumable: {
-        energyRestore: 8,
+        staminaRestore: 8,
       },
     },
     inventorySize: { width: 1, height: 1 },

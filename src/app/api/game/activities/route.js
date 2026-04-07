@@ -15,7 +15,7 @@ import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-tra
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import { logServerError } from "@/lib/server-logger";
 import { getLevelProgressMeta } from "@/lib/level-progression";
-import { getClassPassiveEnergyRefreshBonus } from "@/lib/class-identity";
+import { getClassPassiveStaminaRefreshBonus } from "@/lib/class-identity";
 import { getSessionTokenFromRequestCookies } from "@/lib/session";
 import { activityActionSchema } from "@/lib/validators/core-loop";
 import {
@@ -59,7 +59,7 @@ export async function GET() {
             locationTitle: activity.locationTitle ?? null,
             regionId: activity.regionId ?? null,
             regionName: activity.regionName ?? null,
-            energyCost: activity.energyCost,
+            staminaCost: activity.staminaCost,
             riskProfile: activity.riskProfile,
             successReward: activity.successReward,
             failPenalty: activity.failPenalty,
@@ -75,7 +75,7 @@ export async function GET() {
         locationTitle: activity.locationTitle ?? null,
         regionId: activity.regionId ?? null,
         regionName: activity.regionName ?? null,
-        energyCost: activity.energyCost,
+        staminaCost: activity.staminaCost,
         successReward: activity.successReward,
         failPenalty: activity.failPenalty,
       })),
@@ -172,8 +172,8 @@ export async function POST(request) {
       return NextResponse.json(
         {
           message: result.message,
-          requiredEnergy: result.requiredEnergy,
-          currentEnergy: result.currentEnergy,
+          requiredStamina: result.requiredStamina,
+          currentStamina: result.currentStamina,
           requiredHp: result.requiredHp,
           currentHp: result.currentHp,
           resources: result.resources,
@@ -207,11 +207,11 @@ export async function POST(request) {
           locationTitle: activityContext?.locationTitle ?? null,
           regionId: activityContext?.regionId ?? null,
           regionName: activityContext?.regionName ?? null,
-          energyCost: result.activityEnergyCost,
+          staminaCost: result.activityStaminaCost,
         },
         result: {
           success: result.rollResult.success,
-          energyCost: result.activityEnergyCost,
+          staminaCost: result.activityStaminaCost,
           activityContext,
           progression: {
             leveledUp: result.leveledUp,
@@ -228,14 +228,14 @@ export async function POST(request) {
             class: result.characterClass,
             passive: result.classPassive,
             activityGroupId: result.activityGroupId,
-            baseEnergyCost: activity.energyCost,
-            effectiveEnergyCost: result.activityEnergyCost,
-            passiveEnergyCostReduction: Math.max(
+            baseStaminaCost: activity.staminaCost,
+            effectiveStaminaCost: result.activityStaminaCost,
+            passiveStaminaCostReduction: Math.max(
               0,
-              activity.energyCost - result.activityEnergyCost,
+              activity.staminaCost - result.activityStaminaCost,
             ),
             passiveRollModifier: result.classRollModifier,
-            passiveEnergyRefreshBonus: getClassPassiveEnergyRefreshBonus(
+            passiveStaminaRefreshBonus: getClassPassiveStaminaRefreshBonus(
               result.characterClass,
             ),
             passiveDeltaBonus: result.classPassiveResolvedDelta.deltaBonus,
@@ -279,6 +279,9 @@ export async function POST(request) {
             totalPassiveRollModifier: result.totalRollModifier,
             characterLevel: result.rollResult.calculations.characterLevel,
             chancePercent: result.rollResult.chancePercent,
+            heat: result.rollResult.calculations.heat,
+            heatRollModifier: result.rollResult.calculations.heatRollModifier,
+            heatBuildUp: result.activityHeatBuildUp,
             primaryStat: result.rollResult.calculations.primaryStat,
             secondaryStat: result.rollResult.calculations.secondaryStat,
             primaryStatValue: result.rollResult.calculations.primaryStatValue,

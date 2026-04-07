@@ -34,7 +34,7 @@ export default async function LogPage() {
           type: true,
           activityName: true,
           success: true,
-          energyCost: true,
+          staminaCost: true,
           roll: true,
           rollTotal: true,
           successTarget: true,

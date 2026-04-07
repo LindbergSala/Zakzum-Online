@@ -13,8 +13,8 @@ import { formatItemEffectLabel } from "@/lib/stat-effects";
 export const SHOP_CHARACTER_SELECT = {
   id: true,
   hp: true,
-  energy: true,
-  maxEnergy: true,
+  stamina: true,
+  maxStamina: true,
   gold: true,
   xp: true,
   level: true,
@@ -27,8 +27,8 @@ export const SHOP_CHARACTER_SELECT = {
 export const SHOP_CHARACTER_RESOURCE_SELECT = {
   id: true,
   hp: true,
-  energy: true,
-  maxEnergy: true,
+  stamina: true,
+  maxStamina: true,
   gold: true,
   xp: true,
   level: true,

@@ -3,8 +3,8 @@ import test from "node:test";
 
 import {
   applyClassPassiveDelta,
-  getClassPassiveActivityEnergyCost,
-  getClassPassiveEnergyRefreshBonus,
+  getClassPassiveActivityStaminaCost,
+  getClassPassiveStaminaRefreshBonus,
   getClassPassiveRollModifier,
 } from "../src/lib/class-identity.js";
 
@@ -20,10 +20,10 @@ test("fighter and ranger roll modifiers are activity-specific", () => {
   assert.equal(getClassPassiveRollModifier("RANGER", "arena"), 0);
 });
 
-test("monk reduces activity energy cost by 1 with minimum 1", () => {
-  assert.equal(getClassPassiveActivityEnergyCost("MONK", 5), 4);
-  assert.equal(getClassPassiveActivityEnergyCost("MONK", 1), 1);
-  assert.equal(getClassPassiveActivityEnergyCost("ROGUE", 5), 5);
+test("monk reduces activity stamina cost by 1 with minimum 1", () => {
+  assert.equal(getClassPassiveActivityStaminaCost("MONK", 5), 4);
+  assert.equal(getClassPassiveActivityStaminaCost("MONK", 1), 1);
+  assert.equal(getClassPassiveActivityStaminaCost("ROGUE", 5), 5);
 });
 
 test("paladin gains renown only on successful arena activity", () => {
@@ -82,7 +82,7 @@ test("warlock failure applies an extra penalty", () => {
   assert.deepEqual(withHpPenalty.deltaBonus, { hp: -1 });
 });
 
-test("druid energy refresh bonus is +1", () => {
-  assert.equal(getClassPassiveEnergyRefreshBonus("DRUID"), 1);
-  assert.equal(getClassPassiveEnergyRefreshBonus("WIZARD"), 0);
+test("druid stamina refresh bonus is +1", () => {
+  assert.equal(getClassPassiveStaminaRefreshBonus("DRUID"), 1);
+  assert.equal(getClassPassiveStaminaRefreshBonus("WIZARD"), 0);
 });

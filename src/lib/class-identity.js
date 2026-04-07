@@ -17,7 +17,7 @@ const CLASS_PASSIVES = {
   DRUID: {
     id: "druid-natural-recovery",
     name: "Natural Recovery",
-    description: "Regenerate +1 extra Energy when energy refreshes.",
+    description: "Regenerate +1 extra Stamina when stamina refreshes.",
   },
   FIGHTER: {
     id: "fighter-battle-discipline",
@@ -27,7 +27,7 @@ const CLASS_PASSIVES = {
   MONK: {
     id: "monk-inner-focus",
     name: "Inner Focus",
-    description: "Activities cost -1 Energy (minimum 1).",
+    description: "Activities cost -1 Stamina (minimum 1).",
   },
   PALADIN: {
     id: "paladin-righteous-resolve",
@@ -181,17 +181,17 @@ export function getClassPassiveRollModifier(characterClass, activityId) {
   return 0;
 }
 
-export function getClassPassiveActivityEnergyCost(characterClass, energyCostInput) {
-  const energyCost = Math.max(0, normalizeDeltaValue(energyCostInput));
+export function getClassPassiveActivityStaminaCost(characterClass, staminaCostInput) {
+  const staminaCost = Math.max(0, normalizeDeltaValue(staminaCostInput));
 
   if (characterClass === "MONK") {
-    return Math.max(1, energyCost - 1);
+    return Math.max(1, staminaCost - 1);
   }
 
-  return energyCost;
+  return staminaCost;
 }
 
-export function getClassPassiveEnergyRefreshBonus(characterClass) {
+export function getClassPassiveStaminaRefreshBonus(characterClass) {
   if (characterClass === "DRUID") {
     return 1;
   }
@@ -244,7 +244,7 @@ export function applyClassPassiveDelta({
   const activityGroupId = normalizeActivityGroupId(activityId);
   const nextDelta = {
     hp: normalizeDeltaValue(delta?.hp),
-    energy: normalizeDeltaValue(delta?.energy),
+    stamina: normalizeDeltaValue(delta?.stamina),
     gold: normalizeDeltaValue(delta?.gold),
     xp: normalizeDeltaValue(delta?.xp),
     level: normalizeDeltaValue(delta?.level),
@@ -292,3 +292,6 @@ export function applyClassPassiveDelta({
     deltaBonus,
   };
 }
+
+export const getClassPassiveActivityEnergyCost = getClassPassiveActivityStaminaCost;
+export const getClassPassiveEnergyRefreshBonus = getClassPassiveStaminaRefreshBonus;

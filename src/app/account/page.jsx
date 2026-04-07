@@ -136,9 +136,9 @@ function buildStatisticsCards(entries, character) {
     return sum + Math.max(0, heatDelta);
   }, 0);
 
-  const totalEnergySpent = entries.reduce((sum, entry) => {
-    const energyDelta = toNumericValue(entry.delta?.energy);
-    return sum + Math.max(0, -energyDelta);
+  const totalStaminaSpent = entries.reduce((sum, entry) => {
+    const staminaDelta = toNumericValue(entry.delta?.stamina);
+    return sum + Math.max(0, -staminaDelta);
   }, 0);
 
   const averageRollTotal = activityEntries.length
@@ -194,8 +194,8 @@ function buildStatisticsCards(entries, character) {
       hint: `Current Heat: ${character?.heat ?? 0}`,
     },
     {
-      label: "Energy spent",
-      value: `${totalEnergySpent}`,
+      label: "Stamina spent",
+      value: `${totalStaminaSpent}`,
       hint: "Based on logged resource delta",
     },
     {
@@ -250,7 +250,7 @@ export default async function AccountPage() {
             type: true,
             activityName: true,
             success: true,
-            energyCost: true,
+            staminaCost: true,
             roll: true,
             rollTotal: true,
             successTarget: true,

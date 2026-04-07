@@ -9,8 +9,8 @@ function createRouteHarness() {
   const character = {
     id: "character-1",
     hp: 20,
-    energy: 20,
-    maxEnergy: 20,
+    stamina: 20,
+    maxStamina: 20,
     gold: 10,
     xp: 0,
     level: 1,

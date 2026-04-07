@@ -40,7 +40,7 @@ const QUEST_ACTIVITY_STEPS = [
     riskProfile: "Low risk, city dispatch",
     pageIntro:
       `Take a courier contract through ${HEARTLANDS_LOCATIONS.kingston.locationName}, where crowded wards, noble courts, and royal patrols can turn one missing dispatch into a political spark.`,
-    energyCost: 2,
+    staminaCost: 2,
     roll: {
       difficulty: 11,
       levelScaling: 1,
@@ -58,7 +58,7 @@ const QUEST_ACTIVITY_STEPS = [
     riskProfile: "Low risk, stable gains",
     pageIntro:
       `Broker a ledger dispute in ${HEARTLANDS_LOCATIONS.goldmere.locationName}, where coin, guild pressure, and caravan politics make every handshake feel like a negotiation trap.`,
-    energyCost: 3,
+    staminaCost: 3,
     roll: {
       difficulty: 12,
       levelScaling: 1,
@@ -76,7 +76,7 @@ const QUEST_ACTIVITY_STEPS = [
     riskProfile: "Moderate risk, balanced reward",
     pageIntro:
       `Ride escort through ${HEARTLANDS_LOCATIONS.mournstead.locationName}, a quiet roadside village where exhausted travelers whisper of danger and bad news never lingers far behind.`,
-    energyCost: 3,
+    staminaCost: 3,
     roll: {
       difficulty: 13,
       levelScaling: 1,
@@ -94,7 +94,7 @@ const QUEST_ACTIVITY_STEPS = [
     riskProfile: "Moderate risk, rising pressure",
     pageIntro:
       `Guard pilgrims bound for ${HEARTLANDS_LOCATIONS.saintsHollow.locationName} as bells, shrines, and Order patrols hold the road against raiders testing sacred borders.`,
-    energyCost: 4,
+    staminaCost: 4,
     roll: {
       difficulty: 14,
       levelScaling: 1,
@@ -112,7 +112,7 @@ const QUEST_ACTIVITY_STEPS = [
     riskProfile: "High quest risk, strong early rewards",
     pageIntro:
       `Recover a stolen ward relic near ${HEARTLANDS_LOCATIONS.elfhome.locationName}, where fragile trust between worlds can fracture before dusk if the forest paths close.`,
-    energyCost: 4,
+    staminaCost: 4,
     roll: {
       difficulty: 15,
       levelScaling: 1,
@@ -133,7 +133,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
     riskProfile: "Higher risk than Quest V",
     pageIntro:
       `March beyond ${HEARTLANDS_LOCATIONS.northwatch.locationName} to relight warning fires across wind-cut ridges before whatever moves in the northern dark reaches the Heartlands.`,
-    energyCost: 5,
+    staminaCost: 5,
     roll: {
       difficulty: 17,
       levelScaling: 2,
@@ -151,7 +151,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
     riskProfile: "High risk, high reward",
     pageIntro:
       `Enter ${HEARTLANDS_LOCATIONS.barrowfield.locationName} and contain restless dead beneath the burial mounds before fear spreads from outer roads into settled lands.`,
-    energyCost: 5,
+    staminaCost: 5,
     roll: {
       difficulty: 18,
       levelScaling: 2,
@@ -169,7 +169,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
     riskProfile: "Severe risk, major gains",
     pageIntro:
       `Carry a sealed Blackthorn decree from ${HEARTLANDS_LOCATIONS.blackthornHold.locationName} through hostile ground where duty is absolute and failure invites ruthless reprisal.`,
-    energyCost: 6,
+    staminaCost: 6,
     roll: {
       difficulty: 19,
       levelScaling: 2,
@@ -187,7 +187,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
     riskProfile: "Extreme risk, elite progression",
     pageIntro:
       `Defend ${HEARTLANDS_LOCATIONS.kingston.locationName} during a coordinated breach, choosing which gates, wards, and noble districts can be held before the capital fractures.`,
-    energyCost: 6,
+    staminaCost: 6,
     roll: {
       difficulty: 20,
       levelScaling: 2,
@@ -205,7 +205,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
     riskProfile: "Maximum risk, top-tier payout",
     pageIntro:
       `Follow converging threats from ${HEARTLANDS_LOCATIONS.kingston.locationName}, ${HEARTLANDS_LOCATIONS.northwatch.locationName}, and ${HEARTLANDS_LOCATIONS.barrowfield.locationName} to stop a Heartlands collapse where warning, burial, and crown all fail at once.`,
-    energyCost: 7,
+    staminaCost: 7,
     roll: {
       difficulty: 21,
       levelScaling: 2,
@@ -225,7 +225,7 @@ const ARENA_ACTIVITY_STEPS = [
     riskProfile: "Duel focus, Renown and XP",
     pageIntro:
       "Face NPC opponents in the arena. Victory mainly grants renown and experience.",
-    energyCost: 4,
+    staminaCost: 4,
     roll: {
       difficulty: 16,
       levelScaling: 2,
@@ -249,7 +249,7 @@ export const ACTIVITY_GROUPS = [
     overviewBadges: [
       "Low Risk",
       "Tier I-V",
-      "2-4 Energy",
+      "2-4 Stamina",
     ],
     lootProfile: {
       source: ITEM_LOOT_SOURCE.QUEST,
@@ -284,7 +284,7 @@ export const ACTIVITY_GROUPS = [
     overviewBadges: [
       "High Risk",
       "Tier I-V",
-      "5-7 Energy",
+      "5-7 Stamina",
     ],
     lootProfile: {
       source: ITEM_LOOT_SOURCE.ADVENTURE,
@@ -317,7 +317,7 @@ export const ACTIVITY_GROUPS = [
     overviewBadges: [
       "Renown Focus",
       "Single Track",
-      "4 Energy",
+      "4 Stamina",
     ],
     lootProfile: {
       source: ITEM_LOOT_SOURCE.ARENA,

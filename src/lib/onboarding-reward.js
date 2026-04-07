@@ -13,8 +13,8 @@ export {
 const CHARACTER_REWARD_SELECT = {
   id: true,
   hp: true,
-  energy: true,
-  maxEnergy: true,
+  stamina: true,
+  maxStamina: true,
   gold: true,
   xp: true,
   level: true,
@@ -25,8 +25,8 @@ const CHARACTER_REWARD_SELECT = {
 function buildCharacterResourceSnapshot(character) {
   return {
     hp: Number(character.hp) || 0,
-    energy: Number(character.energy) || 0,
-    maxEnergy: Number(character.maxEnergy) || 0,
+    stamina: Number(character.stamina) || 0,
+    maxStamina: Number(character.maxStamina) || 0,
     gold: Number(character.gold) || 0,
     xp: Number(character.xp) || 0,
     level: Number(character.level) || 0,
@@ -86,7 +86,7 @@ export async function maybeGrantOnboardingCompletionReward(
         activityId: ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
         activityName: "Onboarding Completion Bonus",
         success: true,
-        energyCost: 0,
+        staminaCost: 0,
         roll: 0,
         rollTotal: 0,
         successTarget: 0,

@@ -23,6 +23,10 @@ function getSecondsUntilNext(meta) {
     return meta.secondsUntilNextEnergy;
   }
 
+  if (typeof meta.secondsUntilNextStamina === "number") {
+    return meta.secondsUntilNextStamina;
+  }
+
   if (typeof meta.secondsUntilNextHp === "number") {
     return meta.secondsUntilNextHp;
   }
@@ -43,6 +47,10 @@ function getCurrentValue(meta) {
     return meta.currentEnergy;
   }
 
+  if (typeof meta.currentStamina === "number") {
+    return meta.currentStamina;
+  }
+
   if (typeof meta.currentHp === "number") {
     return meta.currentHp;
   }
@@ -50,15 +58,16 @@ function getCurrentValue(meta) {
   return 0;
 }
 
-export default function EnergyTimer({
-  energyMeta,
+export default function StaminaTimer({
+  staminaMeta = null,
+  energyMeta = null,
   resourceMeta = null,
-  resourceLabel = "Energy",
+  resourceLabel = "Stamina",
   showDepletedNotice = false,
   variant = "block",
   className = "",
 }) {
-  const meta = resourceMeta ?? energyMeta;
+  const meta = resourceMeta ?? staminaMeta ?? energyMeta;
   const router = useRouter();
   const refreshTriggeredRef = useRef(false);
   const [secondsLeft, setSecondsLeft] = useState(() =>

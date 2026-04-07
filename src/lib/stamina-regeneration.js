@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { getClassPassiveEnergyRefreshBonus } from "@/lib/class-identity";
+import { getClassPassiveStaminaRefreshBonus } from "@/lib/class-identity";
 
-export const DEFAULT_MAX_ENERGY = 20;
-export const ENERGY_REGEN_INTERVAL_SECONDS = 5 * 60;
-export const ENERGY_REGEN_INTERVAL_MS = ENERGY_REGEN_INTERVAL_SECONDS * 1000;
-export const HP_REGEN_INTERVAL_MS = ENERGY_REGEN_INTERVAL_MS;
+export const DEFAULT_MAX_STAMINA = 20;
+export const STAMINA_REGEN_INTERVAL_SECONDS = 5 * 60;
+export const STAMINA_REGEN_INTERVAL_MS = STAMINA_REGEN_INTERVAL_SECONDS * 1000;
+export const HP_REGEN_INTERVAL_MS = STAMINA_REGEN_INTERVAL_MS;
 
 const CHARACTER_CLASS_BASE_HP = {
   BARBARIAN: 28,
@@ -31,12 +31,12 @@ function clampNumeric(value, min, max, fallback) {
   return Math.min(max, Math.max(min, Math.floor(numericValue)));
 }
 
-function resolveMaxEnergy(character) {
-  return clampNumeric(character?.maxEnergy, 1, 999, DEFAULT_MAX_ENERGY);
+function resolveMaxStamina(character) {
+  return clampNumeric(character?.maxStamina, 1, 999, DEFAULT_MAX_STAMINA);
 }
 
-function resolveEnergy(character, maxEnergy) {
-  return clampNumeric(character?.energy, 0, maxEnergy, maxEnergy);
+function resolveStamina(character, maxStamina) {
+  return clampNumeric(character?.stamina, 0, maxStamina, maxStamina);
 }
 
 function resolveBaseMaxHp(character) {
@@ -64,9 +64,9 @@ function resolveHp(character, maxHp) {
   return clampNumeric(character?.hp, 0, maxHp, maxHp);
 }
 
-function resolveEnergyAnchor(character, now) {
-  const anchor = character?.energyRegenAt
-    ? new Date(character.energyRegenAt)
+function resolveStaminaAnchor(character, now) {
+  const anchor = character?.staminaRegenAt
+    ? new Date(character.staminaRegenAt)
     : null;
 
   if (!anchor || Number.isNaN(anchor.getTime())) {
@@ -101,13 +101,13 @@ function buildResourceRegenerationMeta({
     regenerationIntervalSeconds: intervalSeconds,
   };
 
-  if (resourceKey === "energy") {
+  if (resourceKey === "stamina") {
     return {
       ...baseMeta,
-      currentEnergy: currentValue,
-      maxEnergy: maxValue,
-      nextEnergyAt: baseMeta.nextAt,
-      secondsUntilNextEnergy: secondsUntilNext,
+      currentStamina: currentValue,
+      maxStamina: maxValue,
+      nextStaminaAt: baseMeta.nextAt,
+      secondsUntilNextStamina: secondsUntilNext,
     };
   }
 
@@ -120,23 +120,23 @@ function buildResourceRegenerationMeta({
   };
 }
 
-export function getEnergyRegenerationMeta(character, nowInput = new Date()) {
+export function getStaminaRegenerationMeta(character, nowInput = new Date()) {
   if (!character) {
     return null;
   }
 
   const now = new Date(nowInput);
-  const maxEnergy = resolveMaxEnergy(character);
-  const energy = resolveEnergy(character, maxEnergy);
-  const energyRegenAt = resolveEnergyAnchor(character, now);
+  const maxStamina = resolveMaxStamina(character);
+  const stamina = resolveStamina(character, maxStamina);
+  const staminaRegenAt = resolveStaminaAnchor(character, now);
 
   return buildResourceRegenerationMeta({
-    resourceKey: "energy",
-    currentValue: energy,
-    maxValue: maxEnergy,
+    resourceKey: "stamina",
+    currentValue: stamina,
+    maxValue: maxStamina,
     now,
-    anchor: energyRegenAt,
-    intervalMs: ENERGY_REGEN_INTERVAL_MS,
+    anchor: staminaRegenAt,
+    intervalMs: STAMINA_REGEN_INTERVAL_MS,
   });
 }
 
@@ -148,24 +148,24 @@ export function getHpRegenerationMeta(character, nowInput = new Date()) {
   const now = new Date(nowInput);
   const maxHp = resolveMaxHp(character);
   const hp = resolveHp(character, maxHp);
-  const energyRegenAt = resolveEnergyAnchor(character, now);
+  const staminaRegenAt = resolveStaminaAnchor(character, now);
 
   return buildResourceRegenerationMeta({
     resourceKey: "hp",
     currentValue: hp,
     maxValue: maxHp,
     now,
-    anchor: energyRegenAt,
+    anchor: staminaRegenAt,
     intervalMs: HP_REGEN_INTERVAL_MS,
   });
 }
 
-export async function resolveCharacterEnergyRegeneration(character, options = {}) {
+export async function resolveCharacterStaminaRegeneration(character, options = {}) {
   if (!character) {
     return {
       character: null,
       changed: false,
-      energy: null,
+      stamina: null,
       hp: null,
       meta: null,
       hpMeta: null,
@@ -174,66 +174,66 @@ export async function resolveCharacterEnergyRegeneration(character, options = {}
 
   const now = options.now ? new Date(options.now) : new Date();
   const shouldPersist = options.persist !== false;
-  const rawEnergy = Number(character?.energy);
-  const rawMaxEnergy = Number(character?.maxEnergy);
-  const rawEnergyRegenAt = character?.energyRegenAt
-    ? new Date(character.energyRegenAt)
+  const rawStamina = Number(character?.stamina);
+  const rawMaxStamina = Number(character?.maxStamina);
+  const rawStaminaRegenAt = character?.staminaRegenAt
+    ? new Date(character.staminaRegenAt)
     : null;
   const hasValidStoredAnchor =
-    rawEnergyRegenAt !== null && !Number.isNaN(rawEnergyRegenAt.getTime());
+    rawStaminaRegenAt !== null && !Number.isNaN(rawStaminaRegenAt.getTime());
 
-  const maxEnergy = resolveMaxEnergy(character);
+  const maxStamina = resolveMaxStamina(character);
   const maxHp = resolveMaxHp(character);
-  const previousEnergy = resolveEnergy(character, maxEnergy);
+  const previousStamina = resolveStamina(character, maxStamina);
   const previousHp = resolveHp(character, maxHp);
-  const previousAnchor = resolveEnergyAnchor(character, now);
+  const previousAnchor = resolveStaminaAnchor(character, now);
 
-  let nextEnergy = previousEnergy;
+  let nextStamina = previousStamina;
   let nextHp = previousHp;
   let nextAnchor = previousAnchor;
   let changed =
-    !Number.isFinite(rawEnergy) ||
-    Math.floor(rawEnergy) !== previousEnergy ||
-    !Number.isFinite(rawMaxEnergy) ||
-    Math.floor(rawMaxEnergy) !== maxEnergy ||
+    !Number.isFinite(rawStamina) ||
+    Math.floor(rawStamina) !== previousStamina ||
+    !Number.isFinite(rawMaxStamina) ||
+    Math.floor(rawMaxStamina) !== maxStamina ||
     !hasValidStoredAnchor;
 
-  if (nextEnergy < maxEnergy || nextHp < maxHp) {
+  if (nextStamina < maxStamina || nextHp < maxHp) {
     const elapsedMs = Math.max(0, now.getTime() - previousAnchor.getTime());
-    const recoveredUnits = Math.floor(elapsedMs / ENERGY_REGEN_INTERVAL_MS);
+    const recoveredUnits = Math.floor(elapsedMs / STAMINA_REGEN_INTERVAL_MS);
 
     if (recoveredUnits > 0) {
-      const availableEnergyCapacity = maxEnergy - nextEnergy;
+      const availableStaminaCapacity = maxStamina - nextStamina;
       const availableHpCapacity = maxHp - nextHp;
-      const gainedEnergyFromIntervals = Math.min(availableEnergyCapacity, recoveredUnits);
+      const gainedStaminaFromIntervals = Math.min(availableStaminaCapacity, recoveredUnits);
       const gainedHpFromIntervals = Math.min(availableHpCapacity, recoveredUnits);
-      const consumedIntervals = Math.max(gainedEnergyFromIntervals, gainedHpFromIntervals);
+      const consumedIntervals = Math.max(gainedStaminaFromIntervals, gainedHpFromIntervals);
 
-      nextEnergy += gainedEnergyFromIntervals;
+      nextStamina += gainedStaminaFromIntervals;
       nextHp += gainedHpFromIntervals;
       changed =
         changed ||
-        gainedEnergyFromIntervals > 0 ||
+        gainedStaminaFromIntervals > 0 ||
         gainedHpFromIntervals > 0;
-      const extraEnergyOnRefresh = getClassPassiveEnergyRefreshBonus(
+      const extraStaminaOnRefresh = getClassPassiveStaminaRefreshBonus(
         character.characterClass,
       );
 
       if (
-        gainedEnergyFromIntervals > 0 &&
-        extraEnergyOnRefresh > 0 &&
-        nextEnergy < maxEnergy
+        gainedStaminaFromIntervals > 0 &&
+        extraStaminaOnRefresh > 0 &&
+        nextStamina < maxStamina
       ) {
-        const extraEnergy = Math.min(maxEnergy - nextEnergy, extraEnergyOnRefresh);
-        nextEnergy += extraEnergy;
-        changed = changed || extraEnergy > 0;
+        const extraStamina = Math.min(maxStamina - nextStamina, extraStaminaOnRefresh);
+        nextStamina += extraStamina;
+        changed = changed || extraStamina > 0;
       }
 
-      if (nextEnergy >= maxEnergy && nextHp >= maxHp) {
+      if (nextStamina >= maxStamina && nextHp >= maxHp) {
         nextAnchor = now;
       } else if (consumedIntervals > 0) {
         nextAnchor = new Date(
-          previousAnchor.getTime() + consumedIntervals * ENERGY_REGEN_INTERVAL_MS,
+          previousAnchor.getTime() + consumedIntervals * STAMINA_REGEN_INTERVAL_MS,
         );
       }
     }
@@ -242,9 +242,9 @@ export async function resolveCharacterEnergyRegeneration(character, options = {}
   const normalizedCharacter = {
     ...character,
     hp: nextHp,
-    energy: nextEnergy,
-    maxEnergy,
-    energyRegenAt: nextAnchor,
+    stamina: nextStamina,
+    maxStamina,
+    staminaRegenAt: nextAnchor,
   };
 
   if (shouldPersist && changed) {
@@ -252,9 +252,9 @@ export async function resolveCharacterEnergyRegeneration(character, options = {}
       where: { id: character.id },
       data: {
         hp: nextHp,
-        energy: nextEnergy,
-        maxEnergy,
-        energyRegenAt: nextAnchor,
+        stamina: nextStamina,
+        maxStamina,
+        staminaRegenAt: nextAnchor,
       },
     });
   }
@@ -262,17 +262,23 @@ export async function resolveCharacterEnergyRegeneration(character, options = {}
   return {
     character: normalizedCharacter,
     changed,
-    energy: {
-      before: previousEnergy,
-      after: nextEnergy,
-      max: maxEnergy,
+    stamina: {
+      before: previousStamina,
+      after: nextStamina,
+      max: maxStamina,
     },
     hp: {
       before: previousHp,
       after: nextHp,
       max: maxHp,
     },
-    meta: getEnergyRegenerationMeta(normalizedCharacter, now),
+    meta: getStaminaRegenerationMeta(normalizedCharacter, now),
     hpMeta: getHpRegenerationMeta(normalizedCharacter, now),
   };
 }
+
+export const DEFAULT_MAX_ENERGY = DEFAULT_MAX_STAMINA;
+export const ENERGY_REGEN_INTERVAL_SECONDS = STAMINA_REGEN_INTERVAL_SECONDS;
+export const ENERGY_REGEN_INTERVAL_MS = STAMINA_REGEN_INTERVAL_MS;
+export const getEnergyRegenerationMeta = getStaminaRegenerationMeta;
+export const resolveCharacterEnergyRegeneration = resolveCharacterStaminaRegeneration;

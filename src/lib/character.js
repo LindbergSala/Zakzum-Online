@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import {
-  DEFAULT_MAX_ENERGY,
-  resolveCharacterEnergyRegeneration,
-} from "@/lib/energy-regeneration";
+  DEFAULT_MAX_STAMINA,
+  resolveCharacterStaminaRegeneration,
+} from "@/lib/stamina-regeneration";
 
 export const CHARACTER_OVERVIEW_SELECT = {
   id: true,
@@ -19,9 +19,9 @@ export const CHARACTER_OVERVIEW_SELECT = {
   wisdom: true,
   charisma: true,
   hp: true,
-  energy: true,
-  maxEnergy: true,
-  energyRegenAt: true,
+  stamina: true,
+  maxStamina: true,
+  staminaRegenAt: true,
   gold: true,
   xp: true,
   level: true,
@@ -54,9 +54,9 @@ export function buildBaseResourcesForCharacter(characterClass, constitution) {
 
   return {
     hp,
-    energy: DEFAULT_MAX_ENERGY,
-    maxEnergy: DEFAULT_MAX_ENERGY,
-    energyRegenAt: new Date(),
+    stamina: DEFAULT_MAX_STAMINA,
+    maxStamina: DEFAULT_MAX_STAMINA,
+    staminaRegenAt: new Date(),
     gold: 10,
     xp: 0,
     renown: 0,
@@ -70,7 +70,7 @@ async function withRegeneratedActiveCharacter(user) {
     return user;
   }
 
-  const resolved = await resolveCharacterEnergyRegeneration(user.activeCharacter, {
+  const resolved = await resolveCharacterStaminaRegeneration(user.activeCharacter, {
     persist: true,
   });
 

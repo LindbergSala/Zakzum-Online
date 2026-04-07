@@ -2,8 +2,8 @@ import { resolveActivityLootDrop } from "@/lib/activity-loot";
 import {
   applyClassPassiveDelta,
   getClassPassive,
-  getClassPassiveActivityEnergyCost,
-  getClassPassiveEnergyRefreshBonus,
+  getClassPassiveActivityStaminaCost,
+  getClassPassiveStaminaRefreshBonus,
   getClassPassiveRollModifier,
 } from "@/lib/class-identity";
 import { resolveActivityRoll } from "@/lib/roll-engine";
@@ -29,6 +29,24 @@ import {
   applyLootDropToInventory,
   buildLootLogDetails,
 } from "./route-helpers";
+
+function getActivityHeatBuildUp(activity, activityGroupId, success) {
+  const tier = Math.max(1, Number(activity?.tier) || 1);
+
+  if (activityGroupId === "adventure") {
+    return success ? 1 : 2 + Math.floor((tier - 1) / 2);
+  }
+
+  if (activityGroupId === "arena") {
+    return success ? 1 : 2;
+  }
+
+  if (activityGroupId === "quest") {
+    return success ? 0 : tier >= 4 ? 2 : 1;
+  }
+
+  return success ? 0 : 1;
+}
 
 export async function processActivityTransaction({
   tx,
@@ -74,9 +92,9 @@ export async function processActivityTransaction({
 
   const classPassive = getClassPassive(latestCharacter.characterClass);
   const racePassive = getRacePassive(latestCharacter.characterRace);
-  const activityEnergyCost = getClassPassiveActivityEnergyCost(
+  const activityStaminaCost = getClassPassiveActivityStaminaCost(
     latestCharacter.characterClass,
-    activity.energyCost,
+    activity.staminaCost,
   );
   const classRollModifier = getClassPassiveRollModifier(
     latestCharacter.characterClass,
@@ -98,6 +116,7 @@ export async function processActivityTransaction({
   const rollResult = resolveActivityRoll(statSummary.effective, activity, {
     level: latestCharacter.level,
     passiveRollModifier: totalRollModifier,
+    heat: latestCharacter.heat,
   });
   const classPassiveResolvedDelta = applyClassPassiveDelta({
     characterClass: latestCharacter.characterClass,
@@ -117,6 +136,15 @@ export async function processActivityTransaction({
     success: rollResult.success,
     activityId: activityGroupId,
   });
+  const activityHeatBuildUp = getActivityHeatBuildUp(
+    activity,
+    activityGroupId,
+    rollResult.success,
+  );
+  const resolvedDelta = {
+    ...itemResolvedDelta.delta,
+    heat: (Number(itemResolvedDelta.delta?.heat) || 0) + activityHeatBuildUp,
+  };
   const lootDrop = resolveActivityLootDrop({
     activityGroupId,
     activityTier: activity.tier ?? 1,
@@ -124,8 +152,8 @@ export async function processActivityTransaction({
   });
 
   const calculation = calculateCharacterResourceResult(latestCharacter, {
-    energyCost: activityEnergyCost,
-    delta: itemResolvedDelta.delta,
+    staminaCost: activityStaminaCost,
+    delta: resolvedDelta,
   });
 
   if (!calculation.ok) {
@@ -133,7 +161,8 @@ export async function processActivityTransaction({
       ok: false,
       status: 400,
       message: calculation.message,
-      requiredEnergy: calculation.requiredEnergy,
+      requiredStamina: calculation.requiredStamina,
+      currentStamina: calculation.currentStamina,
       resources: getCharacterResourceSnapshot(latestCharacter),
     };
   }
@@ -163,7 +192,7 @@ export async function processActivityTransaction({
     },
     data: {
       ...buildCharacterResourceUpdateInput(calculation.after),
-      energyRegenAt: now,
+      staminaRegenAt: now,
       nextActivityRollBonus: 0,
       ...(gainedLevels > 0
         ? { unspentStatPoints: { increment: gainedLevels } }
@@ -194,9 +223,9 @@ export async function processActivityTransaction({
     select: {
       id: true,
       hp: true,
-      energy: true,
-      maxEnergy: true,
-      energyRegenAt: true,
+      stamina: true,
+      maxStamina: true,
+      staminaRegenAt: true,
       gold: true,
       xp: true,
       level: true,
@@ -214,7 +243,7 @@ export async function processActivityTransaction({
       activityId: activity.id,
       activityName: activity.name,
       success: rollResult.success,
-      energyCost: activityEnergyCost,
+      staminaCost: activityStaminaCost,
       roll: rollResult.roll,
       rollTotal: rollResult.rollTotal,
       successTarget: rollResult.successTarget,
@@ -232,22 +261,28 @@ export async function processActivityTransaction({
           difficultyLevelScaling: rollResult.difficultyLevelScaling,
           statModifier: rollResult.statModifier,
           chancePercent: rollResult.chancePercent,
+          heatBuildUp: activityHeatBuildUp,
         },
         classIdentity: {
           class: latestCharacter.characterClass,
           passive: classPassive,
           activityGroupId,
-          baseEnergyCost: activity.energyCost,
-          effectiveEnergyCost: activityEnergyCost,
-          passiveEnergyCostReduction: Math.max(
+          baseStaminaCost: activity.staminaCost,
+          effectiveStaminaCost: activityStaminaCost,
+          passiveStaminaCostReduction: Math.max(
             0,
-            activity.energyCost - activityEnergyCost,
+            activity.staminaCost - activityStaminaCost,
           ),
           classRollModifier,
-          passiveEnergyRefreshBonus: getClassPassiveEnergyRefreshBonus(
+          passiveStaminaRefreshBonus: getClassPassiveStaminaRefreshBonus(
             latestCharacter.characterClass,
           ),
           passiveDeltaBonus: classPassiveResolvedDelta.deltaBonus,
+        },
+        heatState: {
+          currentHeat: Number(latestCharacter.heat) || 0,
+          heatRollModifier: rollResult.calculations.heatRollModifier,
+          activityHeatBuildUp,
         },
         raceIdentity: {
           race: latestCharacter.characterRace,
@@ -282,7 +317,7 @@ export async function processActivityTransaction({
     logEntry,
     classPassive,
     racePassive,
-    activityEnergyCost,
+    activityStaminaCost,
     classRollModifier,
     raceRollModifier,
     itemRollModifier,
@@ -303,6 +338,7 @@ export async function processActivityTransaction({
     characterClass: latestCharacter.characterClass,
     characterRace: latestCharacter.characterRace,
     activityGroupId,
+    activityHeatBuildUp,
     lootDrop,
     loot,
     lootBlockedByCarry,

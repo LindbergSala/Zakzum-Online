@@ -33,7 +33,7 @@ const RACE_PASSIVES = {
   HALFLING: {
     id: "halfling-lucky",
     name: "Lucky",
-    description: "On failure, regain 1 Energy.",
+    description: "On failure, regain 1 Stamina.",
   },
   HUMAN: {
     id: "human-adaptable",
@@ -84,7 +84,7 @@ function normalizeActivityGroupId(activityId) {
 function buildDeltaSnapshot(delta) {
   return {
     hp: normalizeDeltaValue(delta?.hp),
-    energy: normalizeDeltaValue(delta?.energy),
+    stamina: normalizeDeltaValue(delta?.stamina),
     gold: normalizeDeltaValue(delta?.gold),
     xp: normalizeDeltaValue(delta?.xp),
     level: normalizeDeltaValue(delta?.level),
@@ -139,8 +139,8 @@ export function applyRacePassiveDelta({
     nextDelta.xp += 1;
     deltaBonus = { gold: 1, xp: 1 };
   } else if (characterRace === "HALFLING" && !success) {
-    nextDelta.energy += 1;
-    deltaBonus = { energy: 1 };
+    nextDelta.stamina += 1;
+    deltaBonus = { stamina: 1 };
   } else if (characterRace === "HUMAN" && success) {
     nextDelta.gold += 1;
     nextDelta.xp += 1;

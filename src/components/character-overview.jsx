@@ -64,7 +64,7 @@ export default function CharacterOverview({
   ];
   const resourceRows = [
     { label: "HP", value: character.hp },
-    { label: "Energy", value: character.energy },
+    { label: "Stamina", value: character.stamina },
     { label: "Gold", value: character.gold },
     { label: "XP", value: character.xp },
     { label: "Level", value: character.level },
