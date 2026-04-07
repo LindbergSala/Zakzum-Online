@@ -436,6 +436,9 @@ export default function ActivityRunner({
         includeNegative: !lastResult.success,
       })
     : "No resource changes.";
+  const isOutcomeRevealPending = Boolean(lastResult && rollReveal && !rollReveal.showOutcome);
+  const shouldShowPendingSummary = isLoading || isOutcomeRevealPending;
+  const shouldShowOutcomeSummary = Boolean(lastResult) && (!rollReveal || rollReveal.showOutcome);
 
   async function handleUsePocket(slotIndex) {
     const pocketItem = pocketSlots.find((slot) => slot.slotIndex === slotIndex)?.item;
@@ -729,11 +732,12 @@ export default function ActivityRunner({
         )}
       </section>
 
-      {isLoading ? (
+      {shouldShowPendingSummary ? (
         <section className="action-result-card action-result-pending" aria-live="polite">
           <div className="activity-outcome-summary">
             <p className="activity-outcome-line">
-              <strong>Status:</strong> Resolving action...
+              <strong>Status:</strong>{" "}
+              {isOutcomeRevealPending ? "Revealing dice roll..." : "Resolving action..."}
             </p>
             <p className="activity-outcome-line activity-outcome-line-placeholder" aria-hidden="true">
               {"\u00A0"}
@@ -757,7 +761,7 @@ export default function ActivityRunner({
         ) : null
       ) : null}
 
-      {lastResult ? (
+      {lastResult && shouldShowOutcomeSummary ? (
         <section
           className={`action-result-card ${
             lastResult.success ? "action-result-ok" : "action-result-error"
