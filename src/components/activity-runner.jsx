@@ -334,7 +334,7 @@ export default function ActivityRunner({
   const outcomeLabel = lastResult?.success ? "Reward" : "Penalty";
   const outcomeDeltaText = lastResult
     ? formatReadableOutcomeDelta(lastResult.delta, {
-        includePositive: lastResult.success,
+        includePositive: true,
         includeNegative: !lastResult.success,
       })
     : "No resource changes.";

@@ -253,10 +253,10 @@ export default async function ActivityGroupPage({ params }) {
                         </div>
                         <div className={styles.activityOutcome}>
                           <p>
-                            <strong>Success:</strong> {formatCompactResourceDelta(activity.successDelta)}
+                            <strong>Success:</strong> {formatCompactResourceDelta(activity.successReward)}
                           </p>
                           <p>
-                            <strong>Failure:</strong> {formatCompactResourceDelta(activity.failureDelta)}
+                            <strong>Failure:</strong> {formatCompactResourceDelta(activity.failPenalty)}
                           </p>
                         </div>
                         <Link

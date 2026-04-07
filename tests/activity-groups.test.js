@@ -75,6 +75,13 @@ test("activity failures do not remove gold", () => {
   }
 });
 
+test("activity cards can read success and failure deltas from current field names", () => {
+  for (const activity of ACTIVITY_DEFINITIONS) {
+    assert.ok(activity.successReward && typeof activity.successReward === "object");
+    assert.ok(activity.failPenalty && typeof activity.failPenalty === "object");
+  }
+});
+
 test("activities can be filtered by location id", () => {
   const kingstonActivities = getActivitiesForLocation("kingston");
 
