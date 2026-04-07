@@ -23,6 +23,7 @@ export const ACTIVITY_CHARACTER_SELECT = {
   stamina: true,
   maxStamina: true,
   staminaRegenAt: true,
+  heatRestEndsAt: true,
   gold: true,
   xp: true,
   level: true,

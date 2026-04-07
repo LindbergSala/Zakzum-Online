@@ -27,6 +27,7 @@ import {
   normalizePositiveQuantity,
   pickSellItemRecord,
 } from "./route-helpers";
+import { isCharacterResting } from "@/lib/heat-rest";
 
 export async function processSellTransaction({
   tx,
@@ -34,6 +35,15 @@ export async function processSellTransaction({
   ownedItems,
   parsedData,
 }) {
+  if (isCharacterResting(latestCharacter)) {
+    return {
+      ok: false,
+      status: 423,
+      message: "You are currently resting. Cancel rest or wait for the rest pass to finish before using the market.",
+      resources: getCharacterResourceSnapshot(latestCharacter),
+    };
+  }
+
   const sellItemRecord = pickSellItemRecord(ownedItems, parsedData);
 
   if (!sellItemRecord) {
@@ -182,6 +192,15 @@ export async function processBuyTransaction({
   parsedData,
   requestedMarket,
 }) {
+  if (isCharacterResting(latestCharacter)) {
+    return {
+      ok: false,
+      status: 423,
+      message: "You are currently resting. Cancel rest or wait for the rest pass to finish before using the market.",
+      resources: getCharacterResourceSnapshot(latestCharacter),
+    };
+  }
+
   const itemDefinition = ITEM_CATALOG_MAP[parsedData.itemId];
 
   if (!itemDefinition) {

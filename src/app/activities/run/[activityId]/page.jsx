@@ -5,10 +5,12 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import ActivityRunner from "@/components/activity-runner";
 import GameNav from "@/components/game-nav";
+import RestControls from "@/components/rest-controls";
 import ResourceStrip from "@/components/resource-strip";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { getClassPassiveActivityStaminaCost } from "@/lib/class-identity";
 import { ACTIVITY_DEFINITION_MAP, isActivityOpen } from "@/lib/core-loop-data";
+import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import { getHeatRollModifier, getNextHeatThreshold } from "@/lib/roll-engine";
@@ -117,6 +119,9 @@ export default async function ActivityRunPage({ params }) {
   ]
     .filter(Boolean)
     .join(" ");
+  const heatRestMeta = activeCharacter
+    ? getCharacterHeatRestMeta(activeCharacter)
+    : null;
   const currentHeat = Number(activeCharacter?.heat) || 0;
   const currentHeatRollModifier = getHeatRollModifier(currentHeat);
   const nextHeatThreshold = getNextHeatThreshold(currentHeat);
@@ -162,6 +167,10 @@ export default async function ActivityRunPage({ params }) {
                 <div className={styles.metricCard}>
                   <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
                 </div>
+                <RestControls
+                  currentHeat={currentHeat}
+                  restMeta={heatRestMeta}
+                />
                 <div className={styles.metricCard}>
                   <p>
                     <strong>Heat rule:</strong> Heat lowers roll bonus at 20/40/60/80.
@@ -177,16 +186,22 @@ export default async function ActivityRunPage({ params }) {
                     <strong>This activity:</strong> expected Heat change is +{heatBuildUpPreview.success} on success and +{heatBuildUpPreview.failure} on failure, before any extra item or effect changes.
                   </p>
                 </div>
-                <ActivityRunner
-                  activity={activity}
-                  characterId={activeCharacter.id}
-                  currentStamina={activeCharacter.stamina}
-                  requiredStamina={effectiveActivityStaminaCost}
-                  currentHeat={currentHeat}
-                  currentHeatRollModifier={currentHeatRollModifier}
-                  nextHeatThreshold={nextHeatThreshold}
-                  expectedHeatBuildUp={heatBuildUpPreview}
-                />
+                {heatRestMeta?.isResting ? (
+                  <p className={styles.emptyState}>
+                    Rest is active. Activities stay locked until the pass finishes or you cancel it.
+                  </p>
+                ) : (
+                  <ActivityRunner
+                    activity={activity}
+                    characterId={activeCharacter.id}
+                    currentStamina={activeCharacter.stamina}
+                    requiredStamina={effectiveActivityStaminaCost}
+                    currentHeat={currentHeat}
+                    currentHeatRollModifier={currentHeatRollModifier}
+                    nextHeatThreshold={nextHeatThreshold}
+                    expectedHeatBuildUp={heatBuildUpPreview}
+                  />
+                )}
               </>
             ) : (
               <p className={styles.emptyState}>

@@ -361,14 +361,14 @@ export const ITEM_CATALOG = [
     maxStack: 5,
     weight: 1,
     price: 15,
-    description: "Cooling draft used to reduce Heat build-up.",
+    description: "Steadying draft that sharpens focus before a risky attempt.",
     lootable: true,
     lootSources: [ITEM_LOOT_SOURCE.ADVENTURE],
     marketIds: ["alchemist-lab"],
     marketRules: { buy: true, sell: true },
     effects: {
       consumable: {
-        heatReduction: 3,
+        activityRollModifier: 1,
       },
     },
     inventorySize: { width: 1, height: 1 },

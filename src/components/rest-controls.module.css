@@ -1,0 +1,88 @@
+.card {
+  margin-top: 0.85rem;
+  border-radius: 14px;
+  border: 1px solid rgba(117, 70, 35, 0.36);
+  background: linear-gradient(150deg, rgba(252, 241, 216, 0.88) 0%, rgba(233, 212, 176, 0.78) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 247, 229, 0.7);
+  padding: 0.95rem 1rem;
+}
+
+.copyBlock {
+  display: grid;
+  gap: 0.22rem;
+}
+
+.kicker {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #8e4722;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2f1f0e;
+}
+
+.body {
+  margin: 0;
+  color: #4e3720;
+  line-height: 1.45;
+}
+
+.timer {
+  margin: 0.15rem 0 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #7b2d16;
+}
+
+.actions {
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.72rem 1rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #92461d 0%, #c76a2f 100%);
+  color: #fff7ed;
+  box-shadow: 0 10px 22px rgba(95, 47, 20, 0.24);
+}
+
+.secondaryButton {
+  background: rgba(74, 46, 25, 0.12);
+  color: #4a2e19;
+  border: 1px solid rgba(74, 46, 25, 0.2);
+}
+
+.primaryButton:hover:not(:disabled),
+.secondaryButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.feedback {
+  margin: 0.75rem 0 0;
+  color: #6d2614;
+}

@@ -17,6 +17,7 @@ import {
   getConsumableRollBonus,
   normalizePositiveQuantity,
 } from "./route-helpers";
+import { isCharacterResting } from "@/lib/heat-rest";
 
 async function fetchAllCharacterItems(tx, characterId) {
   return tx.characterItem.findMany({
@@ -520,6 +521,14 @@ export async function processInventoryActionTransaction({
   selectedItem,
   parsedData,
 }) {
+  if (isCharacterResting(latestCharacter)) {
+    return {
+      ok: false,
+      status: 423,
+      message: "You are currently resting. Cancel rest or wait for the rest pass to finish before managing inventory.",
+    };
+  }
+
   if (action === "combine") {
     return processCombineAction({
       tx,

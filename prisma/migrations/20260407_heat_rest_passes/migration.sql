@@ -1,0 +1,2 @@
+ALTER TABLE "Character"
+ADD COLUMN "heatRestEndsAt" TIMESTAMP(3);

@@ -14,6 +14,10 @@ export const activityActionSchema = z.object({
   activityId: z.enum(ACTIVITY_IDS),
 }).strict();
 
+export const restActionSchema = z.object({
+  action: z.enum(["start", "cancel"]),
+}).strict();
+
 function addRequiredFieldIssue(ctx, fieldName, message) {
   ctx.addIssue({
     code: z.ZodIssueCode.custom,

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import CharacterOverview from "@/components/character-overview";
+import RestControls from "@/components/rest-controls";
 import StaminaTimer from "@/components/stamina-timer";
 import GameNav from "@/components/game-nav";
 import InventoryHydrated from "@/components/inventory/inventory-hydrated";
@@ -16,6 +17,7 @@ import {
   getStaminaRegenerationMeta,
   getHpRegenerationMeta,
 } from "@/lib/stamina-regeneration";
+import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { getItemById } from "@/lib/items/helpers";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
@@ -137,6 +139,9 @@ export default async function CharacterPage() {
   const hpMeta = character
     ? getHpRegenerationMeta(character)
     : null;
+  const heatRestMeta = character
+    ? getCharacterHeatRestMeta(character)
+    : null;
   const maxResources = character ? getCharacterMaxResources(character) : null;
   const hpPercent = maxResources
     ? clampPercent((character.hp / maxResources.maxHp) * 100)
@@ -221,6 +226,10 @@ export default async function CharacterPage() {
               Heat lowers your roll bonus at 20, 40, 60 and 80 Heat, with penalties of -1,
               -2, -3 and -4.
             </p>
+            <RestControls
+              currentHeat={Number(character.heat) || 0}
+              restMeta={heatRestMeta}
+            />
 
             <div className={styles.resourceMeters}>
               <article className={styles.resourceCard}>

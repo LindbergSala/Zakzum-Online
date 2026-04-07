@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { resolveCharacterHeatRest } from "@/lib/heat-rest";
 import {
   DEFAULT_MAX_STAMINA,
   resolveCharacterStaminaRegeneration,
@@ -22,6 +23,7 @@ export const CHARACTER_OVERVIEW_SELECT = {
   stamina: true,
   maxStamina: true,
   staminaRegenAt: true,
+  heatRestEndsAt: true,
   gold: true,
   xp: true,
   level: true,
@@ -57,6 +59,7 @@ export function buildBaseResourcesForCharacter(characterClass, constitution) {
     stamina: DEFAULT_MAX_STAMINA,
     maxStamina: DEFAULT_MAX_STAMINA,
     staminaRegenAt: new Date(),
+    heatRestEndsAt: null,
     gold: 10,
     xp: 0,
     renown: 0,
@@ -70,7 +73,11 @@ async function withRegeneratedActiveCharacter(user) {
     return user;
   }
 
-  const resolved = await resolveCharacterStaminaRegeneration(user.activeCharacter, {
+  const restResolved = await resolveCharacterHeatRest(user.activeCharacter, {
+    persist: true,
+  });
+
+  const resolved = await resolveCharacterStaminaRegeneration(restResolved.character, {
     persist: true,
   });
 

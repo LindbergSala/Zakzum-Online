@@ -23,6 +23,7 @@ import {
   getCharacterEffectiveStats,
   getEquippedItemRollModifier,
 } from "@/lib/stat-effects";
+import { isCharacterResting } from "@/lib/heat-rest";
 import {
   ACTIVITY_CHARACTER_SELECT,
   ACTIVITY_ITEM_SELECT,
@@ -66,6 +67,15 @@ export async function processActivityTransaction({
       ok: false,
       status: 404,
       message: "Character was not found.",
+    };
+  }
+
+  if (isCharacterResting(latestCharacter)) {
+    return {
+      ok: false,
+      status: 423,
+      message: "You are currently resting. Cancel rest or wait for the rest pass to finish before doing activities.",
+      resources: getCharacterResourceSnapshot(latestCharacter),
     };
   }
 
