@@ -109,8 +109,8 @@ export default function EnergyTimer({
   }
 
   const timerText = meta.isFull
-    ? `Next ${resourceLabel}: Full`
-    : `Next ${resourceLabel}: in ${formatCountdown(secondsLeft)}`;
+    ? "Next in: Full"
+    : `Next in: ${formatCountdown(secondsLeft)}`;
   const isDepleted = !meta.isFull && getCurrentValue(meta) <= 0;
   const depletedNotice = `${resourceLabel} is at 0 and recovering.`;
 
@@ -126,7 +126,7 @@ export default function EnergyTimer({
   if (meta.isFull) {
     return (
       <p>
-        <strong>Next {resourceLabel}:</strong> Full
+        <strong>Next in:</strong> Full
       </p>
     );
   }
@@ -134,7 +134,7 @@ export default function EnergyTimer({
   return (
     <>
       <p>
-        <strong>Next {resourceLabel}:</strong> in {formatCountdown(secondsLeft)}
+        <strong>Next in:</strong> {formatCountdown(secondsLeft)}
       </p>
       {showDepletedNotice && isDepleted ? <p>{depletedNotice}</p> : null}
     </>
