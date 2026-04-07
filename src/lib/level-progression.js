@@ -1,4 +1,4 @@
-export const XP_LEVEL_STEP = 100;
+export const XP_LEVEL_STEP = 80;
 
 function toSafeInteger(value, fallback = 0) {
   const numericValue = Number(value);

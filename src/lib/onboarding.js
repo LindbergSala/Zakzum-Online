@@ -9,7 +9,7 @@ export const ONBOARDING_STATUS = {
   ONBOARDING_COMPLETE: "onboarding_complete",
 };
 
-export const ONBOARDING_COMPLETION_REWARD_GOLD = 50;
+export const ONBOARDING_COMPLETION_REWARD_GOLD = 30;
 export const ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID =
   "onboarding-complete-bonus";
 export const ONBOARDING_REWARD_LOG_DETAIL_ACTION = "onboarding_reward";

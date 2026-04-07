@@ -47,8 +47,8 @@ const QUEST_ACTIVITY_STEPS = [
       primaryStat: "wisdom",
       secondaryStat: "dexterity",
     },
-    successReward: { gold: 5, xp: 4, renown: 1 },
-    failPenalty: { hp: -1, gold: -2, heat: 1 },
+    successReward: { gold: 5, xp: 5, renown: 1 },
+    failPenalty: { hp: -1, heat: 1 },
   },
   {
     ...HEARTLANDS_LOCATIONS.goldmere,
@@ -65,8 +65,8 @@ const QUEST_ACTIVITY_STEPS = [
       primaryStat: "wisdom",
       secondaryStat: "dexterity",
     },
-    successReward: { gold: 6, xp: 5, renown: 1 },
-    failPenalty: { hp: -2, gold: -2, heat: 1 },
+    successReward: { gold: 6, xp: 6, renown: 1 },
+    failPenalty: { hp: -2, heat: 1 },
   },
   {
     ...HEARTLANDS_LOCATIONS.mournstead,
@@ -83,8 +83,8 @@ const QUEST_ACTIVITY_STEPS = [
       primaryStat: "wisdom",
       secondaryStat: "dexterity",
     },
-    successReward: { gold: 8, xp: 6, renown: 1 },
-    failPenalty: { hp: -2, gold: -3, heat: 1 },
+    successReward: { gold: 8, xp: 7, renown: 1 },
+    failPenalty: { hp: -2, heat: 1 },
   },
   {
     ...HEARTLANDS_LOCATIONS.saintsHollow,
@@ -101,8 +101,8 @@ const QUEST_ACTIVITY_STEPS = [
       primaryStat: "wisdom",
       secondaryStat: "dexterity",
     },
-    successReward: { gold: 9, xp: 7, renown: 2 },
-    failPenalty: { hp: -3, gold: -4, heat: 2 },
+    successReward: { gold: 9, xp: 8, renown: 2 },
+    failPenalty: { hp: -3, heat: 2 },
   },
   {
     ...HEARTLANDS_LOCATIONS.elfhome,
@@ -119,8 +119,8 @@ const QUEST_ACTIVITY_STEPS = [
       primaryStat: "wisdom",
       secondaryStat: "dexterity",
     },
-    successReward: { gold: 11, xp: 8, renown: 2 },
-    failPenalty: { hp: -3, gold: -5, heat: 2 },
+    successReward: { gold: 11, xp: 10, renown: 2 },
+    failPenalty: { hp: -3, heat: 2 },
   },
 ];
 
@@ -141,7 +141,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
       secondaryStat: "constitution",
     },
     successReward: { gold: 13, xp: 10, renown: 3 },
-    failPenalty: { hp: -4, gold: -6, heat: 3 },
+    failPenalty: { hp: -4, heat: 3 },
   },
   {
     ...HEARTLANDS_LOCATIONS.barrowfield,
@@ -159,7 +159,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
       secondaryStat: "constitution",
     },
     successReward: { gold: 15, xp: 12, renown: 3 },
-    failPenalty: { hp: -5, gold: -7, heat: 3 },
+    failPenalty: { hp: -5, heat: 3 },
   },
   {
     ...HEARTLANDS_LOCATIONS.blackthornHold,
@@ -177,7 +177,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
       secondaryStat: "constitution",
     },
     successReward: { gold: 17, xp: 14, renown: 3 },
-    failPenalty: { hp: -6, gold: -8, heat: 4 },
+    failPenalty: { hp: -6, heat: 4 },
   },
   {
     ...HEARTLANDS_LOCATIONS.kingston,
@@ -195,7 +195,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
       secondaryStat: "constitution",
     },
     successReward: { gold: 19, xp: 16, renown: 4 },
-    failPenalty: { hp: -7, gold: -9, heat: 4 },
+    failPenalty: { hp: -7, heat: 4 },
   },
   {
     ...HEARTLANDS_LOCATIONS.kingston,
@@ -213,7 +213,7 @@ const ADVENTURE_ACTIVITY_STEPS = [
       secondaryStat: "constitution",
     },
     successReward: { gold: 22, xp: 18, renown: 5 },
-    failPenalty: { hp: -8, gold: -11, heat: 5 },
+    failPenalty: { hp: -8, heat: 5 },
   },
 ];
 
@@ -233,7 +233,7 @@ const ARENA_ACTIVITY_STEPS = [
       secondaryStat: "dexterity",
     },
     successReward: { gold: 4, xp: 14, renown: 4 },
-    failPenalty: { hp: -6, gold: -4, heat: 2 },
+    failPenalty: { hp: -6, heat: 2 },
   },
 ];
 
@@ -253,7 +253,7 @@ export const ACTIVITY_GROUPS = [
     ],
     lootProfile: {
       source: ITEM_LOOT_SOURCE.QUEST,
-      dropChance: 0.32,
+      dropChance: 0.36,
       successOnly: true,
       categoryWeights: {
         [ITEM_CATEGORY.TRASH]: 4,
@@ -288,7 +288,7 @@ export const ACTIVITY_GROUPS = [
     ],
     lootProfile: {
       source: ITEM_LOOT_SOURCE.ADVENTURE,
-      dropChance: 0.5,
+      dropChance: 0.42,
       successOnly: true,
       categoryWeights: {
         [ITEM_CATEGORY.TRASH]: 1,
@@ -321,7 +321,7 @@ export const ACTIVITY_GROUPS = [
     ],
     lootProfile: {
       source: ITEM_LOOT_SOURCE.ARENA,
-      dropChance: 0.44,
+      dropChance: 0.36,
       successOnly: true,
       categoryWeights: {
         [ITEM_CATEGORY.TRASH]: 0.4,

@@ -26,6 +26,9 @@ test("loot profile maps activity groups to explicit sources and drop chances", (
   assert.equal(questProfile.source, ITEM_LOOT_SOURCE.QUEST);
   assert.equal(adventureProfile.source, ITEM_LOOT_SOURCE.ADVENTURE);
   assert.equal(arenaProfile.source, ITEM_LOOT_SOURCE.ARENA);
+  assert.equal(questProfile.dropChance, 0.36);
+  assert.equal(adventureProfile.dropChance, 0.42);
+  assert.equal(arenaProfile.dropChance, 0.36);
   assert.ok(adventureProfile.dropChance > questProfile.dropChance);
 });
 

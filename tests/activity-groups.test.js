@@ -69,6 +69,12 @@ test("quest and adventure activities include heartlands location metadata", () =
   }
 });
 
+test("activity failures do not remove gold", () => {
+  for (const activity of ACTIVITY_DEFINITIONS) {
+    assert.ok((activity.failPenalty?.gold ?? 0) >= 0);
+  }
+});
+
 test("activities can be filtered by location id", () => {
   const kingstonActivities = getActivitiesForLocation("kingston");
 
