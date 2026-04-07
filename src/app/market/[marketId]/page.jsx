@@ -4,8 +4,10 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import GameNav from "@/components/game-nav";
 import InventoryHydrated from "@/components/inventory/inventory-hydrated";
+import RestLockBanner from "@/components/rest-lock-banner";
 import ShopActions from "@/components/shop-actions";
 import { getActiveCharacterForUser } from "@/lib/character";
+import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import {
   getItemById,
   getItemGoldCost,
@@ -132,6 +134,7 @@ export default async function MarketVendorPage({ params }) {
         .map((item) => `${item.id}-${item.isEquipped ? 1 : 0}-${item.quantity}`)
         .join("|")}`
     : "market-inventory-empty";
+  const heatRestMeta = activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null;
   const pageShellClassName = [
     styles.pageShell,
     bodyFont.className,
@@ -163,6 +166,8 @@ export default async function MarketVendorPage({ params }) {
                 You must create a character before you can use the market.{" "}
                 <Link href="/character/create">Create character</Link>.
               </p>
+            ) : heatRestMeta?.isResting ? (
+              <RestLockBanner areaLabel={market.name} />
             ) : market.supportsPurchases ? (
               <>
                 <div className={styles.vendorMetrics}>

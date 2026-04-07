@@ -5,11 +5,26 @@ import { useEffect, useState } from "react";
 
 import styles from "./rest-controls.module.css";
 
+const HEAT_THRESHOLDS = [20, 40, 60, 80];
+
 function formatCountdown(secondsLeft) {
   const safeSeconds = Math.max(0, Number(secondsLeft) || 0);
   const minutes = Math.floor(safeSeconds / 60);
   const seconds = safeSeconds % 60;
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatHeatValue(value) {
+  const numericValue = Number(value) || 0;
+  return numericValue > 0 ? `+${numericValue}` : `${numericValue}`;
+}
+
+function getHeatPenalty(heat) {
+  return -HEAT_THRESHOLDS.filter((threshold) => heat >= threshold).length;
+}
+
+function getNextHeatThreshold(heat) {
+  return HEAT_THRESHOLDS.find((threshold) => heat < threshold) ?? null;
 }
 
 export default function RestControls({
@@ -20,6 +35,13 @@ export default function RestControls({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [secondsLeft, setSecondsLeft] = useState(restMeta?.secondsUntilNextRecovery ?? 0);
+  const currentPenalty = getHeatPenalty(currentHeat);
+  const nextThreshold = getNextHeatThreshold(currentHeat);
+  const heatSummary = currentPenalty === 0
+    ? `No roll penalty yet. The first penalty starts at ${nextThreshold ?? 20} Heat.`
+    : nextThreshold
+      ? `Current roll penalty: ${formatHeatValue(currentPenalty)}. The next penalty starts at ${nextThreshold} Heat.`
+      : `Current roll penalty: ${formatHeatValue(currentPenalty)}. This is the maximum Heat penalty.`;
 
   useEffect(() => {
     setSecondsLeft(restMeta?.secondsUntilNextRecovery ?? 0);
@@ -75,31 +97,44 @@ export default function RestControls({
 
   return (
     <section className={styles.card}>
-      <div className={styles.copyBlock}>
-        <p className={styles.kicker}>Heat Rest</p>
-        {restMeta?.isResting ? (
-          <>
-            <p className={styles.title}>Rest in progress</p>
-            <p className={styles.body}>
-              Rest stays active until you cancel it. While resting, activities, market
-              actions, and inventory actions are locked.
-            </p>
-            <p className={styles.timer}>Next recovery in: {formatCountdown(secondsLeft)}</p>
-            <p className={styles.body}>
-              Every 15 minutes: -{restMeta.heatRecoveredPerPass} Heat.
-            </p>
-          </>
-        ) : (
-          <>
-            <p className={styles.title}>Start ongoing rest</p>
-            <p className={styles.body}>
-              Rest continues until you cancel it. Every 15 minutes, Heat goes down by 4.
-              While resting, you cannot do gameplay actions.
-            </p>
-            <p className={styles.body}>Current Heat: {currentHeat}</p>
-          </>
-        )}
+      <div className={styles.header}>
+        <div className={styles.copyBlock}>
+          <p className={styles.title}>Heat Rest</p>
+          <p className={styles.body}>{heatSummary}</p>
+        </div>
+
+        <div className={styles.statusPill}>
+          {restMeta?.isResting ? "Resting" : "Ready"}
+        </div>
       </div>
+
+      <div className={styles.summaryRow}>
+        <div className={styles.summaryItem}>
+          <span className={styles.summaryLabel}>Current Heat</span>
+          <span className={styles.summaryValue}>{currentHeat}</span>
+        </div>
+        <div className={styles.summaryItem}>
+          <span className={styles.summaryLabel}>Roll Penalty</span>
+          <span className={styles.summaryValue}>{formatHeatValue(currentPenalty)}</span>
+        </div>
+        <div className={styles.summaryItem}>
+          <span className={styles.summaryLabel}>Recovery</span>
+          <span className={styles.summaryValueMuted}>{formatHeatValue(-4)} every 15 min</span>
+        </div>
+      </div>
+
+      {restMeta?.isResting ? (
+        <div className={styles.restState}>
+          <p className={styles.timerLabel}>Next recovery</p>
+          <p className={styles.timer}>{formatCountdown(secondsLeft)}</p>
+          <p className={styles.body}>Actions stay locked while you rest. Cancel any time.</p>
+        </div>
+      ) : (
+        <div className={styles.restState}>
+          <p className={styles.timerLabel}>When to use it</p>
+          <p className={styles.body}>Use Rest to lower Heat before the next penalty tier hits.</p>
+        </div>
+      )}
 
       <div className={styles.actions}>
         {restMeta?.isResting ? (
@@ -123,7 +158,11 @@ export default function RestControls({
         )}
       </div>
 
-      {feedback ? <p className={styles.feedback}>{feedback}</p> : null}
+      {feedback ? (
+        <p className={styles.feedback} role="status">
+          {feedback}
+        </p>
+      ) : null}
     </section>
   );
 }

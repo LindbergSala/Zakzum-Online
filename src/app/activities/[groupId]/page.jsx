@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import GameNav from "@/components/game-nav";
+import RestLockBanner from "@/components/rest-lock-banner";
 import ResourceStrip from "@/components/resource-strip";
 import { getActiveCharacterForUser } from "@/lib/character";
 import {
@@ -10,6 +11,7 @@ import {
   getActivityGroup,
   getActivityGroupAvailability,
 } from "@/lib/core-loop-data";
+import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import styles from "./page.module.css";
@@ -212,6 +214,7 @@ export default async function ActivityGroupPage({ params }) {
   const activities = getActivitiesForGroup(group.id);
   const shouldUseFiveAcrossLayout = group.id === "quest" || group.id === "adventure";
   const activeCharacter = await getActiveCharacterForUser(user.id);
+  const heatRestMeta = activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null;
 
   return (
     <div className={pageShellClassName}>
@@ -231,66 +234,60 @@ export default async function ActivityGroupPage({ params }) {
                   <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
                 </div>
 
-                <div
-                  className={`${styles.activityGrid} ${
-                    shouldUseFiveAcrossLayout ? styles.activityGridFiveAcross : ""
-                  }`}
-                >
-                  {activities.map((activity, index) => (
-                    <article
-                      key={activity.id}
-                      className={`${styles.activityCard} ${groupThemeClass}`}
-                      style={{ "--card-index": index }}
-                    >
-                      <header className={styles.activityHeader}>
-                        <p className={styles.activityEyebrow}>
-                          {buildRunLabel(activity, group.id)}
+                {heatRestMeta?.isResting ? (
+                  <RestLockBanner areaLabel={group.name} />
+                ) : (
+                  <div
+                    className={`${styles.activityGrid} ${
+                      shouldUseFiveAcrossLayout ? styles.activityGridFiveAcross : ""
+                    }`}
+                  >
+                    {activities.map((activity, index) => (
+                      <article
+                        key={activity.id}
+                        className={`${styles.activityCard} ${groupThemeClass}`}
+                        style={{ "--card-index": index }}
+                      >
+                        <header className={styles.activityHeader}>
+                          <p className={styles.activityEyebrow}>
+                            {buildRunLabel(activity, group.id)}
+                          </p>
+                          <h3>{buildActivityTitle(activity, group.id)}</h3>
+                          {activity.locationName ? (
+                            <p className={styles.activityLocation}>{activity.locationName}</p>
+                          ) : null}
+                        </header>
+                        <p className={styles.activityIntro}>
+                          {buildActivityTeaser(activity, group.id)}
                         </p>
-                        <h3>{buildActivityTitle(activity, group.id)}</h3>
-                        {activity.locationName ? (
-                          <p className={styles.activityLocation}>{activity.locationName}</p>
-                        ) : null}
-                      </header>
-                      <p className={styles.activityIntro}>
-                        {buildActivityTeaser(activity, group.id)}
-                      </p>
-                      <div className={styles.activityMetaWrap}>
-                        <span className={styles.activityMetaChip}>
-                          {buildRiskBadgeLabel(activity.riskProfile)}
-                        </span>
-                        <span className={styles.activityMetaChip}>
-                          {activity.staminaCost} Stamina
-                        </span>
-                        <span className={styles.activityMetaChip}>
-                          Difficulty {activity.roll.difficulty}
-                        </span>
-                      </div>
-                      <div className={styles.activityStakesGrid}>
-                        <article
-                          className={`${styles.activityStakeCard} ${styles.activityStakeSuccess}`}
-                        >
-                          <p className={styles.activityStakeLabel}>On success</p>
-                          <p className={styles.activityStakeValue}>
-                            {formatCompactDelta(activity.successReward)}
+                        <div className={styles.activityMetaWrap}>
+                          <span className={styles.activityMetaChip}>
+                            {buildRiskBadgeLabel(activity.riskProfile)}
+                          </span>
+                          {activity.staminaCost > 0 ? (
+                            <span className={styles.activityMetaChip}>
+                              {activity.staminaCost} Stamina
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className={styles.activityOutcome}>
+                          <p>
+                            <strong>Success:</strong> {formatCompactDelta(activity.successDelta)}
                           </p>
-                        </article>
-                        <article
-                          className={`${styles.activityStakeCard} ${styles.activityStakeFailure}`}
-                        >
-                          <p className={styles.activityStakeLabel}>On failure</p>
-                          <p className={styles.activityStakeValue}>
-                            {formatCompactDelta(activity.failPenalty)}
+                          <p>
+                            <strong>Failure:</strong> {formatCompactDelta(activity.failureDelta)}
                           </p>
-                        </article>
-                      </div>
-                      <p className={styles.openLink}>
-                        <Link href={`/activities/run/${activity.id}`}>
+                        </div>
+                        <Link
+                          href={`/activities/run/${activity.id}`}
+                          className={styles.activityAction}
+                        >
                           {buildOpenLabel(activity, group.id)}
                         </Link>
-                      </p>
-                    </article>
-                  ))}
-                </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
               </>
             ) : (
               <p className={styles.emptyState}>

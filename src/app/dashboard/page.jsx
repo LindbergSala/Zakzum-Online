@@ -3,7 +3,6 @@ import Image from "next/image";
 import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import CharacterOverview from "@/components/character-overview";
-import RestControls from "@/components/rest-controls";
 import StaminaTimer from "@/components/stamina-timer";
 import GameNav from "@/components/game-nav";
 import OnboardingPanel from "@/components/onboarding-panel";
@@ -17,7 +16,6 @@ import {
   getStaminaRegenerationMeta,
   getHpRegenerationMeta,
 } from "@/lib/stamina-regeneration";
-import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import {
   buildOnboardingViewModel,
@@ -132,9 +130,6 @@ export default async function DashboardPage() {
   const levelProgress = effectiveCharacter
     ? getLevelProgressMeta(effectiveCharacter.level, effectiveCharacter.xp)
     : null;
-  const heatRestMeta = effectiveCharacter
-    ? getCharacterHeatRestMeta(effectiveCharacter)
-    : null;
   const logEntries = activeCharacter
     ? await prisma.activityLog.findMany({
         where: { characterId: activeCharacter.id },
@@ -208,10 +203,6 @@ export default async function DashboardPage() {
                 <p className={styles.muted}>
                   Active character loaded automatically on login.
                 </p>
-                <RestControls
-                  currentHeat={Number(effectiveCharacter.heat) || 0}
-                  restMeta={heatRestMeta}
-                />
                 <div className={styles.resourceMeters}>
                   <article className={styles.resourceCard}>
                     <div className={styles.resourceTop}>

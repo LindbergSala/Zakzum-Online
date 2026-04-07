@@ -1,48 +1,119 @@
 .card {
   margin-top: 0.85rem;
-  border-radius: 14px;
-  border: 1px solid rgba(117, 70, 35, 0.36);
-  background: linear-gradient(150deg, rgba(252, 241, 216, 0.88) 0%, rgba(233, 212, 176, 0.78) 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 247, 229, 0.7);
-  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(117, 70, 35, 0.22);
+  background:
+    linear-gradient(180deg, rgba(252, 245, 230, 0.98) 0%, rgba(241, 225, 194, 0.9) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 247, 229, 0.72),
+    0 10px 24px rgba(82, 43, 19, 0.05);
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .copyBlock {
   display: grid;
-  gap: 0.22rem;
-}
-
-.kicker {
-  margin: 0;
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: #8e4722;
+  gap: 0.18rem;
 }
 
 .title {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #2f1f0e;
+  line-height: 1.2;
 }
 
 .body {
   margin: 0;
   color: #4e3720;
   line-height: 1.45;
+  max-width: 62ch;
+}
+
+.statusPill {
+  flex-shrink: 0;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(122, 45, 22, 0.08);
+  border: 1px solid rgba(122, 45, 22, 0.12);
+  color: #7b2d16;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.summaryRow {
+  margin-top: 0.9rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.78rem 0;
+  border-top: 1px solid rgba(122, 78, 43, 0.12);
+  border-bottom: 1px solid rgba(122, 78, 43, 0.12);
+}
+
+.summaryItem {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.summaryLabel {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8c623d;
+}
+
+.summaryValue,
+.summaryValueMuted {
+  margin: 0;
+  color: #2f1f0e;
+  font-weight: 700;
+}
+
+.summaryValue {
+  font-size: 1.12rem;
+}
+
+.summaryValueMuted {
+  font-size: 0.96rem;
+}
+
+.restState {
+  margin-top: 0.85rem;
+  border-radius: 14px;
+  padding: 0.95rem 1rem;
+  background: rgba(255, 249, 238, 0.58);
+  border: 1px solid rgba(110, 43, 20, 0.1);
+}
+
+.timerLabel {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8c623d;
 }
 
 .timer {
-  margin: 0.15rem 0 0;
-  font-size: 1.1rem;
+  margin: 0.2rem 0 0.28rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: #7b2d16;
+  letter-spacing: 0.03em;
 }
 
 .actions {
-  margin-top: 0.8rem;
+  margin-top: 0.9rem;
   display: flex;
   gap: 0.6rem;
   flex-wrap: wrap;
@@ -66,9 +137,9 @@
 }
 
 .secondaryButton {
-  background: rgba(74, 46, 25, 0.12);
+  background: rgba(74, 46, 25, 0.08);
   color: #4a2e19;
-  border: 1px solid rgba(74, 46, 25, 0.2);
+  border: 1px solid rgba(74, 46, 25, 0.16);
 }
 
 .primaryButton:hover:not(:disabled),
@@ -83,6 +154,21 @@
 }
 
 .feedback {
-  margin: 0.75rem 0 0;
+  margin: 0.8rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(123, 45, 22, 0.06);
+  border: 1px solid rgba(123, 45, 22, 0.08);
   color: #6d2614;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 720px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .summaryRow {
+    grid-template-columns: 1fr;
+  }
 }

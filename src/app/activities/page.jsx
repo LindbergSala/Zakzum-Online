@@ -4,8 +4,10 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import ActivityActions from "@/components/activity-actions";
 import GameNav from "@/components/game-nav";
 import HeartlandsLocationSlideshow from "@/components/heartlands-location-slideshow";
+import RestLockBanner from "@/components/rest-lock-banner";
 import ResourceStrip from "@/components/resource-strip";
 import { getActiveCharacterForUser } from "@/lib/character";
+import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import styles from "./page.module.css";
@@ -58,6 +60,7 @@ const HEARTLANDS_LOCATION_SLIDES = [
 export default async function ActivitiesPage() {
   const user = await requirePageUser();
   const activeCharacter = await getActiveCharacterForUser(user.id);
+  const heatRestMeta = activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null;
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -88,9 +91,13 @@ export default async function ActivitiesPage() {
                 <div className={styles.metricCard}>
                   <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
                 </div>
-                <div className={styles.actionsWrap}>
-                  <ActivityActions />
-                </div>
+                {heatRestMeta?.isResting ? (
+                  <RestLockBanner areaLabel="Activities" />
+                ) : (
+                  <div className={styles.actionsWrap}>
+                    <ActivityActions />
+                  </div>
+                )}
               </>
             ) : (
               <p className={styles.emptyState}>

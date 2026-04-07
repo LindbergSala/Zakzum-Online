@@ -222,14 +222,6 @@ export default async function CharacterPage() {
             <p className={styles.muted}>
               Keep track of survivability and progression before your next run.
             </p>
-            <p className={styles.mutedSecondary}>
-              Heat lowers your roll bonus at 20, 40, 60 and 80 Heat, with penalties of -1,
-              -2, -3 and -4.
-            </p>
-            <RestControls
-              currentHeat={Number(character.heat) || 0}
-              restMeta={heatRestMeta}
-            />
 
             <div className={styles.resourceMeters}>
               <article className={styles.resourceCard}>
@@ -297,6 +289,11 @@ export default async function CharacterPage() {
                 </li>
               ))}
             </ul>
+
+            <RestControls
+              currentHeat={Number(character.heat) || 0}
+              restMeta={heatRestMeta}
+            />
 
             {character.unspentStatPoints > 0 ? (
               <StatPointAllocator character={character} />

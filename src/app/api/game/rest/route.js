@@ -112,7 +112,7 @@ export async function POST(request) {
           return {
             ok: false,
             status: 409,
-            message: "A rest pass is already active.",
+              message: "Rest is already active.",
             resources: getCharacterResourceSnapshot(latestCharacter),
             rest: getCharacterHeatRestMeta(latestCharacter),
           };
@@ -153,7 +153,7 @@ export async function POST(request) {
         return {
           ok: true,
           status: 200,
-          message: `Rest started. Heat will recover by ${HEAT_REST_RECOVERY} every 15 minutes until you cancel rest.`,
+          message: `Rest started. -${HEAT_REST_RECOVERY} Heat every 15 min until canceled.`,
           resources: getCharacterResourceSnapshot(updatedCharacter),
           rest: getCharacterHeatRestMeta(updatedCharacter),
         };
@@ -163,7 +163,7 @@ export async function POST(request) {
         return {
           ok: false,
           status: 400,
-          message: "No active rest pass to cancel.",
+          message: "No active rest.",
           resources: getCharacterResourceSnapshot(latestCharacter),
           rest: null,
         };
@@ -193,7 +193,7 @@ export async function POST(request) {
       return {
         ok: true,
         status: 200,
-        message: "Rest canceled. Any completed Heat recovery ticks are already applied.",
+        message: "Rest canceled.",
         resources: getCharacterResourceSnapshot(updatedCharacter),
         rest: null,
       };
