@@ -1,3 +1,6 @@
+import { formatBuyValueLabel } from "@/lib/items/trade-format";
+import { toNumericValue } from "@/lib/number-utils";
+
 const DELTA_LABELS = {
   hp: "HP",
   stamina: "Stamina",
@@ -17,11 +20,6 @@ const DELTA_DISPLAY_ORDER = [
   "heat",
   "level",
 ];
-
-function toNumericValue(value) {
-  const numericValue = Number(value);
-  return Number.isFinite(numericValue) ? numericValue : 0;
-}
 
 function formatSignedValue(value) {
   return value > 0 ? `+${value}` : `${value}`;
@@ -62,17 +60,8 @@ function formatLogItemDetails(entry) {
     return null;
   }
 
-  const priceParts = [];
-
-  if (toNumericValue(item.price) > 0) {
-    priceParts.push(`${item.price} Gold`);
-  }
-
-  if (toNumericValue(item.renownPrice) > 0) {
-    priceParts.push(`${item.renownPrice} Renown`);
-  }
-
-  const pricePart = priceParts.length > 0 ? `, cost ${priceParts.join(" + ")}` : "";
+  const formattedCost = formatBuyValueLabel(item, "");
+  const pricePart = formattedCost ? `, cost ${formattedCost}` : "";
   return `${item.name ?? entry.activityName} (${item.slot ?? "unknown slot"}${pricePart})`;
 }
 

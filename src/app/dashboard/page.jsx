@@ -9,7 +9,7 @@ import OnboardingPanel from "@/components/onboarding-panel";
 import { formatDashboardLogEntry } from "@/lib/activity-log-format";
 import { getResolvedCharacterAvatar } from "@/lib/character-avatars";
 import {
-  buildBaseResourcesForCharacter,
+  getCharacterMaxResources,
   getUserWithResolvedActiveCharacter,
 } from "@/lib/character";
 import {
@@ -21,6 +21,7 @@ import {
   buildOnboardingViewModel,
   getOnboardingMetricsForCharacter,
 } from "@/lib/onboarding";
+import { clampPercent } from "@/lib/number-utils";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
 import styles from "./page.module.css";
@@ -36,10 +37,6 @@ const bodyFont = Source_Sans_3({
 });
 
 const DASHBOARD_LOG_ENTRY_LIMIT = 6;
-
-function clampPercent(value) {
-  return Math.max(0, Math.min(100, Math.round(value)));
-}
 
 function getNextStepTarget(currentValue, step, minimumTarget = step) {
   const safeValue = Number(currentValue) || 0;
@@ -85,23 +82,6 @@ function buildDashboardGoals(character, levelProgress) {
       progressPercent: renownProgressPercent,
     },
   ];
-}
-
-function getCharacterMaxResources(character) {
-  const baseResources = buildBaseResourcesForCharacter(
-    character.characterClass,
-    character.constitution,
-  );
-
-  return {
-    maxHp: Math.max(1, baseResources.hp, Number(character.hp) || 0),
-    maxStamina: Math.max(
-      1,
-      baseResources.maxStamina,
-      Number(character.maxStamina) || 0,
-      Number(character.stamina) || 0,
-    ),
-  };
 }
 
 export default async function DashboardPage() {

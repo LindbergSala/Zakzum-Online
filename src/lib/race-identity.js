@@ -1,3 +1,5 @@
+import { resolveActivityGroupId } from "@/lib/core-loop-data";
+
 const RACE_PASSIVES = {
   DRAGONBORN: {
     id: "dragonborn-draconic-might",
@@ -52,35 +54,6 @@ function normalizeDeltaValue(value) {
   return Number.isFinite(numericValue) ? Math.floor(numericValue) : 0;
 }
 
-function normalizeResourceValue(value) {
-  const numericValue = Number(value);
-  return Number.isFinite(numericValue) ? Math.floor(numericValue) : 0;
-}
-
-function normalizeActivityGroupId(activityId) {
-  if (typeof activityId !== "string") {
-    return "";
-  }
-
-  if (activityId === "quest" || activityId === "adventure" || activityId === "arena") {
-    return activityId;
-  }
-
-  if (activityId.startsWith("quest-")) {
-    return "quest";
-  }
-
-  if (activityId.startsWith("adventure-")) {
-    return "adventure";
-  }
-
-  if (activityId.startsWith("arena-")) {
-    return "arena";
-  }
-
-  return activityId;
-}
-
 function buildDeltaSnapshot(delta) {
   return {
     hp: normalizeDeltaValue(delta?.hp),
@@ -104,7 +77,7 @@ export function getRacePassive(characterRace) {
 }
 
 export function getRacePassiveRollModifier(characterRace, activityId) {
-  const activityGroupId = normalizeActivityGroupId(activityId);
+  const activityGroupId = resolveActivityGroupId(activityId) ?? activityId;
 
   if (characterRace === "DRAGONBORN" && activityGroupId === "arena") {
     return 1;
@@ -123,7 +96,7 @@ export function applyRacePassiveDelta({
   delta,
   activityId,
 }) {
-  const activityGroupId = normalizeActivityGroupId(activityId);
+  const activityGroupId = resolveActivityGroupId(activityId) ?? activityId;
   const nextDelta = buildDeltaSnapshot(delta);
   let deltaBonus = {};
 
@@ -167,8 +140,8 @@ export function applyHalfOrcRelentless({
   delta,
   alreadyUsedThisSession,
 }) {
-  const beforeHp = normalizeResourceValue(beforeResources?.hp);
-  const afterHp = normalizeResourceValue(afterResources?.hp);
+  const beforeHp = normalizeDeltaValue(beforeResources?.hp);
+  const afterHp = normalizeDeltaValue(afterResources?.hp);
 
   const nextAfter = {
     ...afterResources,

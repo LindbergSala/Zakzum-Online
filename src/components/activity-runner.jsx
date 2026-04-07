@@ -11,8 +11,16 @@ import {
   resolvePocketSlots,
 } from "./inventory/pocket-layout";
 import { syncInventoryAction } from "./inventory/inventory-utils";
+import {
+  formatActivityDelta,
+  formatDeltaBonus,
+  formatLoot,
+  formatReadableOutcomeDelta,
+  formatStatWithBonus,
+  getRollDisplayValue,
+} from "@/lib/activity-runner-format";
+import { getJson, postJson } from "@/lib/client-json";
 import { getItemImagePath } from "@/lib/items/helpers";
-import { CHARACTER_STAT_LABELS } from "@/lib/stat-effects";
 
 const MIN_ROLL_ANIMATION_MS = 2000;
 const ROLL_TICK_MS = 56;
@@ -22,119 +30,6 @@ const OUTCOME_REVEAL_DELAY_MS = 980;
 const DICE_THROW_SOUND_PATH = "/audio/sfx/dice-throw.mp3";
 const DICE_THROW_VOLUME_RANGE = [0.82, 0.96];
 const DICE_THROW_PLAYBACK_RATE_RANGE = [0.985, 1.015];
-
-function formatDelta(delta) {
-  if (!delta || typeof delta !== "object") {
-    return "No delta.";
-  }
-
-  const labelMap = {
-    stamina: "STAMINA",
-  };
-
-  return Object.entries(delta)
-    .map(([key, value]) => {
-      const numericValue = Number(value);
-      const sign = numericValue > 0 ? "+" : "";
-      const label = labelMap[key] ?? key;
-      return `${label}: ${sign}${numericValue}`;
-    })
-    .join(", ");
-}
-
-function formatReadableOutcomeDelta(delta, options = {}) {
-  if (!delta || typeof delta !== "object") {
-    return "No resource changes.";
-  }
-
-  const includePositive = options.includePositive ?? true;
-  const includeNegative = options.includeNegative ?? true;
-
-  const parts = Object.entries(delta)
-    .filter(([, value]) => {
-      const numericValue = Number(value);
-
-      if (numericValue === 0) {
-        return false;
-      }
-
-      if (numericValue > 0) {
-        return includePositive;
-      }
-
-      return includeNegative;
-    })
-    .map(([key, value]) => {
-      const numericValue = Number(value);
-      const sign = numericValue > 0 ? "+" : "";
-      const label = key === "stamina" ? "STAMINA" : key.toUpperCase();
-      return `${label} ${sign}${numericValue}`;
-    });
-
-  return parts.length > 0 ? parts.join(" | ") : "No resource changes.";
-}
-
-function formatStatWithBonus(statKey, stats) {
-  const label = CHARACTER_STAT_LABELS[statKey] ?? statKey.toUpperCase();
-  if (!stats) {
-    return label;
-  }
-
-  return `${label} ${stats.base[statKey]} + ${stats.bonus[statKey]} = ${stats.effective[statKey]}`;
-}
-
-function formatDeltaBonus(deltaBonus) {
-  if (!deltaBonus || typeof deltaBonus !== "object") {
-    return "No extra bonus on this action.";
-  }
-
-  const parts = Object.entries(deltaBonus)
-    .filter(([, value]) => Number(value) !== 0)
-    .map(([key, value]) => {
-      const numericValue = Number(value);
-      const sign = numericValue > 0 ? "+" : "";
-      const label = key === "stamina" ? "stamina" : key;
-      return `${label}: ${sign}${numericValue}`;
-    });
-
-  return parts.length > 0
-    ? parts.join(", ")
-    : "No extra bonus on this action.";
-}
-
-function formatLoot(loot) {
-  if (!loot) {
-    return "No loot dropped.";
-  }
-
-  const rarityLabel = loot.rarity ? `, ${loot.rarity}` : "";
-  return `${loot.name} x${loot.quantity} (${loot.category}${rarityLabel})`;
-}
-
-function formatSignedNumber(value) {
-  const numericValue = Number(value) || 0;
-  return numericValue >= 0 ? `+${numericValue}` : `${numericValue}`;
-}
-
-function getRollDisplayValue(rollReveal) {
-  if (!rollReveal) {
-    return "?";
-  }
-
-  if (rollReveal.phase === "rolling") {
-    return `${rollReveal.dieValue}`;
-  }
-
-  if (!rollReveal.showBonus) {
-    return `${rollReveal.dieValue}`;
-  }
-
-  if (!rollReveal.showTotal) {
-    return formatSignedNumber(rollReveal.bonusValue);
-  }
-
-  return `${rollReveal.totalValue}`;
-}
 
 function getRandomNumberInRange(min, max) {
   return min + Math.random() * (max - min);
@@ -363,13 +258,9 @@ export default function ActivityRunner({
     async function loadInventorySnapshot() {
       try {
         setIsInventoryLoading(true);
-        const response = await fetch("/api/game/inventory", {
-          method: "GET",
-          cache: "no-store",
-        });
-        const data = await response.json();
+        const { ok, data } = await getJson("/api/game/inventory");
 
-        if (!response.ok) {
+        if (!ok) {
           throw new Error(data.message ?? "Could not load inventory pockets.");
         }
 
@@ -508,15 +399,11 @@ export default function ActivityRunner({
     playDiceThrowSound();
 
     try {
-      const response = await fetch("/api/game/activities", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ activityId: activity.id }),
+      const { ok, data } = await postJson("/api/game/activities", {
+        activityId: activity.id,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      if (!ok) {
         setLastResult(null);
         clearRevealTimers();
         setRollReveal(null);
@@ -575,11 +462,11 @@ export default function ActivityRunner({
         <div className="activity-briefing-stakes">
           <p className="activity-briefing-stake activity-briefing-stake-success">
             <span className="activity-briefing-stake-label">Success reward</span>
-            <span className="activity-briefing-stake-value">{formatDelta(activity.successReward)}</span>
+            <span className="activity-briefing-stake-value">{formatActivityDelta(activity.successReward)}</span>
           </p>
           <p className="activity-briefing-stake activity-briefing-stake-fail">
             <span className="activity-briefing-stake-label">Fail penalty</span>
-            <span className="activity-briefing-stake-value">{formatDelta(activity.failPenalty)}</span>
+            <span className="activity-briefing-stake-value">{formatActivityDelta(activity.failPenalty)}</span>
           </p>
         </div>
       </section>
@@ -899,7 +786,7 @@ export default function ActivityRunner({
               ) : null}
               <p>
                 <strong>Reward/Penalty (delta):</strong>{" "}
-                {formatDelta(lastResult.delta)}
+                {formatActivityDelta(lastResult.delta)}
               </p>
               <p>
                 <strong>Loot:</strong> {formatLoot(lastResult.loot)}

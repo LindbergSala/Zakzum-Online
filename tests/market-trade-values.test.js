@@ -9,7 +9,7 @@ import {
 } from "../src/lib/items/helpers.js";
 
 test("buy costs resolve correctly for market items", () => {
-  assert.equal(getItemGoldCost("iron-sword"), 25);
+  assert.equal(getItemGoldCost("iron-sword"), 20);
   assert.equal(getItemRenownCost("iron-sword"), 0);
   assert.equal(getItemGoldCost("arena-laurel"), 0);
   assert.equal(getItemRenownCost("arena-laurel"), 10);
@@ -17,7 +17,7 @@ test("buy costs resolve correctly for market items", () => {
 
 test("sell values use robust floor ratios with minimum 1 for paid costs", () => {
   assert.deepEqual(getItemSellValue("iron-sword"), {
-    gold: 15,
+    gold: 12,
     renown: 0,
   });
   assert.deepEqual(getItemSellValue("arena-laurel"), {
@@ -34,6 +34,13 @@ test("sell values use robust floor ratios with minimum 1 for paid costs", () => 
       renown: 1,
     },
   );
+});
+
+test("starter gear stays in an early-game affordable band", () => {
+  assert.equal(getItemGoldCost("scout-dagger"), 13);
+  assert.equal(getItemGoldCost("apprentice-staff"), 16);
+  assert.equal(getItemGoldCost("chain-shirt"), 20);
+  assert.equal(getItemGoldCost("apprentice-ring"), 14);
 });
 
 test("unknown items have zero trade values", () => {

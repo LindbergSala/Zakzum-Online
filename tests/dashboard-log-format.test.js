@@ -43,11 +43,11 @@ test("formatDashboardLogEntry builds compact non-activity entry", () => {
       item: {
         name: "Iron Sword",
         slot: "weapon",
-        price: 25,
+        price: 20,
       },
     },
     delta: {
-      gold: -25,
+      gold: -20,
       xp: 0,
     },
   });
@@ -55,8 +55,8 @@ test("formatDashboardLogEntry builds compact non-activity entry", () => {
   assert.equal(entry.activityName, "Purchase: Iron Sword");
   assert.equal(entry.status, "SUCCESS");
   assert.equal(entry.rollLine, null);
-  assert.equal(entry.detailLine, "Iron Sword (weapon, cost 25 Gold)");
-  assert.equal(entry.deltaLine, "-25 Gold");
+  assert.equal(entry.detailLine, "Iron Sword (weapon, cost 20 Gold)");
+  assert.equal(entry.deltaLine, "-20 Gold");
 });
 
 test("formatDashboardLogEntry includes activity location context when available", () => {

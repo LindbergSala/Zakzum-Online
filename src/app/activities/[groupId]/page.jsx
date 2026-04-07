@@ -14,6 +14,7 @@ import {
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
+import { formatCompactResourceDelta } from "@/lib/resource-delta-format";
 import styles from "./page.module.css";
 
 const headingFont = Cinzel({
@@ -25,26 +26,6 @@ const bodyFont = Source_Sans_3({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 });
-
-function formatCompactDelta(delta) {
-  if (!delta || typeof delta !== "object") {
-    return "None";
-  }
-
-  const orderedKeys = ["gold", "xp", "renown", "hp", "heat", "stamina"];
-  const labelMap = {
-    stamina: "STAMINA",
-  };
-  const segments = orderedKeys
-    .map((key) => [key, Number(delta[key] ?? 0)])
-    .filter(([, value]) => value !== 0)
-    .map(([key, value]) => {
-      const sign = value > 0 ? "+" : "";
-      return `${sign}${value} ${labelMap[key] ?? key.toUpperCase()}`;
-    });
-
-  return segments.length ? segments.join(" • ") : "None";
-}
 
 function buildGroupLead(group) {
   if (group.id === "quest") {
@@ -272,10 +253,10 @@ export default async function ActivityGroupPage({ params }) {
                         </div>
                         <div className={styles.activityOutcome}>
                           <p>
-                            <strong>Success:</strong> {formatCompactDelta(activity.successDelta)}
+                            <strong>Success:</strong> {formatCompactResourceDelta(activity.successDelta)}
                           </p>
                           <p>
-                            <strong>Failure:</strong> {formatCompactDelta(activity.failureDelta)}
+                            <strong>Failure:</strong> {formatCompactResourceDelta(activity.failureDelta)}
                           </p>
                         </div>
                         <Link

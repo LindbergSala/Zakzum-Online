@@ -1,3 +1,5 @@
+import { postJson } from "@/lib/client-json";
+
 export function formatSlotLabel(slot) {
   if (!slot) {
     return "Unknown";
@@ -52,34 +54,20 @@ export function toInventorySyncPayload(syncAction) {
   return payload;
 }
 
-export async function syncInventoryAction(payload) {
-  const response = await fetch("/api/game/inventory", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+async function postJsonAction(url, payload, fallbackMessage) {
+  const { ok, data } = await postJson(url, payload);
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message ?? "Inventory sync failed.");
+  if (!ok) {
+    throw new Error(data.message ?? fallbackMessage);
   }
 
   return data;
 }
 
+export async function syncInventoryAction(payload) {
+  return postJsonAction("/api/game/inventory", payload, "Inventory sync failed.");
+}
+
 export async function syncMarketSellAction(payload) {
-  const response = await fetch("/api/game/shop", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message ?? "Market sell failed.");
-  }
-
-  return data;
+  return postJsonAction("/api/game/shop", payload, "Market sell failed.");
 }

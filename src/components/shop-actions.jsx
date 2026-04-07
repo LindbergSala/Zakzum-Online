@@ -4,35 +4,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getItemImagePath } from "@/lib/items/helpers";
+import { formatBuyValueLabel, formatTradeValueLabel } from "@/lib/items/trade-format";
 import styles from "./shop-actions.module.css";
-
-function formatBuyPrice(item) {
-  const parts = [];
-
-  if (Number(item.price) > 0) {
-    parts.push(`${item.price} Gold`);
-  }
-
-  if (Number(item.renownPrice) > 0) {
-    parts.push(`${item.renownPrice} Renown`);
-  }
-
-  return parts.length > 0 ? parts.join(" + ") : "Free";
-}
-
-function formatSellPrice(sellValue) {
-  const parts = [];
-
-  if (Number(sellValue?.gold) > 0) {
-    parts.push(`${sellValue.gold} Gold`);
-  }
-
-  if (Number(sellValue?.renown) > 0) {
-    parts.push(`${sellValue.renown} Renown`);
-  }
-
-  return parts.length > 0 ? parts.join(" + ") : "No value";
-}
 
 export default function ShopActions({ items, marketId = null }) {
   const router = useRouter();
@@ -117,7 +90,7 @@ export default function ShopActions({ items, marketId = null }) {
                 ? `Stackable (max ${item.maxStack ?? 5})`
                 : "Unique equipment";
               const imagePath = getItemImagePath(item.id);
-              const overlayTradeLine = `Buy: ${formatBuyPrice(item)} | Sell: ${formatSellPrice(item.sellValue)}`;
+              const overlayTradeLine = `Buy: ${formatBuyValueLabel(item)} | Sell: ${formatTradeValueLabel(item.sellValue)}`;
 
               return (
                 <li key={item.id} className={styles.marketItemRow}>
@@ -169,8 +142,8 @@ export default function ShopActions({ items, marketId = null }) {
                     </p>
                     {item.description ? <p>{item.description}</p> : null}
                     <p>
-                      Slot: {item.slot} | Buy: {formatBuyPrice(item)} | Sell: {" "}
-                      {formatSellPrice(item.sellValue)} | Weight: {item.weight} Wt
+                      Slot: {item.slot} | Buy: {formatBuyValueLabel(item)} | Sell: {" "}
+                      {formatTradeValueLabel(item.sellValue)} | Weight: {item.weight} Wt
                     </p>
                     <p>{stackInfo}</p>
                     <p>Effects: {item.effectLabel}</p>

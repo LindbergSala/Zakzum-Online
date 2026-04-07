@@ -68,6 +68,23 @@ export function buildBaseResourcesForCharacter(characterClass, constitution) {
   };
 }
 
+export function getCharacterMaxResources(character) {
+  const baseResources = buildBaseResourcesForCharacter(
+    character.characterClass,
+    character.constitution,
+  );
+
+  return {
+    maxHp: Math.max(1, baseResources.hp, Number(character.hp) || 0),
+    maxStamina: Math.max(
+      1,
+      baseResources.maxStamina,
+      Number(character.maxStamina) || 0,
+      Number(character.stamina) || 0,
+    ),
+  };
+}
+
 async function withRegeneratedActiveCharacter(user) {
   if (!user?.activeCharacter) {
     return user;

@@ -3,26 +3,13 @@
 import Image from "next/image";
 
 import { getItemImagePath, getItemSellValue } from "@/lib/items/helpers";
+import { formatTradeValueLabel } from "@/lib/items/trade-format";
 import styles from "./inventory-item-card.module.css";
-
-function formatSellValueLabel(sellValue) {
-  const parts = [];
-
-  if (Number(sellValue?.gold) > 0) {
-    parts.push(`${sellValue.gold} Gold`);
-  }
-
-  if (Number(sellValue?.renown) > 0) {
-    parts.push(`${sellValue.renown} Renown`);
-  }
-
-  return parts.length > 0 ? parts.join(" + ") : "No value";
-}
 
 function formatInventoryValueLabel(item) {
   const quantity = Math.max(1, Number(item.quantity) || 1);
   const sellValue = item.sellValue ?? getItemSellValue(item.itemId);
-  const perItemLabel = formatSellValueLabel(sellValue);
+  const perItemLabel = formatTradeValueLabel(sellValue);
 
   if (quantity <= 1 || perItemLabel === "No value") {
     return `Value: ${perItemLabel}`;
@@ -33,7 +20,7 @@ function formatInventoryValueLabel(item) {
     renown: (Number(sellValue?.renown) || 0) * quantity,
   };
 
-  return `Value: ${perItemLabel} each (${formatSellValueLabel(stackValue)} total)`;
+  return `Value: ${perItemLabel} each (${formatTradeValueLabel(stackValue)} total)`;
 }
 
 export default function InventoryItemCard({

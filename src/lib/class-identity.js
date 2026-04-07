@@ -1,3 +1,5 @@
+import { resolveActivityGroupId } from "@/lib/core-loop-data";
+
 const CLASS_PASSIVES = {
   BARBARIAN: {
     id: "barbarian-thick-skin",
@@ -127,30 +129,6 @@ function normalizeDeltaValue(value) {
   return Number.isFinite(numericValue) ? Math.floor(numericValue) : 0;
 }
 
-function normalizeActivityGroupId(activityId) {
-  if (typeof activityId !== "string") {
-    return "";
-  }
-
-  if (activityId === "quest" || activityId === "adventure" || activityId === "arena") {
-    return activityId;
-  }
-
-  if (activityId.startsWith("quest-")) {
-    return "quest";
-  }
-
-  if (activityId.startsWith("adventure-")) {
-    return "adventure";
-  }
-
-  if (activityId.startsWith("arena-")) {
-    return "arena";
-  }
-
-  return activityId;
-}
-
 export function getClassPassive(characterClass) {
   return (
     CLASS_PASSIVES[characterClass] ?? {
@@ -162,7 +140,7 @@ export function getClassPassive(characterClass) {
 }
 
 export function getClassPassiveRollModifier(characterClass, activityId) {
-  const activityGroupId = normalizeActivityGroupId(activityId);
+  const activityGroupId = resolveActivityGroupId(activityId) ?? activityId;
 
   if (
     characterClass === "FIGHTER" &&
@@ -241,7 +219,7 @@ export function applyClassPassiveDelta({
   delta,
   activityId,
 }) {
-  const activityGroupId = normalizeActivityGroupId(activityId);
+  const activityGroupId = resolveActivityGroupId(activityId) ?? activityId;
   const nextDelta = {
     hp: normalizeDeltaValue(delta?.hp),
     stamina: normalizeDeltaValue(delta?.stamina),
@@ -292,6 +270,3 @@ export function applyClassPassiveDelta({
     deltaBonus,
   };
 }
-
-export const getClassPassiveActivityEnergyCost = getClassPassiveActivityStaminaCost;
-export const getClassPassiveEnergyRefreshBonus = getClassPassiveStaminaRefreshBonus;

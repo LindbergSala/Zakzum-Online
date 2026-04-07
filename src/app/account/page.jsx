@@ -5,6 +5,8 @@ import AccountPopupHub from "@/components/account-popup-hub";
 import GameNav from "@/components/game-nav";
 import { formatDashboardLogEntry } from "@/lib/activity-log-format";
 import { getUserWithResolvedActiveCharacter } from "@/lib/character";
+import { formatStockholmDayLabel, getStockholmDayKey } from "@/lib/date-time-format";
+import { toNumericValue } from "@/lib/number-utils";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
 import styles from "./page.module.css";
@@ -19,40 +21,6 @@ const bodyFont = Source_Sans_3({
   weight: ["400", "600", "700"],
 });
 const ACCOUNT_LOG_ENTRY_LIMIT = 300;
-
-const DAY_KEY_FORMATTER = new Intl.DateTimeFormat("sv-SE", {
-  timeZone: "Europe/Stockholm",
-});
-
-const DAY_LABEL_FORMATTER = new Intl.DateTimeFormat("en-US", {
-  weekday: "long",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  timeZone: "Europe/Stockholm",
-});
-
-function toNumericValue(value) {
-  const numericValue = Number(value);
-  return Number.isFinite(numericValue) ? numericValue : 0;
-}
-
-function getDayKey(dateValue) {
-  return DAY_KEY_FORMATTER.format(new Date(dateValue));
-}
-
-function formatDayLabel(dayKey) {
-  if (!dayKey) {
-    return "No activity day selected";
-  }
-
-  const parsedDate = new Date(`${dayKey}T00:00:00`);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return dayKey;
-  }
-
-  return DAY_LABEL_FORMATTER.format(parsedDate);
-}
 
 function buildTopActivities(entries) {
   const counts = {};
@@ -90,13 +58,13 @@ function getLongestSuccessStreak(entries) {
 function buildLogDays(entries) {
   const compactEntries = entries.map((entry) => ({
     ...formatDashboardLogEntry(entry),
-    dayKey: getDayKey(entry.createdAt),
+    dayKey: getStockholmDayKey(entry.createdAt),
   }));
   const dayKeys = Array.from(new Set(compactEntries.map((entry) => entry.dayKey)));
 
   return dayKeys.map((dayKey) => ({
     dayKey,
-    label: formatDayLabel(dayKey),
+    label: formatStockholmDayLabel(dayKey),
     entries: compactEntries.filter((entry) => entry.dayKey === dayKey),
   }));
 }
@@ -157,7 +125,7 @@ function buildStatisticsCards(entries, character) {
 
   const topActivities = buildTopActivities(entries);
   const longestSuccessStreak = getLongestSuccessStreak(activityEntries);
-  const activeDays = new Set(entries.map((entry) => getDayKey(entry.createdAt))).size;
+  const activeDays = new Set(entries.map((entry) => getStockholmDayKey(entry.createdAt))).size;
 
   const newestEntryDate = entries[0]?.createdAt ?? null;
   const oldestEntryDate = entries[entries.length - 1]?.createdAt ?? null;
@@ -222,8 +190,8 @@ function buildStatisticsCards(entries, character) {
       label: "Timeline",
       value:
         newestEntryDate && oldestEntryDate
-          ? `${formatDayLabel(getDayKey(oldestEntryDate))} -> ${formatDayLabel(
-              getDayKey(newestEntryDate),
+            ? `${formatStockholmDayLabel(getStockholmDayKey(oldestEntryDate))} -> ${formatStockholmDayLabel(
+              getStockholmDayKey(newestEntryDate),
             )}`
           : "No activity timeline yet",
       hint: "Oldest to newest day in your log",

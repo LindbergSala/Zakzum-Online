@@ -2,12 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import GameNav from "@/components/game-nav";
+import { formatDateTime } from "@/lib/date-time-format";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
-
-function formatDateTime(value) {
-  return new Date(value).toLocaleString("sv-SE");
-}
 
 function buildTypeSummary(entries) {
   const summary = {};

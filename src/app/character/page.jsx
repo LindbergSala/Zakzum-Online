@@ -9,7 +9,7 @@ import GameNav from "@/components/game-nav";
 import InventoryHydrated from "@/components/inventory/inventory-hydrated";
 import StatPointAllocator from "@/components/stat-point-allocator";
 import {
-  buildBaseResourcesForCharacter,
+  getCharacterMaxResources,
   getUserWithResolvedActiveCharacter,
 } from "@/lib/character";
 import { getResolvedCharacterAvatar } from "@/lib/character-avatars";
@@ -20,6 +20,7 @@ import {
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { getItemById } from "@/lib/items/helpers";
 import { getLevelProgressMeta } from "@/lib/level-progression";
+import { clampPercent } from "@/lib/number-utils";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
 import { getHeatRollModifier, getNextHeatThreshold } from "@/lib/roll-engine";
@@ -36,27 +37,6 @@ const bodyFont = Source_Sans_3({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 });
-
-function clampPercent(value) {
-  return Math.max(0, Math.min(100, Math.round(value)));
-}
-
-function getCharacterMaxResources(character) {
-  const baseResources = buildBaseResourcesForCharacter(
-    character.characterClass,
-    character.constitution,
-  );
-
-  return {
-    maxHp: Math.max(1, baseResources.hp, Number(character.hp) || 0),
-    maxStamina: Math.max(
-      1,
-      baseResources.maxStamina,
-      Number(character.maxStamina) || 0,
-      Number(character.stamina) || 0,
-    ),
-  };
-}
 
 function buildCharacterGoalCards(character, levelProgress, carryWeightSummary) {
   const currentHeat = Number(character.heat) || 0;
