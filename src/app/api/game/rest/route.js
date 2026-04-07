@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
+import { parseAndValidateJsonRequestBody } from "@/lib/api-request";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
@@ -61,26 +62,14 @@ export async function POST(request) {
     return error;
   }
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { message: "Invalid JSON in request body." },
-      { status: 400 },
-    );
-  }
+  const { data: parsedData, response: parseResponse } =
+    await parseAndValidateJsonRequestBody(request, {
+      schema: restActionSchema,
+      invalidMessage: "Invalid rest action.",
+    });
 
-  const parsed = restActionSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        message: "Invalid rest action.",
-        errors: parsed.error.flatten().fieldErrors,
-      },
-      { status: 400 },
-    );
+  if (parseResponse) {
+    return parseResponse;
   }
 
   const activeCharacter = await getActiveCharacterForUser(user.id);
@@ -107,12 +96,12 @@ export async function POST(request) {
         };
       }
 
-      if (parsed.data.action === "start") {
+      if (parsedData.action === "start") {
         if (isCharacterResting(latestCharacter)) {
           return {
             ok: false,
             status: 409,
-              message: "Rest is already active.",
+            message: "Rest is already active.",
             resources: getCharacterResourceSnapshot(latestCharacter),
             rest: getCharacterHeatRestMeta(latestCharacter),
           };
@@ -218,7 +207,7 @@ export async function POST(request) {
     logServerError("/api/game/rest", caughtError, {
       userId: user.id,
       characterId: activeCharacter.id,
-      action: parsed.data.action,
+      action: parsedData.action,
     });
     return NextResponse.json(
       { message: "Something went wrong while processing rest." },

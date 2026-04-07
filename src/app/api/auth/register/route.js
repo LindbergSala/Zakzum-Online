@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
+import { parseAndValidateJsonRequestBody } from "@/lib/api-request";
 import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { prisma } from "@/lib/prisma";
 import { logServerError } from "@/lib/server-logger";
@@ -14,29 +15,17 @@ export async function POST(request) {
   }
 
   try {
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { message: "Invalid JSON in request body." },
-        { status: 400 },
-      );
+    const { data: parsedData, response: parseResponse } =
+      await parseAndValidateJsonRequestBody(request, {
+        schema: registerSchema,
+        invalidMessage: "Invalid input.",
+      });
+
+    if (parseResponse) {
+      return parseResponse;
     }
 
-    const parsed = registerSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          message: "Invalid input.",
-          errors: parsed.error.flatten().fieldErrors,
-        },
-        { status: 400 },
-      );
-    }
-
-    const { email, password } = parsed.data;
+    const { email, password } = parsedData;
 
     const existingUser = await prisma.user.findUnique({
       where: { email },

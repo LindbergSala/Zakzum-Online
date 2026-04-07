@@ -6,6 +6,7 @@ import {
   clearLoginRateLimit,
   recordFailedLoginAttempt,
 } from "@/lib/login-rate-limit";
+import { parseAndValidateJsonRequestBody } from "@/lib/api-request";
 import { prisma } from "@/lib/prisma";
 import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { logServerError } from "@/lib/server-logger";
@@ -28,29 +29,17 @@ export async function POST(request) {
   }
 
   try {
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { message: "Invalid JSON in request body." },
-        { status: 400 },
-      );
+    const { data: parsedData, response: parseResponse } =
+      await parseAndValidateJsonRequestBody(request, {
+        schema: loginSchema,
+        invalidMessage: "Invalid input.",
+      });
+
+    if (parseResponse) {
+      return parseResponse;
     }
 
-    const parsed = loginSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          message: "Invalid input.",
-          errors: parsed.error.flatten().fieldErrors,
-        },
-        { status: 400 },
-      );
-    }
-
-    const { email, password } = parsed.data;
+    const { email, password } = parsedData;
     const rateLimit = await checkLoginRateLimit(request, email);
 
     if (rateLimit.blocked) {

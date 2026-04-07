@@ -5,7 +5,6 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import ActivityRunner from "@/components/activity-runner";
 import GameNav from "@/components/game-nav";
-import RestControls from "@/components/rest-controls";
 import ResourceStrip from "@/components/resource-strip";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { getClassPassiveActivityStaminaCost } from "@/lib/class-identity";
@@ -167,10 +166,6 @@ export default async function ActivityRunPage({ params }) {
                 <div className={styles.metricCard}>
                   <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
                 </div>
-                <RestControls
-                  currentHeat={currentHeat}
-                  restMeta={heatRestMeta}
-                />
                 <div className={styles.metricCard}>
                   <p>
                     <strong>Heat rule:</strong> Heat lowers roll bonus at 20/40/60/80.

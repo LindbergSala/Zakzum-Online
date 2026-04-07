@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 import { requireApiUser } from "@/lib/api-auth";
+import { parseAndValidateJsonRequestBody } from "@/lib/api-request";
 import { getActiveCharacterForUser } from "@/lib/character";
 import {
   ACTIVITY_DEFINITION_MAP,
@@ -25,6 +26,45 @@ import {
 } from "./route-helpers";
 import { processActivityTransaction } from "./transaction-actions";
 
+function serializeActivity(activity, { includeRiskProfile = false } = {}) {
+  const serializedActivity = {
+    id: activity.id,
+    groupId: activity.groupId,
+    tier: activity.tier,
+    name: activity.name,
+    locationId: activity.locationId ?? null,
+    locationName: activity.locationName ?? null,
+    locationTitle: activity.locationTitle ?? null,
+    regionId: activity.regionId ?? null,
+    regionName: activity.regionName ?? null,
+    staminaCost: activity.staminaCost,
+    successReward: activity.successReward,
+    failPenalty: activity.failPenalty,
+  };
+
+  if (includeRiskProfile) {
+    serializedActivity.riskProfile = activity.riskProfile;
+  }
+
+  return serializedActivity;
+}
+
+function serializeActivityGroup(group) {
+  return {
+    availability: getActivityGroupAvailability(group.id),
+    id: group.id,
+    name: group.name,
+    tagline: group.tagline,
+    summary: group.summary,
+    regionId: group.regionId ?? null,
+    regionName: group.regionName ?? null,
+    overviewBadges: group.overviewBadges ?? [],
+    activities: ACTIVITY_DEFINITIONS.filter((activity) => activity.groupId === group.id)
+      .sort((left, right) => (left.tier ?? 0) - (right.tier ?? 0))
+      .map((activity) => serializeActivity(activity, { includeRiskProfile: true })),
+  };
+}
+
 export async function GET() {
   const { user, error } = await requireApiUser();
 
@@ -36,49 +76,10 @@ export async function GET() {
 
   return NextResponse.json(
     {
-      groups: ACTIVITY_GROUPS.map((group) => ({
-        availability: getActivityGroupAvailability(group.id),
-        id: group.id,
-        name: group.name,
-        tagline: group.tagline,
-        summary: group.summary,
-        regionId: group.regionId ?? null,
-        regionName: group.regionName ?? null,
-        overviewBadges: group.overviewBadges ?? [],
-        activities: ACTIVITY_DEFINITIONS.filter(
-          (activity) => activity.groupId === group.id,
-        )
-          .sort((left, right) => (left.tier ?? 0) - (right.tier ?? 0))
-          .map((activity) => ({
-            id: activity.id,
-            groupId: activity.groupId,
-            tier: activity.tier,
-            name: activity.name,
-            locationId: activity.locationId ?? null,
-            locationName: activity.locationName ?? null,
-            locationTitle: activity.locationTitle ?? null,
-            regionId: activity.regionId ?? null,
-            regionName: activity.regionName ?? null,
-            staminaCost: activity.staminaCost,
-            riskProfile: activity.riskProfile,
-            successReward: activity.successReward,
-            failPenalty: activity.failPenalty,
-          })),
-      })),
-      activities: ACTIVITY_DEFINITIONS.map((activity) => ({
-        id: activity.id,
-        groupId: activity.groupId,
-        tier: activity.tier,
-        name: activity.name,
-        locationId: activity.locationId ?? null,
-        locationName: activity.locationName ?? null,
-        locationTitle: activity.locationTitle ?? null,
-        regionId: activity.regionId ?? null,
-        regionName: activity.regionName ?? null,
-        staminaCost: activity.staminaCost,
-        successReward: activity.successReward,
-        failPenalty: activity.failPenalty,
-      })),
+      groups: ACTIVITY_GROUPS.map(serializeActivityGroup),
+      activities: ACTIVITY_DEFINITIONS.map((activity) =>
+        serializeActivity(activity),
+      ),
       resources: activeCharacter ? getCharacterResourceSnapshot(activeCharacter) : null,
     },
     { status: 200 },
@@ -97,26 +98,14 @@ export async function POST(request) {
     return error;
   }
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { message: "Invalid JSON in request body." },
-      { status: 400 },
-    );
-  }
+  const { data: parsedData, response: parseResponse } =
+    await parseAndValidateJsonRequestBody(request, {
+      schema: activityActionSchema,
+      invalidMessage: "Invalid activity.",
+    });
 
-  const parsed = activityActionSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        message: "Invalid activity.",
-        errors: parsed.error.flatten().fieldErrors,
-      },
-      { status: 400 },
-    );
+  if (parseResponse) {
+    return parseResponse;
   }
 
   const activeCharacter = await getActiveCharacterForUser(user.id);
@@ -138,7 +127,7 @@ export async function POST(request) {
   );
 
   try {
-    const activity = ACTIVITY_DEFINITION_MAP[parsed.data.activityId];
+    const activity = ACTIVITY_DEFINITION_MAP[parsedData.activityId];
     if (!activity) {
       return NextResponse.json(
         { message: "Activity was not found." },
@@ -327,7 +316,7 @@ export async function POST(request) {
     logServerError("/api/game/activities", error, {
       userId: user.id,
       characterId: activeCharacter.id,
-      activityId: parsed.data.activityId,
+      activityId: parsedData.activityId,
     });
     return NextResponse.json(
       { message: "Something went wrong while processing the activity." },

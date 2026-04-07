@@ -269,13 +269,6 @@
   color: var(--ink-soft);
 }
 
-.progressionHint {
-  margin: 0.6rem auto 0;
-  max-width: 62ch;
-  font-weight: 700;
-  color: #7a2f12;
-}
-
 .panel {
   margin-top: 1.05rem;
   border-radius: 14px;
@@ -498,13 +491,14 @@
   letter-spacing: 0.01em;
 }
 
-.activityStakesGrid {
+.activityOutcome {
   margin-top: 0.08rem;
   display: grid;
   gap: 0.32rem;
 }
 
-.activityStakeCard {
+.activityOutcome p {
+  margin: 0;
   border-radius: 9px;
   border: 1px solid rgba(114, 72, 40, 0.3);
   background: linear-gradient(
@@ -514,57 +508,21 @@
   );
   padding: 0.34rem 0.46rem;
   box-shadow: inset 0 1px 0 rgba(255, 252, 245, 0.72);
-}
-
-.activityStakeSuccess {
-  border-color: rgba(88, 129, 64, 0.34);
-  background: linear-gradient(
-    145deg,
-    rgba(244, 253, 235, 0.8) 0%,
-    rgba(230, 245, 214, 0.72) 100%
-  );
-}
-
-.activityStakeFailure {
-  border-color: rgba(138, 89, 52, 0.34);
-  background: linear-gradient(
-    145deg,
-    rgba(253, 245, 236, 0.82) 0%,
-    rgba(244, 230, 212, 0.74) 100%
-  );
-}
-
-.activityStakeLabel {
-  margin: 0;
-  font-size: 0.64rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #704524;
-}
-
-.activityStakeValue {
-  margin: 0.12rem 0 0;
   font-size: 0.74rem;
   font-weight: 700;
   line-height: 1.3;
   color: #3f2712;
 }
 
-.openLink {
-  margin: 0;
-  margin-top: auto;
-  padding-top: 0.35rem;
-}
-
-.openLink a {
+.activityAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   min-height: 50px;
-  border-radius: 9px;
+  margin-top: auto;
   padding: 0.38rem 0.5rem;
+  border-radius: 9px;
   border: 1px solid rgba(112, 67, 34, 0.5);
   background: linear-gradient(145deg, #c57634 0%, #9b4f24 100%);
   font-size: 1rem;
@@ -584,7 +542,7 @@
     filter 160ms ease;
 }
 
-.openLink a:hover {
+.activityAction:hover {
   transform: translateY(-1px);
   filter: brightness(1.04);
   box-shadow:
@@ -592,7 +550,7 @@
     0 0 16px rgba(206, 131, 66, 0.44);
 }
 
-.openLink a:focus-visible {
+.activityAction:focus-visible {
   outline: 2px solid rgba(214, 150, 92, 0.92);
   outline-offset: 2px;
 }
@@ -738,7 +696,7 @@
   .pageShell::before,
   .heroCard,
   .activityCard,
-  .openLink a {
+  .activityAction {
     animation: none;
     transition: none;
     transform: none;

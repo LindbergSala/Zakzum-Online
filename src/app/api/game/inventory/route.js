@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
+import { parseAndValidateJsonRequestBody } from "@/lib/api-request";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import { prisma } from "@/lib/prisma";
@@ -66,29 +67,17 @@ export async function POST(request) {
     return error;
   }
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { message: "Invalid JSON in request body." },
-      { status: 400 },
-    );
+  const { data: parsedData, response: parseResponse } =
+    await parseAndValidateJsonRequestBody(request, {
+      schema: inventoryActionSchema,
+      invalidMessage: "Invalid inventory action.",
+    });
+
+  if (parseResponse) {
+    return parseResponse;
   }
 
-  const parsed = inventoryActionSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        message: "Invalid inventory action.",
-        errors: parsed.error.flatten().fieldErrors,
-      },
-      { status: 400 },
-    );
-  }
-
-  const action = parsed.data.action ?? "equip";
+  const action = parsedData.action ?? "equip";
   const activeCharacter = await getActiveCharacterForUser(user.id);
 
   if (!activeCharacter) {
@@ -118,7 +107,7 @@ export async function POST(request) {
         select: INVENTORY_ITEM_SELECT,
       });
 
-      const selectedItem = resolveOwnedItem(ownedItems, parsed.data);
+      const selectedItem = resolveOwnedItem(ownedItems, parsedData);
 
       if ((action === "equip" || action === "unequip" || action === "split" || action === "use") && !selectedItem) {
         return {
@@ -134,7 +123,7 @@ export async function POST(request) {
         latestCharacter,
         ownedItems,
         selectedItem,
-        parsedData: parsed.data,
+        parsedData,
       });
     });
 
@@ -172,10 +161,10 @@ export async function POST(request) {
       userId: user.id,
       characterId: activeCharacter.id,
       action,
-      itemRecordId: parsed.data.itemRecordId,
-      itemId: parsed.data.itemId,
-      targetItemRecordId: parsed.data.targetItemRecordId,
-      quantity: parsed.data.quantity,
+      itemRecordId: parsedData.itemRecordId,
+      itemId: parsedData.itemId,
+      targetItemRecordId: parsedData.targetItemRecordId,
+      quantity: parsedData.quantity,
     });
     return NextResponse.json(
       { message: "Something went wrong while processing inventory action." },

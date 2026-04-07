@@ -8,6 +8,11 @@ import {
   getItemSellValue,
   isItemStackable,
 } from "@/lib/items/helpers";
+import {
+  buildProjectedOwnedItemsWithIncrement,
+  normalizePositiveQuantity,
+  resolveOwnedItemByRecordOrItemId,
+} from "@/lib/items/owned-items";
 import { formatItemEffectLabel } from "@/lib/stat-effects";
 
 export const SHOP_CHARACTER_SELECT = {
@@ -47,15 +52,7 @@ export const OWNED_ITEM_SELECT = {
   createdAt: true,
 };
 
-export function normalizePositiveQuantity(value, fallback = 1) {
-  const numeric = Number(value);
-
-  if (!Number.isFinite(numeric)) {
-    return fallback;
-  }
-
-  return Math.max(1, Math.floor(numeric));
-}
+export { normalizePositiveQuantity };
 
 export function summarizeOwnedByItemId(ownedItems) {
   const summary = {};
@@ -140,38 +137,9 @@ export function hasAnySellValue(itemDefinition) {
 }
 
 export function buildProjectedOwnedItemsForBuy(ownedItems, itemId) {
-  const projected = ownedItems.map((item) => ({
-    itemId: item.itemId,
-    quantity: normalizePositiveQuantity(item.quantity, 1),
-  }));
-
-  const existing = projected.find((item) => item.itemId === itemId);
-
-  if (existing) {
-    existing.quantity += 1;
-    return projected;
-  }
-
-  projected.push({
-    itemId,
-    quantity: 1,
-  });
-
-  return projected;
+  return buildProjectedOwnedItemsWithIncrement(ownedItems, itemId, 1);
 }
 
 export function pickSellItemRecord(ownedItems, { itemRecordId, itemId }) {
-  if (itemRecordId) {
-    return ownedItems.find((item) => item.id === itemRecordId) ?? null;
-  }
-
-  if (!itemId) {
-    return null;
-  }
-
-  return (
-    ownedItems.find((item) => item.itemId === itemId && item.isEquipped) ??
-    ownedItems.find((item) => item.itemId === itemId) ??
-    null
-  );
+  return resolveOwnedItemByRecordOrItemId(ownedItems, { itemRecordId, itemId });
 }

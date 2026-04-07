@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
+import { parseAndValidateJsonRequestBody } from "@/lib/api-request";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { ITEM_CATALOG } from "@/lib/items/catalog";
 import { validateWriteRequestOrigin } from "@/lib/csrf";
@@ -63,30 +64,18 @@ export async function POST(request) {
     return error;
   }
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { message: "Invalid JSON in request body." },
-      { status: 400 },
-    );
+  const { data: parsedData, response: parseResponse } =
+    await parseAndValidateJsonRequestBody(request, {
+      schema: shopPurchaseSchema,
+      invalidMessage: "Invalid market action.",
+    });
+
+  if (parseResponse) {
+    return parseResponse;
   }
 
-  const parsed = shopPurchaseSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        message: "Invalid market action.",
-        errors: parsed.error.flatten().fieldErrors,
-      },
-      { status: 400 },
-    );
-  }
-
-  const action = parsed.data.action ?? "buy";
-  const requestedMarketId = parsed.data.marketId ?? null;
+  const action = parsedData.action ?? "buy";
+  const requestedMarketId = parsedData.marketId ?? null;
   const activeCharacter = await getActiveCharacterForUser(user.id);
 
   if (!activeCharacter) {
@@ -96,7 +85,7 @@ export async function POST(request) {
     );
   }
 
-  if (action === "buy" && !parsed.data.itemId) {
+  if (action === "buy" && !parsedData.itemId) {
     return NextResponse.json(
       { message: "Buying requires an item id." },
       { status: 400 },
@@ -152,7 +141,7 @@ export async function POST(request) {
           tx,
           latestCharacter,
           ownedItems,
-          parsedData: parsed.data,
+          parsedData,
         });
       }
 
@@ -160,7 +149,7 @@ export async function POST(request) {
         tx,
         latestCharacter,
         ownedItems,
-        parsedData: parsed.data,
+        parsedData,
         requestedMarket,
       });
     });
@@ -215,9 +204,9 @@ export async function POST(request) {
       userId: user.id,
       characterId: activeCharacter.id,
       action,
-      itemId: parsed.data.itemId,
-      itemRecordId: parsed.data.itemRecordId,
-      quantity: parsed.data.quantity,
+      itemId: parsedData.itemId,
+      itemRecordId: parsedData.itemRecordId,
+      quantity: parsedData.quantity,
     });
     return NextResponse.json(
       { message: "Something went wrong while processing the market transaction." },

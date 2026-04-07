@@ -3,6 +3,7 @@ import { compare } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
+import { parseAndValidateJsonRequestBody } from "@/lib/api-request";
 import { applyBackgroundStartBonuses } from "@/lib/background-identity";
 import {
   buildBaseResourcesForCharacter,
@@ -57,26 +58,14 @@ export async function POST(request) {
   }
 
   try {
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { message: "Invalid JSON in request body." },
-        { status: 400 },
-      );
-    }
+    const { data: parsedData, response: parseResponse } =
+      await parseAndValidateJsonRequestBody(request, {
+        schema: createCharacterSchema,
+        invalidMessage: "Invalid input.",
+      });
 
-    const parsed = createCharacterSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          message: "Invalid input.",
-          errors: parsed.error.flatten().fieldErrors,
-        },
-        { status: 400 },
-      );
+    if (parseResponse) {
+      return parseResponse;
     }
 
     const existingCharacter = await prisma.character.findUnique({
@@ -93,17 +82,17 @@ export async function POST(request) {
 
     const initialStats = applyBackgroundStartBonuses(
       buildInitialStats(),
-      parsed.data.characterBackground,
+      parsedData.characterBackground,
     );
-    const requestedAvatarImage = parsed.data.avatarImage?.trim() ?? "";
+    const requestedAvatarImage = parsedData.avatarImage?.trim() ?? "";
     const resolvedAvatarImage =
       requestedAvatarImage &&
-      isValidAvatarForRace(parsed.data.characterRace, requestedAvatarImage)
+      isValidAvatarForRace(parsedData.characterRace, requestedAvatarImage)
         ? requestedAvatarImage
         : null;
 
     const baseResources = buildBaseResourcesForCharacter(
-      parsed.data.characterClass,
+      parsedData.characterClass,
       initialStats.constitution,
     );
 
@@ -111,7 +100,7 @@ export async function POST(request) {
       const newCharacter = await tx.character.create({
         data: {
           userId: user.id,
-          ...parsed.data,
+          ...parsedData,
           avatarImage: resolvedAvatarImage,
           ...initialStats,
           ...baseResources,
@@ -166,26 +155,14 @@ export async function PATCH(request) {
   }
 
   try {
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { message: "Invalid JSON in request body." },
-        { status: 400 },
-      );
-    }
+    const { data: parsedData, response: parseResponse } =
+      await parseAndValidateJsonRequestBody(request, {
+        schema: allocateStatPointSchema,
+        invalidMessage: "Invalid stat point action.",
+      });
 
-    const parsed = allocateStatPointSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          message: "Invalid stat point action.",
-          errors: parsed.error.flatten().fieldErrors,
-        },
-        { status: 400 },
-      );
+    if (parseResponse) {
+      return parseResponse;
     }
 
     const updatedCharacter = await prisma.$transaction(async (tx) => {
@@ -213,7 +190,7 @@ export async function PATCH(request) {
           unspentStatPoints: { gt: 0 },
         },
         data: {
-          [parsed.data.statKey]: { increment: 1 },
+          [parsedData.statKey]: { increment: 1 },
           unspentStatPoints: { decrement: 1 },
         },
       });
@@ -251,7 +228,7 @@ export async function PATCH(request) {
 
     return NextResponse.json(
       {
-        message: `${parsed.data.statKey.toUpperCase()} increased by 1.`,
+        message: `${parsedData.statKey.toUpperCase()} increased by 1.`,
         character: updatedCharacter,
       },
       { status: 200 },
@@ -278,26 +255,14 @@ export async function DELETE(request) {
   }
 
   try {
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { message: "Invalid JSON in request body." },
-        { status: 400 },
-      );
-    }
+    const { data: parsedData, response: parseResponse } =
+      await parseAndValidateJsonRequestBody(request, {
+        schema: deleteCharacterSchema,
+        invalidMessage: "Invalid delete request.",
+      });
 
-    const parsed = deleteCharacterSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          message: "Invalid delete request.",
-          errors: parsed.error.flatten().fieldErrors,
-        },
-        { status: 400 },
-      );
+    if (parseResponse) {
+      return parseResponse;
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -329,7 +294,7 @@ export async function DELETE(request) {
       }
 
       const isPasswordValid = await compare(
-        parsed.data.password,
+        parsedData.password,
         userWithCharacter.passwordHash,
       );
 

@@ -4,6 +4,10 @@ import {
   getItemMaxStack,
   isItemStackable,
 } from "@/lib/items/helpers";
+import {
+  normalizePositiveQuantity,
+  resolveOwnedItemByRecordOrItemId,
+} from "@/lib/items/owned-items";
 import { formatItemEffectLabel } from "@/lib/stat-effects";
 
 export const EQUIPPABLE_SLOTS = new Set(EQUIPPABLE_ITEM_SLOTS);
@@ -39,6 +43,8 @@ export const INVENTORY_ITEM_SELECT = {
   createdAt: true,
 };
 
+export { normalizePositiveQuantity };
+
 export function enrichInventoryItems(items) {
   return items.map((item) => {
     const definition = getItemById(item.itemId);
@@ -54,30 +60,8 @@ export function enrichInventoryItems(items) {
   });
 }
 
-export function normalizePositiveQuantity(value, fallback = 1) {
-  const numeric = Number(value);
-
-  if (!Number.isFinite(numeric)) {
-    return fallback;
-  }
-
-  return Math.max(1, Math.floor(numeric));
-}
-
 export function resolveOwnedItem(ownedItems, { itemRecordId, itemId }) {
-  if (itemRecordId) {
-    return ownedItems.find((item) => item.id === itemRecordId) ?? null;
-  }
-
-  if (!itemId) {
-    return null;
-  }
-
-  return (
-    ownedItems.find((item) => item.itemId === itemId && item.isEquipped) ??
-    ownedItems.find((item) => item.itemId === itemId) ??
-    null
-  );
+  return resolveOwnedItemByRecordOrItemId(ownedItems, { itemRecordId, itemId });
 }
 
 export function buildConsumableDelta(itemDefinition, quantity) {

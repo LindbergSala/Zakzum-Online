@@ -3,6 +3,7 @@ import { compare, hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
+import { parseAndValidateJsonRequestBody } from "@/lib/api-request";
 import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { prisma } from "@/lib/prisma";
 import { logServerError } from "@/lib/server-logger";
@@ -43,26 +44,14 @@ export async function PATCH(request) {
   }
 
   try {
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { message: "Invalid JSON in request body." },
-        { status: 400 },
-      );
-    }
+    const { data: parsedData, response: parseResponse } =
+      await parseAndValidateJsonRequestBody(request, {
+        schema: updateAccountSchema,
+        invalidMessage: "Invalid input.",
+      });
 
-    const parsed = updateAccountSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          message: "Invalid input.",
-          errors: parsed.error.flatten().fieldErrors,
-        },
-        { status: 400 },
-      );
+    if (parseResponse) {
+      return parseResponse;
     }
 
     const latestUser = await resolveUserCredentials(user.id);
@@ -75,7 +64,7 @@ export async function PATCH(request) {
     }
 
     const isPasswordValid = await compare(
-      parsed.data.currentPassword,
+      parsedData.currentPassword,
       latestUser.passwordHash,
     );
 
@@ -86,8 +75,8 @@ export async function PATCH(request) {
       );
     }
 
-    if (parsed.data.action === "update_email") {
-      if (parsed.data.nextEmail === latestUser.email) {
+    if (parsedData.action === "update_email") {
+      if (parsedData.nextEmail === latestUser.email) {
         return NextResponse.json(
           { message: "New email must be different from current email." },
           { status: 400 },
@@ -96,23 +85,23 @@ export async function PATCH(request) {
 
       await prisma.user.update({
         where: { id: user.id },
-        data: { email: parsed.data.nextEmail },
+        data: { email: parsedData.nextEmail },
       });
 
       return NextResponse.json(
-        { message: "Email updated.", email: parsed.data.nextEmail },
+        { message: "Email updated.", email: parsedData.nextEmail },
         { status: 200 },
       );
     }
 
-    if (parsed.data.nextPassword === parsed.data.currentPassword) {
+    if (parsedData.nextPassword === parsedData.currentPassword) {
       return NextResponse.json(
         { message: "New password must be different from current password." },
         { status: 400 },
       );
     }
 
-    const nextPasswordHash = await hash(parsed.data.nextPassword, 12);
+    const nextPasswordHash = await hash(parsedData.nextPassword, 12);
 
     await prisma.user.update({
       where: { id: user.id },
@@ -173,26 +162,14 @@ export async function DELETE(request) {
   }
 
   try {
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { message: "Invalid JSON in request body." },
-        { status: 400 },
-      );
-    }
+    const { data: parsedData, response: parseResponse } =
+      await parseAndValidateJsonRequestBody(request, {
+        schema: deleteAccountSchema,
+        invalidMessage: "Invalid delete request.",
+      });
 
-    const parsed = deleteAccountSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          message: "Invalid delete request.",
-          errors: parsed.error.flatten().fieldErrors,
-        },
-        { status: 400 },
-      );
+    if (parseResponse) {
+      return parseResponse;
     }
 
     const latestUser = await resolveUserCredentials(user.id);
@@ -205,7 +182,7 @@ export async function DELETE(request) {
     }
 
     const isPasswordValid = await compare(
-      parsed.data.password,
+      parsedData.password,
       latestUser.passwordHash,
     );
 

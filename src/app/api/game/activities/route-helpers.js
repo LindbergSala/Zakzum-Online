@@ -3,6 +3,10 @@ import { createHash } from "crypto";
 import { getActivityLocationContext } from "@/lib/core-loop-data";
 import { getItemMaxStack, isItemStackable } from "@/lib/items/helpers";
 import {
+  buildProjectedOwnedItemsWithIncrement,
+  normalizePositiveQuantity,
+} from "@/lib/items/owned-items";
+import {
   getCharacterCarryWeightSummary,
   getItemWeightById,
 } from "@/lib/weight-rules";
@@ -61,15 +65,6 @@ export function hashSessionToken(token) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-function normalizePositiveQuantity(value, fallback = 1) {
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) {
-    return fallback;
-  }
-
-  return Math.max(1, Math.floor(numericValue));
-}
-
 export async function applyLootDropToInventory(
   tx,
   characterId,
@@ -93,23 +88,11 @@ export async function applyLootDropToInventory(
         .filter((ownedItem) => ownedItem.itemId === item.id && ownedItem.quantity < maxStack)
         .sort((left, right) => left.quantity - right.quantity)[0] ?? null
     : null;
-  const projectedOwnedItems = ownedItems.map((ownedItem) => ({
-    itemId: ownedItem.itemId,
-    quantity: normalizePositiveQuantity(ownedItem.quantity, 1),
-  }));
-
-  const existingProjectedEntry = projectedOwnedItems.find(
-    (ownedItem) => ownedItem.itemId === item.id,
+  const projectedOwnedItems = buildProjectedOwnedItemsWithIncrement(
+    ownedItems,
+    item.id,
+    1,
   );
-
-  if (existingProjectedEntry) {
-    existingProjectedEntry.quantity += 1;
-  } else {
-    projectedOwnedItems.push({
-      itemId: item.id,
-      quantity: 1,
-    });
-  }
 
   const currentCarrySummary = getCharacterCarryWeightSummary(
     characterStrength,

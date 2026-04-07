@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
+import { parseJsonRequestBody } from "@/lib/api-request";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { runSerializableTransaction } from "@/lib/db-transaction";
@@ -71,16 +72,16 @@ export function createCompleteOnboardingLorePostHandler(dependencies = {}) {
       );
     }
 
-    let payload = {};
-    try {
-      if (typeof request?.json === "function") {
-        payload = await request.json();
-      }
-    } catch {
-      return NextResponse.json(
-        { message: "Invalid JSON in request body." },
-        { status: 400 },
-      );
+    const { body: payload, response: parseResponse } = await parseJsonRequestBody(
+      request,
+      {
+        allowMissingJsonMethod: true,
+        fallbackBody: {},
+      },
+    );
+
+    if (parseResponse) {
+      return parseResponse;
     }
 
     const lorePayload = normalizeLorePayload(payload);
