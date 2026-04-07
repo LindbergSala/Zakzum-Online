@@ -24,26 +24,34 @@ const FAIL_SECONDARY_MODIFIER_SCALE = 0.01;
 const FAIL_SCALE_MIN = 0.7;
 const FAIL_SCALE_MAX = 1.6;
 
+export const HEAT_ROLL_PENALTY_THRESHOLDS = [
+  { minimumHeat: 80, rollModifier: -4 },
+  { minimumHeat: 60, rollModifier: -3 },
+  { minimumHeat: 40, rollModifier: -2 },
+  { minimumHeat: 20, rollModifier: -1 },
+];
+
 export function getHeatRollModifier(heatInput) {
   const heat = clamp(toFiniteInteger(heatInput, 0), 0, 100);
 
-  if (heat >= 80) {
-    return -4;
-  }
-
-  if (heat >= 60) {
-    return -3;
-  }
-
-  if (heat >= 40) {
-    return -2;
-  }
-
-  if (heat >= 20) {
-    return -1;
+  for (const threshold of HEAT_ROLL_PENALTY_THRESHOLDS) {
+    if (heat >= threshold.minimumHeat) {
+      return threshold.rollModifier;
+    }
   }
 
   return 0;
+}
+
+export function getNextHeatThreshold(heatInput) {
+  const heat = clamp(toFiniteInteger(heatInput, 0), 0, 100);
+
+  return (
+    HEAT_ROLL_PENALTY_THRESHOLDS
+      .slice()
+      .reverse()
+      .find((threshold) => heat < threshold.minimumHeat) ?? null
+  );
 }
 
 function toEffectiveStatValue(statValue) {

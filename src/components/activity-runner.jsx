@@ -145,6 +145,10 @@ export default function ActivityRunner({
   characterId,
   currentStamina = 0,
   requiredStamina = 0,
+  currentHeat = 0,
+  currentHeatRollModifier = 0,
+  nextHeatThreshold = null,
+  expectedHeatBuildUp = null,
 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -556,6 +560,18 @@ export default function ActivityRunner({
         <p className="activity-briefing-kicker">Current Contract</p>
         <h2 className="activity-runner-title">{activity.name}</h2>
         <p className="activity-briefing-copy">{activity.pageIntro}</p>
+        <p className="activity-briefing-copy">
+          Heat lowers your roll bonus at 20, 40, 60 and 80 Heat. You are currently at Heat {currentHeat},
+          so this action starts with {currentHeatRollModifier >= 0 ? "+0" : currentHeatRollModifier} from Heat.
+          {nextHeatThreshold
+            ? ` Next threshold: ${nextHeatThreshold.minimumHeat} Heat for ${nextHeatThreshold.rollModifier}.`
+            : " Maximum Heat penalty already active."}
+        </p>
+        {expectedHeatBuildUp ? (
+          <p className="activity-briefing-copy">
+            Expected Heat from this action: +{expectedHeatBuildUp.success} on success, +{expectedHeatBuildUp.failure} on failure.
+          </p>
+        ) : null}
         <div className="activity-briefing-stakes">
           <p className="activity-briefing-stake activity-briefing-stake-success">
             <span className="activity-briefing-stake-label">Success reward</span>

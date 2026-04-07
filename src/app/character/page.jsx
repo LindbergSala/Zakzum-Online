@@ -20,6 +20,7 @@ import { getItemById } from "@/lib/items/helpers";
 import { getLevelProgressMeta } from "@/lib/level-progression";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
+import { getHeatRollModifier, getNextHeatThreshold } from "@/lib/roll-engine";
 import { formatItemEffectLabel } from "@/lib/stat-effects";
 import { getCharacterCarryWeightSummary } from "@/lib/weight-rules";
 import styles from "./page.module.css";
@@ -33,8 +34,6 @@ const bodyFont = Source_Sans_3({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 });
-
-const SAFE_HEAT_LIMIT = 10;
 
 function clampPercent(value) {
   return Math.max(0, Math.min(100, Math.round(value)));
@@ -58,13 +57,15 @@ function getCharacterMaxResources(character) {
 }
 
 function buildCharacterGoalCards(character, levelProgress, carryWeightSummary) {
+  const currentHeat = Number(character.heat) || 0;
+  const heatRollModifier = getHeatRollModifier(currentHeat);
+  const nextHeatThreshold = getNextHeatThreshold(currentHeat);
   const levelProgressPercent = clampPercent(
     (levelProgress.xp / levelProgress.nextLevelXpTarget) * 100,
   );
   const heatProgressPercent = clampPercent(
-    ((SAFE_HEAT_LIMIT - character.heat) / SAFE_HEAT_LIMIT) * 100,
+    (Math.max(0, 100 - currentHeat) / 100) * 100,
   );
-  const isHeatInSafeRange = character.heat <= SAFE_HEAT_LIMIT;
 
   return [
     {
@@ -77,12 +78,10 @@ function buildCharacterGoalCards(character, levelProgress, carryWeightSummary) {
     {
       id: "heat",
       label: "Heat control",
-      value: isHeatInSafeRange
-        ? `Safe range (${character.heat}/${SAFE_HEAT_LIMIT})`
-        : `${character.heat - SAFE_HEAT_LIMIT} above safe range`,
-      hint: isHeatInSafeRange
-        ? `${SAFE_HEAT_LIMIT - character.heat} margin left`
-        : "Consider low-risk actions to stabilize",
+      value: `Heat ${currentHeat} | Roll ${heatRollModifier >= 0 ? "+0" : heatRollModifier}`,
+      hint: nextHeatThreshold
+        ? `${nextHeatThreshold.minimumHeat - currentHeat} Heat until ${nextHeatThreshold.rollModifier}`
+        : "Maximum Heat penalty reached",
       progressPercent: heatProgressPercent,
     },
     {
@@ -217,6 +216,10 @@ export default async function CharacterPage() {
             <h2>Current status</h2>
             <p className={styles.muted}>
               Keep track of survivability and progression before your next run.
+            </p>
+            <p className={styles.mutedSecondary}>
+              Heat lowers your roll bonus at 20, 40, 60 and 80 Heat, with penalties of -1,
+              -2, -3 and -4.
             </p>
 
             <div className={styles.resourceMeters}>

@@ -11,6 +11,7 @@ import { getClassPassiveActivityStaminaCost } from "@/lib/class-identity";
 import { ACTIVITY_DEFINITION_MAP, isActivityOpen } from "@/lib/core-loop-data";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
+import { getHeatRollModifier, getNextHeatThreshold } from "@/lib/roll-engine";
 import styles from "../../page.module.css";
 
 const headingFont = Cinzel({
@@ -55,6 +56,36 @@ function getActivityIllustrationSrc(activity) {
   return imagePath ? `${imagePath}?v=${ACTIVITY_IMAGE_CACHE_VERSION}` : null;
 }
 
+function getActivityHeatBuildUpPreview(activity) {
+  const tier = Math.max(1, Number(activity?.tier) || 1);
+
+  if (activity.groupId === "adventure") {
+    return {
+      success: 1,
+      failure: 2 + Math.floor((tier - 1) / 2),
+    };
+  }
+
+  if (activity.groupId === "arena") {
+    return {
+      success: 1,
+      failure: 2,
+    };
+  }
+
+  if (activity.groupId === "quest") {
+    return {
+      success: 0,
+      failure: tier >= 4 ? 2 : 1,
+    };
+  }
+
+  return {
+    success: 0,
+    failure: 1,
+  };
+}
+
 export default async function ActivityRunPage({ params }) {
   const resolvedParams = await params;
   const activity = ACTIVITY_DEFINITION_MAP[resolvedParams.activityId];
@@ -86,6 +117,10 @@ export default async function ActivityRunPage({ params }) {
   ]
     .filter(Boolean)
     .join(" ");
+  const currentHeat = Number(activeCharacter?.heat) || 0;
+  const currentHeatRollModifier = getHeatRollModifier(currentHeat);
+  const nextHeatThreshold = getNextHeatThreshold(currentHeat);
+  const heatBuildUpPreview = getActivityHeatBuildUpPreview(activity);
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -127,11 +162,30 @@ export default async function ActivityRunPage({ params }) {
                 <div className={styles.metricCard}>
                   <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
                 </div>
+                <div className={styles.metricCard}>
+                  <p>
+                    <strong>Heat rule:</strong> Heat lowers roll bonus at 20/40/60/80.
+                    Current Heat {currentHeat} gives {currentHeatRollModifier >= 0 ? "+0" : currentHeatRollModifier}.
+                  </p>
+                  <p>
+                    <strong>Next threshold:</strong>{" "}
+                    {nextHeatThreshold
+                      ? `${nextHeatThreshold.minimumHeat} Heat for ${nextHeatThreshold.rollModifier}`
+                      : "Maximum Heat penalty already active."}
+                  </p>
+                  <p>
+                    <strong>This activity:</strong> expected Heat change is +{heatBuildUpPreview.success} on success and +{heatBuildUpPreview.failure} on failure, before any extra item or effect changes.
+                  </p>
+                </div>
                 <ActivityRunner
                   activity={activity}
                   characterId={activeCharacter.id}
                   currentStamina={activeCharacter.stamina}
                   requiredStamina={effectiveActivityStaminaCost}
+                  currentHeat={currentHeat}
+                  currentHeatRollModifier={currentHeatRollModifier}
+                  nextHeatThreshold={nextHeatThreshold}
+                  expectedHeatBuildUp={heatBuildUpPreview}
                 />
               </>
             ) : (
