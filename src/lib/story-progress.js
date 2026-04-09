@@ -7,6 +7,7 @@ const STORY_ACTIVITIES = ACTIVITY_DEFINITIONS
 
 const STORY_ACTIVITY_IDS = STORY_ACTIVITIES.map((activity) => activity.id);
 const STORY_ACTIVITY_ID_SET = new Set(STORY_ACTIVITY_IDS);
+const TEMPORARILY_UNLOCK_STORY_1_FOR_TESTING = true;
 const STORY_PREREQUISITE_ACTIVITY_IDS = ACTIVITY_DEFINITIONS.filter(
   (activity) => activity.groupId === "quest" || activity.groupId === "adventure",
 ).map((activity) => activity.id);
@@ -150,7 +151,9 @@ export function buildStoryBoardState(activityLogs = []) {
     const previousActivity = STORY_ACTIVITIES[index - 1] ?? null;
     const requiredSuccesses = getStoryRequiredSuccesses(activity);
     const isCompleted = completedStoryIds.has(activity.id);
-    const isUnlocked = index === 0 ? completedAllPrerequisites : previousStoryCompleted;
+    const isUnlocked = index === 0
+      ? completedAllPrerequisites || TEMPORARILY_UNLOCK_STORY_1_FOR_TESTING
+      : previousStoryCompleted;
     const currentStreak = isUnlocked
       ? getCurrentStoryStreak(activity, sortedLogs, completedStoryIds)
       : 0;

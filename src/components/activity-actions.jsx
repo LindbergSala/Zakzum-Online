@@ -12,7 +12,7 @@ function buildDecisionSignal(groupId) {
   }
 
   if (groupId === "story") {
-    return "Visible early, but the first chapter stays locked until every Quest and Adventure has been cleared once.";
+    return "Unlocks after you have cleared the full Quest and Adventure path once.";
   }
 
   return "Save this for later progression and stronger builds.";
@@ -61,13 +61,6 @@ export default function ActivityActions() {
                 </span>
               ))}
             </div>
-            <p className="activity-item-note">
-              {availability.isOpen
-                ? group.id === "story"
-                  ? "The board is available now, but each chapter unlocks through progression and never drops loot."
-                  : "Open now. Choose this when its risk and reward match your current resources."
-                : availability.reason}
-            </p>
             <p className="activity-item-cta">
               {availability.isOpen ? (
                 <Link href={groupHref}>

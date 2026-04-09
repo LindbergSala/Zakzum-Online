@@ -76,10 +76,10 @@ export const ACTIVITY_GROUPS = [
   },
   {
     id: "story",
-    name: "Story Board",
-    tagline: "Five locked chapters that reveal Zakzum's lore",
+    name: "Heartlands Story Board",
+    tagline: "Hidden chapters tied to the Heartlands conspiracy",
     summary:
-      "A five-part chapter track that unlocks only after the full Quest and Adventure board has been cleared once.",
+      "Follow the Blackthorn conspiracy through a five-part chapter track where each clear reveals lore instead of loot.",
     overviewBadges: ["5 Chapters", "3 Rolls In A Row", "No Loot Drops"],
     lootProfile: {
       source: ITEM_LOOT_SOURCE.QUEST,
@@ -89,7 +89,7 @@ export const ACTIVITY_GROUPS = [
       rarityWeights: {},
     },
     description:
-      "Story chapters are progression gates rather than loot farms. Each chapter requires three consecutive successful rolls, reveals a lore segment on every success, and unlocks the next chapter only when fully cleared.",
+      "Story chapters are a lore track built on the same activity rules as the rest of the Heartlands loop, but every chapter must be cleared in a three-roll streak to move the conspiracy forward.",
     activities: STORY_ACTIVITY_STEPS,
   },
   {

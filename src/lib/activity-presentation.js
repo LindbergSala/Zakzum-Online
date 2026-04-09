@@ -1,4 +1,6 @@
 const ACTIVITY_IMAGE_CACHE_VERSION = "20260403";
+const STORY_1_LORE_PUBLIC_PATH =
+  "/lore/Heartlands/The_Blackthorn_Conspiracy/Story_Part_1_Ashes_in_the_Market";
 
 const QUEST_ACTIVITY_IMAGE_BY_TIER = {
   1: "/images/activities/quest/heartlands/Quest_I.png",
@@ -17,7 +19,7 @@ const ADVENTURE_ACTIVITY_IMAGE_BY_TIER = {
 };
 
 const STORY_ACTIVITY_IMAGE_BY_TIER = {
-  1: "/images/activities/story/heartlands/Story_I.png",
+  1: `${STORY_1_LORE_PUBLIC_PATH}/Story_1_image.png`,
 };
 
 const ACTIVITY_IMAGE_BY_GROUP_AND_TIER = {

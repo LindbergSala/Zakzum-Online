@@ -1,6 +1,8 @@
 import { HEARTLANDS_LOCATIONS } from "./location-refs";
 
 const STORY_ROLLS_REQUIRED = 3;
+const STORY_1_LORE_PUBLIC_PATH =
+  "/lore/Heartlands/The_Blackthorn_Conspiracy/Story_Part_1_Ashes_in_the_Market";
 
 function buildStoryParts(chapterTitle) {
   return [
@@ -37,7 +39,7 @@ const STORY_1_PARTS = [
     title: "Story Part 1 - Ashes in the Market",
     text:
       'I. Goldmere Goldmere should have felt ordinary. The market lanes were full, the river docks loud, and merchants argued over grain, iron, and lamp oil as if nothing in the Heartlands could ever truly break. Yet "user-character" noticed strain beneath the noise. Too many guards wore traveler\'s cloaks over soldier\'s boots. Too many ledgers were sealed, then resealed. Too many smiles in Goldmere ended the moment a stranger looked too closely. At a grain auction, "user-character" caught sight of a wax mark hurriedly scraped from a shipping list: the black thorn of House Blackthorn. Moments later, a frightened caravan master dropped a folded inventory sheet after arguing with a buyer who wore no heraldry yet spoke with the confidence of a lord\'s steward. "user-character" caught it before the wind did. The list was written in code, but some names were plain enough: Kingston, Mournstead, Northwatch. One line stood clear even without the cipher: “When the city shutters, the gates must answer to us.” Before "user-character" could read more, two hard-looking men closed in through the crowd. They were no merchants.',
-    imageSrc: "/images/activities/story/heartlands/Story_I_Roll_1.png",
+    imageSrc: `${STORY_1_LORE_PUBLIC_PATH}/Roll_1_image.png`,
     imageAlt: "Ashes in the Market, part one",
   },
   {
@@ -45,7 +47,7 @@ const STORY_1_PARTS = [
     title: "Story Part 1 - Mournstead Road",
     text:
       'II. Mournstead Road "user-character" escaped Goldmere with the ledger hidden beneath the saddle, but riders came fast from the western road. The chase ran until dusk and ended only when Mournstead appeared ahead, all wet timber, muddy carts, and doors already closing for the night. The village looked like the kind of place where bad news arrived before dawn and never really left. Behind an inn stable, "user-character" finally opened the ledger fully. The code broke quickly once its pattern was seen. House Blackthorn was buying control of roads, wagons, and supplies. Northwatch was to receive forged royal orders. Goldmere caravans were to be diverted toward Kingston under Blackthorn oversight. Mournstead was being used as a dead-drop line for messages and weapons. At the bottom stood the true center of it all: Blackthorn Hold. Then arrows struck the stable wall.',
-    imageSrc: "/images/activities/story/heartlands/Story_I_Roll_2.png",
+    imageSrc: `${STORY_1_LORE_PUBLIC_PATH}/Roll_2_image.png`,
     imageAlt: "Ashes in the Market, part two",
   },
   {
@@ -53,7 +55,7 @@ const STORY_1_PARTS = [
     title: "Story Part 1 - Fireborne",
     text:
       'III. Fireborne The attack was clean and disciplined. Four men came through the yard. Two more through the rear gate. "user-character" fought, but the net was closing when fire crossed the rain in a narrow line and drove the attackers back. A lean stranger stepped through the smoke with a rapier in one hand and flame coiled around the other. He fought like a duelist, precise and ruthless, forcing each enemy into the path of his fire. When the last Blackthorn man fled, the stranger gave only one name. Fireborne. He knew the code. He knew the men. He knew why the ledger mattered. House Blackthorn was not preparing for a border war. It was preparing a coup. Kingston would be isolated, then “saved” by the very house engineering the crisis. Once the capital fell under Blackthorn control, the rest of the Heartlands would follow. "user-character" demanded stronger proof. Fireborne answered by showing a scar around one wrist where an old oath-chain had once been locked. He had served Blackthorn in secret, seen maps of the Heartlands marked for seizure, and fled only when he understood that the house meant to crown its ambition with the ruin of Kingston. Before dawn, the two rode north. If the ledger was true, Northwatch had to be warned first.',
-    imageSrc: "/images/activities/story/heartlands/Story_I_Roll_3.png",
+    imageSrc: `${STORY_1_LORE_PUBLIC_PATH}/Roll_3_image.png`,
     imageAlt: "Ashes in the Market, part three",
   },
 ];

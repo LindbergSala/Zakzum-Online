@@ -9,6 +9,9 @@ const nextConfig = {
       {
         pathname: "/images/**",
       },
+      {
+        pathname: "/lore/**",
+      },
     ],
   },
   turbopack: {

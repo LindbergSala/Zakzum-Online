@@ -14,7 +14,7 @@ test("activity illustration resolves quest and adventure art by tier", () => {
   );
   assert.equal(
     getActivityIllustrationSrc({ groupId: "story", tier: 1 }),
-    "/images/activities/story/heartlands/Story_I.png?v=20260403",
+    "/lore/Heartlands/The_Blackthorn_Conspiracy/Story_Part_1_Ashes_in_the_Market/Story_1_image.png?v=20260403",
   );
 });
 

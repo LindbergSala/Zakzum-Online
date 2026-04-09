@@ -36,16 +36,13 @@ function buildPrerequisiteLogs() {
   );
 }
 
-test("story board stays locked until every quest and adventure has succeeded once", () => {
+test("story board keeps later chapters locked until every quest and adventure has succeeded once", () => {
   const partialLogs = buildPrerequisiteLogs().slice(0, -1);
   const boardState = buildStoryBoardState(partialLogs);
 
   assert.equal(boardState.completedAllPrerequisites, false);
-  assert.equal(boardState.statusByActivityId["story-1"].isUnlocked, false);
-  assert.match(
-    boardState.statusByActivityId["story-1"].lockReason,
-    /Complete every Quest and Adventure/i,
-  );
+  assert.equal(boardState.statusByActivityId["story-1"].isUnlocked, true);
+  assert.equal(boardState.statusByActivityId["story-2"].isUnlocked, false);
 });
 
 test("story board tracks current chapter streak from story logs", () => {
