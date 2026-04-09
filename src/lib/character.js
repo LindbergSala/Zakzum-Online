@@ -34,6 +34,18 @@ export const CHARACTER_OVERVIEW_SELECT = {
   unspentStatPoints: true,
 };
 
+const USER_WITH_ACTIVE_CHARACTER_SELECT = {
+  id: true,
+  email: true,
+  activeCharacterId: true,
+  activeCharacter: {
+    select: CHARACTER_OVERVIEW_SELECT,
+  },
+  ownedCharacter: {
+    select: CHARACTER_OVERVIEW_SELECT,
+  },
+};
+
 export function buildBaseResourcesForCharacter(characterClass, constitution) {
   const classHpBase = {
     BARBARIAN: 28,
@@ -85,12 +97,12 @@ export function getCharacterMaxResources(character) {
   };
 }
 
-async function withRegeneratedActiveCharacter(user) {
-  if (!user?.activeCharacter) {
-    return user;
+async function resolvePersistedActiveCharacterState(activeCharacter) {
+  if (!activeCharacter) {
+    return null;
   }
 
-  const restResolved = await resolveCharacterHeatRest(user.activeCharacter, {
+  const restResolved = await resolveCharacterHeatRest(activeCharacter, {
     persist: true,
   });
 
@@ -98,37 +110,20 @@ async function withRegeneratedActiveCharacter(user) {
     persist: true,
   });
 
-  return {
-    ...user,
-    activeCharacter: resolved.character,
-  };
+  return resolved.character;
 }
 
-export async function getUserWithResolvedActiveCharacter(userId) {
+export async function getUserWithActiveCharacter(userId) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: {
-      id: true,
-      email: true,
-      activeCharacterId: true,
-      activeCharacter: {
-        select: CHARACTER_OVERVIEW_SELECT,
-      },
-      ownedCharacter: {
-        select: CHARACTER_OVERVIEW_SELECT,
-      },
-    },
+    select: USER_WITH_ACTIVE_CHARACTER_SELECT,
   });
 
-  if (!user) {
-    return null;
-  }
+  return user;
+}
 
-  if (user.activeCharacter) {
-    return withRegeneratedActiveCharacter(user);
-  }
-
-  if (!user.ownedCharacter) {
+async function ensureUserActiveCharacter(user) {
+  if (!user || user.activeCharacter || !user.ownedCharacter) {
     return user;
   }
 
@@ -137,14 +132,42 @@ export async function getUserWithResolvedActiveCharacter(userId) {
     data: { activeCharacterId: user.ownedCharacter.id },
   });
 
-  return withRegeneratedActiveCharacter({
+  return {
     ...user,
     activeCharacterId: user.ownedCharacter.id,
     activeCharacter: user.ownedCharacter,
-  });
+  };
+}
+
+export async function getUserWithResolvedActiveCharacter(userId) {
+  const user = await getUserWithActiveCharacter(userId);
+
+  if (!user) {
+    return null;
+  }
+
+  const userWithActiveCharacter = await ensureUserActiveCharacter(user);
+
+  if (!userWithActiveCharacter?.activeCharacter) {
+    return userWithActiveCharacter;
+  }
+
+  const activeCharacter = await resolvePersistedActiveCharacterState(
+    userWithActiveCharacter.activeCharacter,
+  );
+
+  return {
+    ...userWithActiveCharacter,
+    activeCharacter,
+  };
 }
 
 export async function getActiveCharacterForUser(userId) {
+  const userWithCharacter = await getUserWithActiveCharacter(userId);
+  return userWithCharacter?.activeCharacter ?? null;
+}
+
+export async function getResolvedActiveCharacterForUser(userId) {
   const userWithCharacter = await getUserWithResolvedActiveCharacter(userId);
   return userWithCharacter?.activeCharacter ?? null;
 }

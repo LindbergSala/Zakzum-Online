@@ -5,7 +5,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import GameNav from "@/components/game-nav";
 import RestLockBanner from "@/components/rest-lock-banner";
 import ResourceStrip from "@/components/resource-strip";
-import { getActiveCharacterForUser } from "@/lib/character";
+import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import {
   getActivitiesForGroup,
   getActivityGroup,
@@ -194,7 +194,7 @@ export default async function ActivityGroupPage({ params }) {
 
   const activities = getActivitiesForGroup(group.id);
   const shouldUseFiveAcrossLayout = group.id === "quest" || group.id === "adventure";
-  const activeCharacter = await getActiveCharacterForUser(user.id);
+  const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
   const heatRestMeta = activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null;
 
   return (

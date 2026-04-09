@@ -3,7 +3,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import GameNav from "@/components/game-nav";
 import RestLockBanner from "@/components/rest-lock-banner";
-import { getActiveCharacterForUser } from "@/lib/character";
+import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { MARKET_DEFINITIONS } from "@/lib/market-data";
 import { requirePageUser } from "@/lib/page-auth";
@@ -21,7 +21,7 @@ const bodyFont = Source_Sans_3({
 
 export default async function MarketPage() {
   const user = await requirePageUser();
-  const activeCharacter = await getActiveCharacterForUser(user.id);
+  const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
   const heatRestMeta = activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null;
   const pageShellClassName = [
     styles.pageShell,

@@ -40,7 +40,7 @@ test("mapped and missing artwork cases resolve correctly", () => {
   );
   assert.equal(
     getItemImagePath("warlord-belt"),
-    "/images/items/betls/warlord-belt.png?v=20260403",
+    "/images/items/belts/warlord-belt.png?v=20260403",
   );
   assert.equal(
     getItemImagePath("focus-charm"),

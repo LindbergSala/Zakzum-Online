@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
-import { getActiveCharacterForUser } from "@/lib/character";
+import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import { prisma } from "@/lib/prisma";
 
 const LOG_ENTRY_LIMIT = 10;
@@ -13,7 +13,7 @@ export async function GET() {
     return error;
   }
 
-  const activeCharacter = await getActiveCharacterForUser(user.id);
+  const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
 
   if (!activeCharacter) {
     return NextResponse.json({ entries: [] }, { status: 200 });

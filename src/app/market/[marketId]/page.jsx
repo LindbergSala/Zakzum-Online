@@ -6,7 +6,7 @@ import GameNav from "@/components/game-nav";
 import InventoryHydrated from "@/components/inventory/inventory-hydrated";
 import RestLockBanner from "@/components/rest-lock-banner";
 import ShopActions from "@/components/shop-actions";
-import { getActiveCharacterForUser } from "@/lib/character";
+import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import {
   getItemById,
@@ -70,7 +70,7 @@ export default async function MarketVendorPage({ params }) {
   }
 
   const user = await requirePageUser();
-  const activeCharacter = await getActiveCharacterForUser(user.id);
+  const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
   const ownedItemsSummary = activeCharacter
     ? await prisma.characterItem.findMany({
         where: { characterId: activeCharacter.id },

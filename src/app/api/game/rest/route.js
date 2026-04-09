@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
 import { parseAndValidateJsonRequestBody } from "@/lib/api-request";
-import { getActiveCharacterForUser } from "@/lib/character";
+import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { isSerializableConflict, runSerializableTransaction } from "@/lib/db-transaction";
 import {
@@ -32,186 +32,224 @@ const REST_CHARACTER_SELECT = {
   updatedAt: true,
 };
 
-export async function GET() {
-  const { user, error } = await requireApiUser();
+export function createRestGetHandler(dependencies = {}) {
+  const requireUser = dependencies.requireApiUser ?? requireApiUser;
+  const resolveActiveCharacter =
+    dependencies.getResolvedActiveCharacterForUser ?? getResolvedActiveCharacterForUser;
+  const logError = dependencies.logServerError ?? logServerError;
 
-  if (error) {
-    return error;
-  }
+  return async function getRest() {
+    const { user, error } = await requireUser();
 
-  const activeCharacter = await getActiveCharacterForUser(user.id);
+    if (error) {
+      return error;
+    }
 
-  return NextResponse.json(
-    {
-      resources: activeCharacter ? getCharacterResourceSnapshot(activeCharacter) : null,
-      rest: activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null,
-    },
-    { status: 200 },
-  );
+    try {
+      const activeCharacter = await resolveActiveCharacter(user.id);
+
+      return NextResponse.json(
+        {
+          resources: activeCharacter ? getCharacterResourceSnapshot(activeCharacter) : null,
+          rest: activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null,
+        },
+        { status: 200 },
+      );
+    } catch (caughtError) {
+      logError("/api/game/rest [GET]", caughtError, { userId: user.id });
+
+      return NextResponse.json(
+        { message: "Something went wrong while loading rest state." },
+        { status: 500 },
+      );
+    }
+  };
 }
 
-export async function POST(request) {
-  const originError = validateWriteRequestOrigin(request);
-  if (originError) {
-    return originError;
-  }
+export function createRestPostHandler(dependencies = {}) {
+  const ensureOriginIsValid =
+    dependencies.validateWriteRequestOrigin ?? validateWriteRequestOrigin;
+  const requireUser = dependencies.requireApiUser ?? requireApiUser;
+  const parseRequestBody =
+    dependencies.parseAndValidateJsonRequestBody ?? parseAndValidateJsonRequestBody;
+  const resolveActiveCharacter =
+    dependencies.getResolvedActiveCharacterForUser ?? getResolvedActiveCharacterForUser;
+  const runTransaction =
+    dependencies.runSerializableTransaction ?? runSerializableTransaction;
+  const isSerializableConflictError =
+    dependencies.isSerializableConflict ?? isSerializableConflict;
+  const logError = dependencies.logServerError ?? logServerError;
 
-  const { user, error } = await requireApiUser();
+  return async function postRest(request) {
+    const originError = ensureOriginIsValid(request);
+    if (originError) {
+      return originError;
+    }
 
-  if (error) {
-    return error;
-  }
+    const { user, error } = await requireUser();
 
-  const { data: parsedData, response: parseResponse } =
-    await parseAndValidateJsonRequestBody(request, {
-      schema: restActionSchema,
-      invalidMessage: "Invalid rest action.",
-    });
+    if (error) {
+      return error;
+    }
 
-  if (parseResponse) {
-    return parseResponse;
-  }
+    let activeCharacter = null;
+    let parsedData = null;
 
-  const activeCharacter = await getActiveCharacterForUser(user.id);
-
-  if (!activeCharacter) {
-    return NextResponse.json(
-      { message: "You must create a character before you can rest." },
-      { status: 400 },
-    );
-  }
-
-  try {
-    const result = await runSerializableTransaction(async (tx) => {
-      const latestCharacter = await tx.character.findUnique({
-        where: { id: activeCharacter.id },
-        select: REST_CHARACTER_SELECT,
+    try {
+      const parsedRequest = await parseRequestBody(request, {
+        schema: restActionSchema,
+        invalidMessage: "Invalid rest action.",
       });
+      parsedData = parsedRequest.data;
 
-      if (!latestCharacter) {
-        return {
-          ok: false,
-          status: 404,
-          message: "Character was not found.",
-        };
+      if (parsedRequest.response) {
+        return parsedRequest.response;
       }
 
-      if (parsedData.action === "start") {
-        if (isCharacterResting(latestCharacter)) {
+      activeCharacter = await resolveActiveCharacter(user.id);
+
+      if (!activeCharacter) {
+        return NextResponse.json(
+          { message: "You must create a character before you can rest." },
+          { status: 400 },
+        );
+      }
+
+      const result = await runTransaction(async (tx) => {
+        const latestCharacter = await tx.character.findUnique({
+          where: { id: activeCharacter.id },
+          select: REST_CHARACTER_SELECT,
+        });
+
+        if (!latestCharacter) {
           return {
             ok: false,
-            status: 409,
-            message: "Rest is already active.",
-            resources: getCharacterResourceSnapshot(latestCharacter),
-            rest: getCharacterHeatRestMeta(latestCharacter),
+            status: 404,
+            message: "Character was not found.",
           };
         }
 
-        if ((Number(latestCharacter.heat) || 0) <= 0) {
+        if (parsedData.action === "start") {
+          if (isCharacterResting(latestCharacter)) {
+            return {
+              ok: false,
+              status: 409,
+              message: "Rest is already active.",
+              resources: getCharacterResourceSnapshot(latestCharacter),
+              rest: getCharacterHeatRestMeta(latestCharacter),
+            };
+          }
+
+          if ((Number(latestCharacter.heat) || 0) <= 0) {
+            return {
+              ok: false,
+              status: 400,
+              message: "Heat is already at 0.",
+              resources: getCharacterResourceSnapshot(latestCharacter),
+              rest: null,
+            };
+          }
+
+          const heatRestEndsAt = new Date(Date.now() + HEAT_REST_DURATION_MS);
+          const updateResult = await tx.character.updateMany({
+            where: {
+              id: latestCharacter.id,
+              updatedAt: latestCharacter.updatedAt,
+            },
+            data: { heatRestEndsAt },
+          });
+
+          if (updateResult.count !== 1) {
+            return {
+              ok: false,
+              status: 409,
+              message: "Character state changed. Please try resting again.",
+            };
+          }
+
+          const updatedCharacter = {
+            ...latestCharacter,
+            heatRestEndsAt,
+          };
+
+          return {
+            ok: true,
+            status: 200,
+            message: `Rest started. -${HEAT_REST_RECOVERY} Heat every 15 min until canceled.`,
+            resources: getCharacterResourceSnapshot(updatedCharacter),
+            rest: getCharacterHeatRestMeta(updatedCharacter),
+          };
+        }
+
+        if (!isCharacterResting(latestCharacter)) {
           return {
             ok: false,
             status: 400,
-            message: "Heat is already at 0.",
+            message: "No active rest.",
             resources: getCharacterResourceSnapshot(latestCharacter),
             rest: null,
           };
         }
 
-        const heatRestEndsAt = new Date(Date.now() + HEAT_REST_DURATION_MS);
         const updateResult = await tx.character.updateMany({
           where: {
             id: latestCharacter.id,
             updatedAt: latestCharacter.updatedAt,
           },
-          data: { heatRestEndsAt },
+          data: { heatRestEndsAt: null },
         });
 
         if (updateResult.count !== 1) {
           return {
             ok: false,
             status: 409,
-            message: "Character state changed. Please try resting again.",
+            message: "Character state changed. Please try canceling rest again.",
           };
         }
 
         const updatedCharacter = {
           ...latestCharacter,
-          heatRestEndsAt,
+          heatRestEndsAt: null,
         };
 
         return {
           ok: true,
           status: 200,
-          message: `Rest started. -${HEAT_REST_RECOVERY} Heat every 15 min until canceled.`,
+          message: "Rest canceled.",
           resources: getCharacterResourceSnapshot(updatedCharacter),
-          rest: getCharacterHeatRestMeta(updatedCharacter),
-        };
-      }
-
-      if (!isCharacterResting(latestCharacter)) {
-        return {
-          ok: false,
-          status: 400,
-          message: "No active rest.",
-          resources: getCharacterResourceSnapshot(latestCharacter),
           rest: null,
         };
-      }
-
-      const updateResult = await tx.character.updateMany({
-        where: {
-          id: latestCharacter.id,
-          updatedAt: latestCharacter.updatedAt,
-        },
-        data: { heatRestEndsAt: null },
       });
 
-      if (updateResult.count !== 1) {
-        return {
-          ok: false,
-          status: 409,
-          message: "Character state changed. Please try canceling rest again.",
-        };
+      return NextResponse.json(
+        {
+          message: result.message,
+          resources: result.resources ?? null,
+          rest: result.rest ?? null,
+        },
+        { status: result.status },
+      );
+    } catch (caughtError) {
+      if (isSerializableConflictError(caughtError)) {
+        return NextResponse.json(
+          { message: "Rest action conflicted with another update. Try again." },
+          { status: 409 },
+        );
       }
 
-      const updatedCharacter = {
-        ...latestCharacter,
-        heatRestEndsAt: null,
-      };
+      logError("/api/game/rest", caughtError, {
+        userId: user.id,
+        characterId: activeCharacter?.id,
+        action: parsedData?.action,
+      });
 
-      return {
-        ok: true,
-        status: 200,
-        message: "Rest canceled.",
-        resources: getCharacterResourceSnapshot(updatedCharacter),
-        rest: null,
-      };
-    });
-
-    return NextResponse.json(
-      {
-        message: result.message,
-        resources: result.resources ?? null,
-        rest: result.rest ?? null,
-      },
-      { status: result.status },
-    );
-  } catch (caughtError) {
-    if (isSerializableConflict(caughtError)) {
       return NextResponse.json(
-        { message: "Rest action conflicted with another update. Try again." },
-        { status: 409 },
+        { message: "Something went wrong while processing rest." },
+        { status: 500 },
       );
     }
-
-    logServerError("/api/game/rest", caughtError, {
-      userId: user.id,
-      characterId: activeCharacter.id,
-      action: parsedData.action,
-    });
-    return NextResponse.json(
-      { message: "Something went wrong while processing rest." },
-      { status: 500 },
-    );
-  }
+  };
 }
+
+export const GET = createRestGetHandler();
+export const POST = createRestPostHandler();

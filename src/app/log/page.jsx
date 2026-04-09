@@ -3,7 +3,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import GameNav from "@/components/game-nav";
 import { formatDashboardLogEntry } from "@/lib/activity-log-format";
-import { getActiveCharacterForUser } from "@/lib/character";
+import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
 import styles from "./page.module.css";
@@ -22,7 +22,7 @@ const bodyFont = Source_Sans_3({
 
 export default async function LogPage() {
   const user = await requirePageUser();
-  const activeCharacter = await getActiveCharacterForUser(user.id);
+  const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
 
   const entries = activeCharacter
     ? await prisma.activityLog.findMany({

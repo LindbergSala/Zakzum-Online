@@ -6,7 +6,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import ActivityRunner from "@/components/activity-runner";
 import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
-import { getActiveCharacterForUser } from "@/lib/character";
+import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import { getClassPassiveActivityStaminaCost } from "@/lib/class-identity";
 import { ACTIVITY_DEFINITION_MAP, isActivityOpen } from "@/lib/core-loop-data";
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
@@ -100,7 +100,7 @@ export default async function ActivityRunPage({ params }) {
   }
 
   const user = await requirePageUser();
-  const activeCharacter = await getActiveCharacterForUser(user.id);
+  const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
   const groupPath =
     activity.groupId === "quest"
       ? "/quest"

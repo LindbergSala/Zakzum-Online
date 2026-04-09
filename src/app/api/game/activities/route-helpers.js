@@ -1,11 +1,10 @@
-import { createHash } from "crypto";
-
 import { getActivityLocationContext } from "@/lib/core-loop-data";
 import { getItemMaxStack, isItemStackable } from "@/lib/items/helpers";
 import {
   buildProjectedOwnedItemsWithIncrement,
   normalizePositiveQuantity,
 } from "@/lib/items/owned-items";
+import { hashSessionToken } from "@/lib/session";
 import {
   getCharacterCarryWeightSummary,
   getItemWeightById,
@@ -59,10 +58,6 @@ export function buildActivityContext(activity) {
     regionId: context.regionId,
     regionName: context.regionName,
   };
-}
-
-export function hashSessionToken(token) {
-  return createHash("sha256").update(token).digest("hex");
 }
 
 export async function applyLootDropToInventory(

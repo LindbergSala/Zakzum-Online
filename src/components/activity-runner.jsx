@@ -1,16 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { normalizeInventoryItems } from "./inventory/inventory-logic";
-import {
-  getInventoryLayoutStorageKey,
-  loadStoredInventoryLayout,
-  resolvePocketSlots,
-} from "./inventory/pocket-layout";
+import ActivityRunnerPockets from "./activity-runner-pockets";
 import { syncInventoryAction } from "./inventory/inventory-utils";
+import { useActivityPocketInventory } from "./use-activity-pocket-inventory";
+import { useActivityRollReveal } from "./use-activity-roll-reveal";
 import {
   formatActivityDelta,
   formatDeltaBonus,
@@ -19,21 +15,7 @@ import {
   formatStatWithBonus,
   getRollDisplayValue,
 } from "@/lib/activity-runner-format";
-import { getJson, postJson } from "@/lib/client-json";
-import { getItemImagePath } from "@/lib/items/helpers";
-
-const MIN_ROLL_ANIMATION_MS = 2000;
-const ROLL_TICK_MS = 56;
-const BONUS_REVEAL_DELAY_MS = 320;
-const TOTAL_REVEAL_DELAY_MS = 700;
-const OUTCOME_REVEAL_DELAY_MS = 980;
-const DICE_THROW_SOUND_PATH = "/audio/sfx/dice-throw.mp3";
-const DICE_THROW_VOLUME_RANGE = [0.82, 0.96];
-const DICE_THROW_PLAYBACK_RATE_RANGE = [0.985, 1.015];
-
-function getRandomNumberInRange(min, max) {
-  return min + Math.random() * (max - min);
-}
+import { postJson } from "@/lib/client-json";
 
 export default function ActivityRunner({
   activity,
@@ -50,258 +32,20 @@ export default function ActivityRunner({
   const [isPocketActionLoading, setIsPocketActionLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [lastResult, setLastResult] = useState(null);
-  const [rollReveal, setRollReveal] = useState(null);
   const [availableStamina, setAvailableStamina] = useState(currentStamina);
   const [trayMessage, setTrayMessage] = useState(null);
-  const [inventoryItems, setInventoryItems] = useState([]);
-  const [inventoryLoadError, setInventoryLoadError] = useState("");
-  const [isInventoryLoading, setIsInventoryLoading] = useState(true);
-  const [pocketPlacements, setPocketPlacements] = useState({});
-  const rollingIntervalRef = useRef(null);
-  const revealTimeoutsRef = useRef([]);
-  const runSequenceRef = useRef(0);
-  const activeDiceAudioRef = useRef([]);
-
-  function removeActiveDiceAudio(audio) {
-    activeDiceAudioRef.current = activeDiceAudioRef.current.filter(
-      (activeAudio) => activeAudio !== audio,
-    );
-  }
-
-  function stopActiveDiceAudio() {
-    activeDiceAudioRef.current.forEach((audio) => {
-      audio.pause();
-      audio.currentTime = 0;
-    });
-    activeDiceAudioRef.current = [];
-  }
-
-  function playDiceThrowSound() {
-    if (typeof Audio === "undefined") {
-      return;
-    }
-
-    const audio = new Audio(DICE_THROW_SOUND_PATH);
-    audio.preload = "auto";
-    audio.volume = getRandomNumberInRange(...DICE_THROW_VOLUME_RANGE);
-    audio.playbackRate = getRandomNumberInRange(...DICE_THROW_PLAYBACK_RATE_RANGE);
-
-    if ("preservesPitch" in audio) {
-      audio.preservesPitch = false;
-    }
-
-    if ("mozPreservesPitch" in audio) {
-      audio.mozPreservesPitch = false;
-    }
-
-    if ("webkitPreservesPitch" in audio) {
-      audio.webkitPreservesPitch = false;
-    }
-
-    const cleanup = () => {
-      audio.removeEventListener("ended", cleanup);
-      audio.removeEventListener("error", cleanup);
-      audio.pause();
-      audio.currentTime = 0;
-      removeActiveDiceAudio(audio);
-    };
-
-    audio.addEventListener("ended", cleanup);
-    audio.addEventListener("error", cleanup);
-    activeDiceAudioRef.current.push(audio);
-
-    void audio.play().catch(() => {
-      cleanup();
-    });
-  }
-
-  function clearRevealTimers() {
-    if (rollingIntervalRef.current) {
-      clearInterval(rollingIntervalRef.current);
-      rollingIntervalRef.current = null;
-    }
-
-    revealTimeoutsRef.current.forEach((timeoutId) => {
-      clearTimeout(timeoutId);
-    });
-    revealTimeoutsRef.current = [];
-  }
-
-  function queueRevealStep(callback, delay) {
-    const timeoutId = setTimeout(() => {
-      revealTimeoutsRef.current = revealTimeoutsRef.current.filter(
-        (activeTimeoutId) => activeTimeoutId !== timeoutId,
-      );
-      callback();
-    }, delay);
-    revealTimeoutsRef.current.push(timeoutId);
-  }
-
-  function startRollingPreview(sequenceId) {
-    clearRevealTimers();
-
-    setRollReveal({
-      phase: "rolling",
-      dieValue: Math.floor(Math.random() * 20) + 1,
-      bonusValue: null,
-      totalValue: null,
-      targetValue: null,
-      showBonus: false,
-      showTotal: false,
-      showOutcome: false,
-      success: null,
-    });
-
-    rollingIntervalRef.current = setInterval(() => {
-      setRollReveal((current) => {
-        if (!current || sequenceId !== runSequenceRef.current) {
-          return current;
-        }
-
-        return {
-          ...current,
-          dieValue: Math.floor(Math.random() * 20) + 1,
-        };
-      });
-    }, ROLL_TICK_MS);
-  }
-
-  function revealResolvedRoll(result, sequenceId, startedAt) {
-    const elapsed = Date.now() - startedAt;
-    const lockDelay = Math.max(0, MIN_ROLL_ANIMATION_MS - elapsed);
-    const resolvedBonus = result.roll.totalRollBonus ?? result.roll.statModifier ?? 0;
-
-    queueRevealStep(() => {
-      if (sequenceId !== runSequenceRef.current) {
-        return;
-      }
-
-      if (rollingIntervalRef.current) {
-        clearInterval(rollingIntervalRef.current);
-        rollingIntervalRef.current = null;
-      }
-
-      setRollReveal({
-        phase: "locked",
-        dieValue: result.roll.value,
-        bonusValue: resolvedBonus,
-        totalValue: result.roll.total,
-        targetValue: result.roll.target,
-        showBonus: false,
-        showTotal: false,
-        showOutcome: false,
-        success: result.success,
-      });
-    }, lockDelay);
-
-    queueRevealStep(() => {
-      if (sequenceId !== runSequenceRef.current) {
-        return;
-      }
-
-      setRollReveal((current) =>
-        current
-          ? {
-              ...current,
-              showBonus: true,
-            }
-          : current,
-      );
-    }, lockDelay + BONUS_REVEAL_DELAY_MS);
-
-    queueRevealStep(() => {
-      if (sequenceId !== runSequenceRef.current) {
-        return;
-      }
-
-      setRollReveal((current) =>
-        current
-          ? {
-              ...current,
-              showTotal: true,
-            }
-          : current,
-      );
-    }, lockDelay + TOTAL_REVEAL_DELAY_MS);
-
-    queueRevealStep(() => {
-      if (sequenceId !== runSequenceRef.current) {
-        return;
-      }
-
-      setRollReveal((current) =>
-        current
-          ? {
-              ...current,
-              showOutcome: true,
-              phase: "resolved",
-            }
-          : current,
-      );
-    }, lockDelay + OUTCOME_REVEAL_DELAY_MS);
-  }
+  const { rollReveal, beginRollSequence, revealResolvedRoll, resetRollReveal } =
+    useActivityRollReveal();
+  const {
+    inventoryLoadError,
+    isInventoryLoading,
+    pocketSlots,
+    replaceInventoryItems,
+  } = useActivityPocketInventory(characterId);
 
   useEffect(() => {
     setAvailableStamina(currentStamina);
   }, [currentStamina]);
-
-  useEffect(() => {
-    if (!characterId) {
-      setPocketPlacements({});
-      setInventoryItems([]);
-      setIsInventoryLoading(false);
-      return undefined;
-    }
-
-    let isCancelled = false;
-
-    async function loadInventorySnapshot() {
-      try {
-        setIsInventoryLoading(true);
-        const { ok, data } = await getJson("/api/game/inventory");
-
-        if (!ok) {
-          throw new Error(data.message ?? "Could not load inventory pockets.");
-        }
-
-        if (isCancelled) {
-          return;
-        }
-
-        setInventoryItems(normalizeInventoryItems(data.items ?? []));
-        setInventoryLoadError("");
-      } catch (error) {
-        if (isCancelled) {
-          return;
-        }
-
-        setInventoryItems([]);
-        setInventoryLoadError(error.message ?? "Could not load inventory pockets.");
-      } finally {
-        if (!isCancelled) {
-          setIsInventoryLoading(false);
-        }
-      }
-    }
-
-    setPocketPlacements(loadStoredInventoryLayout(characterId).pocketPlacements);
-    void loadInventorySnapshot();
-
-    function handleStorage(event) {
-      if (event.key && event.key !== getInventoryLayoutStorageKey(characterId)) {
-        return;
-      }
-
-      setPocketPlacements(loadStoredInventoryLayout(characterId).pocketPlacements);
-    }
-
-    window.addEventListener("storage", handleStorage);
-
-    return () => {
-      isCancelled = true;
-      window.removeEventListener("storage", handleStorage);
-    };
-  }, [characterId]);
 
   useEffect(() => {
     if (currentStamina >= requiredStamina) {
@@ -309,19 +53,8 @@ export default function ActivityRunner({
     }
   }, [currentStamina, requiredStamina]);
 
-  useEffect(() => {
-    return () => {
-      clearRevealTimers();
-      stopActiveDiceAudio();
-    };
-  }, []);
-
   const rollDisplayValue = getRollDisplayValue(rollReveal);
   const isBusy = isLoading || isPocketActionLoading;
-  const pocketSlots = useMemo(
-    () => resolvePocketSlots({ pocketPlacements, items: inventoryItems }),
-    [inventoryItems, pocketPlacements],
-  );
   const trayVerdict = trayMessage
     ? trayMessage
     : rollReveal?.showOutcome
@@ -358,8 +91,10 @@ export default function ActivityRunner({
       });
 
       const nextStamina = Number(data.resources?.stamina);
-      setInventoryItems(normalizeInventoryItems(data.items ?? []));
-      setAvailableStamina(Number.isFinite(nextStamina) ? nextStamina : availableStamina);
+      replaceInventoryItems(data.items ?? []);
+      setAvailableStamina((current) =>
+        Number.isFinite(nextStamina) ? nextStamina : current,
+      );
       setTrayMessage(null);
       setFeedback({
         tone: "ok",
@@ -378,9 +113,7 @@ export default function ActivityRunner({
 
   async function runActivity() {
     if (availableStamina < requiredStamina) {
-      clearRevealTimers();
-      stopActiveDiceAudio();
-      setRollReveal(null);
+      resetRollReveal();
       setLastResult(null);
       setFeedback(null);
       setTrayMessage("Not enough Stamina");
@@ -388,15 +121,12 @@ export default function ActivityRunner({
     }
 
     const startedAt = Date.now();
-    const sequenceId = runSequenceRef.current + 1;
-    runSequenceRef.current = sequenceId;
+    const sequenceId = beginRollSequence();
 
     setIsLoading(true);
     setFeedback(null);
     setLastResult(null);
     setTrayMessage(null);
-    startRollingPreview(sequenceId);
-    playDiceThrowSound();
 
     try {
       const { ok, data } = await postJson("/api/game/activities", {
@@ -405,9 +135,7 @@ export default function ActivityRunner({
 
       if (!ok) {
         setLastResult(null);
-        clearRevealTimers();
-        setRollReveal(null);
-        stopActiveDiceAudio();
+        resetRollReveal();
         if (typeof data.message === "string" && data.message.startsWith("Not enough Stamina")) {
           setTrayMessage("Not enough Stamina");
           setFeedback(null);
@@ -422,16 +150,13 @@ export default function ActivityRunner({
       if (data.result) {
         revealResolvedRoll(data.result, sequenceId, startedAt);
       } else {
-        clearRevealTimers();
-        setRollReveal(null);
+        resetRollReveal();
       }
       setFeedback({ tone: "ok", text: data.message });
       router.refresh();
     } catch {
       setLastResult(null);
-      clearRevealTimers();
-      setRollReveal(null);
-      stopActiveDiceAudio();
+      resetRollReveal();
       setFeedback({
         tone: "error",
         text: "The activity could not be completed. Try again.",
@@ -471,71 +196,14 @@ export default function ActivityRunner({
         </div>
       </section>
 
-      <section className="activity-pockets">
-        <div className="activity-pockets-header">
-          <p className="activity-pockets-kicker">Quick Slots</p>
-          <p className="activity-pockets-copy">
-            Assigned stackable consumables are available here for fast use before you roll.
-          </p>
-        </div>
-        <div className="activity-pockets-grid">
-          {pocketSlots.map((slot) => (
-            <article
-              className={`activity-pocket-slot ${slot.item ? "activity-pocket-slot-filled" : ""}`}
-              key={`activity-pocket-${slot.slotIndex}`}
-            >
-              <p className="activity-pocket-slot-label">Slot {slot.slotIndex + 1}</p>
-              {slot.item ? (
-                <>
-                  <div className="activity-pocket-slot-media">
-                    <div className="activity-pocket-slot-artwork-wrap" aria-hidden="true">
-                      {getItemImagePath(slot.item.itemId) ? (
-                        <Image
-                          src={getItemImagePath(slot.item.itemId)}
-                          alt=""
-                          fill
-                          unoptimized
-                          sizes="64px"
-                          className="activity-pocket-slot-artwork"
-                        />
-                      ) : (
-                        <span className="activity-pocket-slot-artwork-fallback">?</span>
-                      )}
-                    </div>
-                    <div className="activity-pocket-slot-copy-wrap">
-                      <p className="activity-pocket-slot-name">{slot.item.itemName}</p>
-                      <p className="activity-pocket-slot-meta">Ready x{slot.item.displayQuantity}</p>
-                      <p className="activity-pocket-slot-owned">Owned x{slot.item.quantity}</p>
-                    </div>
-                  </div>
-                  <p className="activity-pocket-slot-effect">{slot.item.effectLabel}</p>
-                  <button
-                    type="button"
-                    className="activity-pocket-slot-button"
-                    onClick={() => handleUsePocket(slot.slotIndex)}
-                    disabled={isBusy}
-                  >
-                    {isPocketActionLoading ? "Using..." : "Use 1"}
-                  </button>
-                </>
-              ) : (
-                <p className="activity-pocket-slot-empty">
-                  {isInventoryLoading
-                    ? "Loading consumables..."
-                    : slot.itemKey
-                      ? "Assigned consumable is out of stock."
-                      : "Assign a stackable consumable in Inventory > Quick Slots."}
-                </p>
-              )}
-            </article>
-          ))}
-        </div>
-        {inventoryLoadError ? (
-          <p className="feedback error" aria-live="polite">
-            {inventoryLoadError}
-          </p>
-        ) : null}
-      </section>
+      <ActivityRunnerPockets
+        pocketSlots={pocketSlots}
+        isBusy={isBusy}
+        isInventoryLoading={isInventoryLoading}
+        isPocketActionLoading={isPocketActionLoading}
+        inventoryLoadError={inventoryLoadError}
+        onUsePocket={handleUsePocket}
+      />
 
       <section
         className={`roll-theater ${

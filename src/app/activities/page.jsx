@@ -6,7 +6,7 @@ import GameNav from "@/components/game-nav";
 import HeartlandsLocationSlideshow from "@/components/heartlands-location-slideshow";
 import RestLockBanner from "@/components/rest-lock-banner";
 import ResourceStrip from "@/components/resource-strip";
-import { getActiveCharacterForUser } from "@/lib/character";
+import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
@@ -59,7 +59,7 @@ const HEARTLANDS_LOCATION_SLIDES = [
 
 export default async function ActivitiesPage() {
   const user = await requirePageUser();
-  const activeCharacter = await getActiveCharacterForUser(user.id);
+  const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
   const heatRestMeta = activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null;
 
   return (
