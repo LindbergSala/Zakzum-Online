@@ -12,6 +12,10 @@ test("activity illustration resolves quest and adventure art by tier", () => {
     getActivityIllustrationSrc({ groupId: "adventure", tier: 2 }),
     "/images/activities/adventure/heartlands/Adventure_II.png?v=20260403",
   );
+  assert.equal(
+    getActivityIllustrationSrc({ groupId: "story", tier: 1 }),
+    "/images/activities/story/heartlands/Story_I.png?v=20260403",
+  );
 });
 
 test("activity illustration returns null for unsupported input", () => {

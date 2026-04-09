@@ -16,9 +16,14 @@ const ADVENTURE_ACTIVITY_IMAGE_BY_TIER = {
   5: "/images/activities/adventure/heartlands/Adventure_V.png",
 };
 
+const STORY_ACTIVITY_IMAGE_BY_TIER = {
+  1: "/images/activities/story/heartlands/Story_I.png",
+};
+
 const ACTIVITY_IMAGE_BY_GROUP_AND_TIER = {
   quest: QUEST_ACTIVITY_IMAGE_BY_TIER,
   adventure: ADVENTURE_ACTIVITY_IMAGE_BY_TIER,
+  story: STORY_ACTIVITY_IMAGE_BY_TIER,
 };
 
 export function getActivityIllustrationSrc(activity) {
