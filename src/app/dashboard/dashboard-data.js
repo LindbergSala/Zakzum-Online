@@ -4,6 +4,7 @@ import {
   getCharacterMaxResources,
   getUserWithResolvedActiveCharacter,
 } from "@/lib/character";
+import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import {
   getHpRegenerationMeta,
   getStaminaRegenerationMeta,
@@ -64,6 +65,132 @@ function buildDashboardGoals(character, levelProgress) {
   ];
 }
 
+function buildDashboardDecision(activeCharacter, {
+  maxResources,
+  hpMeta,
+  staminaMeta,
+  onboardingModel,
+}) {
+  const heatRestMeta = activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null;
+  const hpPercent = maxResources
+    ? clampPercent((activeCharacter.hp / maxResources.maxHp) * 100)
+    : 0;
+  const staminaPercent = maxResources
+    ? clampPercent((activeCharacter.stamina / maxResources.maxStamina) * 100)
+    : 0;
+  const currentHeat = Number(activeCharacter?.heat) || 0;
+
+  if (heatRestMeta?.isResting) {
+    return {
+      tone: "warn",
+      title: "Rest is active",
+      summary: "Activities and market actions stay blocked until the rest pass finishes or you cancel it.",
+      hint: `Heat recovery: -${heatRestMeta.heatRecoveredPerPass} every ${heatRestMeta.durationMinutes} min.`,
+      action: null,
+    };
+  }
+
+  if (hpPercent <= 35) {
+    return {
+      tone: "danger",
+      title: "HP is the main risk right now",
+      summary: "Avoid risky runs until your health stabilizes. A failure can stop your next turn immediately.",
+      hint: hpMeta?.nextHpAt ? "HP is regenerating in the background." : "Recover before pushing harder content.",
+      action: null,
+    };
+  }
+
+  if (staminaPercent <= 25) {
+    return {
+      tone: "warn",
+      title: "Stamina is your bottleneck",
+      summary: "Choose a cheaper action or wait for regeneration before committing to another costly activity.",
+      hint: staminaMeta?.nextStaminaAt ? "Stamina recovery is already ticking." : "Low stamina will block many activity starts.",
+      action: null,
+    };
+  }
+
+  if (currentHeat >= 60) {
+    return {
+      tone: "danger",
+      title: "Heat is dangerously high",
+      summary: "You are already under heavy roll pressure. Rest or choose a safer board before forcing another run.",
+      hint: "Heat penalties intensify at 20, 40, 60, and 80.",
+      action: {
+        href: "/activities",
+        label: "Review activities",
+      },
+    };
+  }
+
+  if (onboardingModel?.showPanel) {
+    return {
+      tone: onboardingModel.showRewardClaim ? "ok" : "warn",
+      title: onboardingModel.currentStep || "Onboarding in progress",
+      summary: onboardingModel.nextStep || "Follow the quick start steps to lock in your first loop.",
+      hint: onboardingModel.intro,
+      action: onboardingModel.primaryAction,
+    };
+  }
+
+  if (currentHeat >= 20) {
+    return {
+      tone: "warn",
+      title: "Heat pressure has started",
+      summary: "Penalties are active now. Safer activities and planned recovery matter more than brute forcing runs.",
+      hint: "Heat is still manageable, but it will snowball if you ignore it.",
+      action: {
+        href: "/activities/quest",
+        label: "Open quest board",
+      },
+    };
+  }
+
+  return {
+    tone: "ok",
+    title: "You are ready for a productive run",
+    summary: "HP, stamina, and heat are stable enough to keep building momentum.",
+    hint: "Use the goal cards below to pick the next reward worth chasing.",
+    action: {
+      href: "/activities",
+      label: "Choose activity",
+    },
+  };
+}
+
+function buildResourceGuidance(activeCharacter, maxResources) {
+  const hpPercent = maxResources
+    ? clampPercent((activeCharacter.hp / maxResources.maxHp) * 100)
+    : 0;
+  const staminaPercent = maxResources
+    ? clampPercent((activeCharacter.stamina / maxResources.maxStamina) * 100)
+    : 0;
+  const heat = Number(activeCharacter.heat) || 0;
+  const heatRestMeta = getCharacterHeatRestMeta(activeCharacter);
+
+  return {
+    hp:
+      hpPercent <= 35
+        ? "Dangerously low for risky runs."
+        : hpPercent <= 70
+          ? "Stable, but failures will still sting."
+          : "Healthy enough to keep pushing.",
+    stamina:
+      staminaPercent <= 25
+        ? "May block costly activities right now."
+        : staminaPercent <= 60
+          ? "Enough for a short push, not a long chain."
+          : "Strong enough for multiple actions.",
+    heat: heatRestMeta?.isResting
+      ? "Cooling down during rest."
+      : heat >= 60
+        ? "Heavy roll penalty pressure."
+        : heat >= 20
+          ? "Penalty threshold is active."
+          : "No active heat penalty yet.",
+  };
+}
+
 export async function loadDashboardPageData(userId) {
   const userWithCharacter = await getUserWithResolvedActiveCharacter(userId);
   const activeCharacter = userWithCharacter?.activeCharacter ?? null;
@@ -111,6 +238,17 @@ export async function loadDashboardPageData(userId) {
   const maxResources = activeCharacter
     ? getCharacterMaxResources(activeCharacter)
     : null;
+  const dashboardDecision = activeCharacter
+    ? buildDashboardDecision(activeCharacter, {
+        maxResources,
+        hpMeta,
+        staminaMeta,
+        onboardingModel,
+      })
+    : null;
+  const resourceGuidance = activeCharacter && maxResources
+    ? buildResourceGuidance(activeCharacter, maxResources)
+    : null;
 
   return {
     activeCharacter,
@@ -126,7 +264,9 @@ export async function loadDashboardPageData(userId) {
       activeCharacter && levelProgress
         ? buildDashboardGoals(activeCharacter, levelProgress)
         : [],
+    dashboardDecision,
     maxResources,
+    resourceGuidance,
     hpPercent: maxResources
       ? clampPercent((activeCharacter.hp / maxResources.maxHp) * 100)
       : 0,

@@ -33,9 +33,11 @@ export default async function DashboardPage() {
     logEntries,
     compactLogEntries,
     dashboardGoals,
+    dashboardDecision,
     maxResources,
     hpPercent,
     staminaPercent,
+    resourceGuidance,
     characterAvatarImage,
   } = await loadDashboardPageData(user.id);
   const effectiveCharacter = activeCharacter;
@@ -56,7 +58,37 @@ export default async function DashboardPage() {
           {shouldShowOnboardingPanel ? <OnboardingPanel model={onboardingModel} /> : null}
 
           {effectiveCharacter ? (
-            <div className={styles.panelGrid}>
+            <>
+              {dashboardDecision ? (
+                <section
+                  className={`${styles.decisionBanner} ${
+                    dashboardDecision.tone === "danger"
+                      ? styles.decisionBannerDanger
+                      : dashboardDecision.tone === "warn"
+                        ? styles.decisionBannerWarn
+                        : styles.decisionBannerOk
+                  }`}
+                >
+                  <div>
+                    <p className={styles.decisionEyebrow}>Right now</p>
+                    <h2 className={styles.decisionTitle}>{dashboardDecision.title}</h2>
+                    <p className={styles.decisionSummary}>{dashboardDecision.summary}</p>
+                    {dashboardDecision.hint ? (
+                      <p className={styles.decisionHint}>{dashboardDecision.hint}</p>
+                    ) : null}
+                  </div>
+                  {dashboardDecision.action ? (
+                    <Link
+                      href={dashboardDecision.action.href}
+                      className={styles.decisionAction}
+                    >
+                      {dashboardDecision.action.label}
+                    </Link>
+                  ) : null}
+                </section>
+              ) : null}
+
+              <div className={styles.panelGrid}>
               <section className={styles.panel}>
                 {characterAvatarImage ? (
                   <div className={styles.characterPortraitWrap}>
@@ -98,6 +130,7 @@ export default async function DashboardPage() {
                         style={{ width: `${hpPercent}%` }}
                       />
                     </div>
+                    <p className={styles.resourceNote}>{resourceGuidance?.hp}</p>
                   </article>
 
                   <article className={styles.resourceCard}>
@@ -122,6 +155,21 @@ export default async function DashboardPage() {
                         style={{ width: `${staminaPercent}%` }}
                       />
                     </div>
+                    <p className={styles.resourceNote}>{resourceGuidance?.stamina}</p>
+                  </article>
+
+                  <article className={styles.resourceCard}>
+                    <div className={styles.resourceTop}>
+                      <p className={styles.resourceLabel}>Heat</p>
+                      <p className={styles.resourceValue}>{effectiveCharacter.heat}</p>
+                    </div>
+                    <div className={styles.goalTrack} aria-hidden="true">
+                      <span
+                        className={`${styles.goalFill} ${styles.heatFill}`}
+                        style={{ width: `${Math.min(100, (Number(effectiveCharacter.heat) || 0))}%` }}
+                      />
+                    </div>
+                    <p className={styles.resourceNote}>{resourceGuidance?.heat}</p>
                   </article>
                 </div>
                 <p className={styles.progression}>
@@ -203,7 +251,8 @@ export default async function DashboardPage() {
                   ))}
                 </ul>
               </section>
-            </div>
+              </div>
+            </>
           ) : (
             <section className={`${styles.panel} ${styles.emptyState}`}>
               <h2>No active character yet</h2>

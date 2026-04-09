@@ -218,3 +218,16 @@
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
+
+.itemHoverTradeNote {
+  display: block;
+  margin-top: 0.34rem;
+  padding: 0.28rem 0.4rem;
+  border-radius: 8px;
+  background: rgba(247, 229, 193, 0.14);
+  border: 1px solid rgba(212, 173, 116, 0.2);
+  color: #f7e7cb;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}

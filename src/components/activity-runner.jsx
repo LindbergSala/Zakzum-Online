@@ -20,6 +20,7 @@ import { postJson } from "@/lib/client-json";
 export default function ActivityRunner({
   activity,
   characterId,
+  currentHp = 0,
   currentStamina = 0,
   requiredStamina = 0,
   currentHeat = 0,
@@ -74,6 +75,61 @@ export default function ActivityRunner({
   const isOutcomeRevealPending = Boolean(lastResult && rollReveal && !rollReveal.showOutcome);
   const shouldShowPendingSummary = isLoading || isOutcomeRevealPending;
   const shouldShowOutcomeSummary = Boolean(lastResult) && (!rollReveal || rollReveal.showOutcome);
+  const readyPocketCount = pocketSlots.filter((slot) => slot.item).length;
+  const staminaDeficit = Math.max(0, requiredStamina - availableStamina);
+  const failureHpCost = Math.abs(Number(activity.failPenalty?.hp) || 0);
+  const wouldDropHpToZero = failureHpCost > 0 && currentHp > 0
+    ? currentHp - failureHpCost <= 0
+    : false;
+  const runDecision = (() => {
+    if (availableStamina < requiredStamina) {
+      return {
+        tone: "warn",
+        title: "Blocked by stamina",
+        summary:
+          readyPocketCount > 0
+            ? `You need ${staminaDeficit} more Stamina. Use a Quick Slot consumable or wait for recovery.`
+            : `You need ${staminaDeficit} more Stamina before this run can start.`,
+        note:
+          readyPocketCount > 0
+            ? `${readyPocketCount} Quick Slot${readyPocketCount === 1 ? "" : "s"} ready.`
+            : "No Quick Slot consumables are ready right now.",
+      };
+    }
+
+    if (currentHeat >= 60 || wouldDropHpToZero) {
+      return {
+        tone: "danger",
+        title: "High-risk attempt",
+        summary: wouldDropHpToZero
+          ? "A bad outcome can drop this run into lethal territory."
+          : "Heat pressure is already severe, so this run starts from a weak roll position.",
+        note: expectedHeatBuildUp
+          ? `Expected Heat: +${expectedHeatBuildUp.success} on success, +${expectedHeatBuildUp.failure} on failure.`
+          : "Pressure is high even before extra effects are counted.",
+      };
+    }
+
+    if (currentHeat >= 20 || (expectedHeatBuildUp?.failure ?? 0) >= 8) {
+      return {
+        tone: "warn",
+        title: "Manageable, but costly if it goes wrong",
+        summary: "You can run this now, but a failure will push pressure and recovery needs upward.",
+        note: nextHeatThreshold
+          ? `Next Heat breakpoint at ${nextHeatThreshold.minimumHeat}.`
+          : "You are already at the last Heat breakpoint.",
+      };
+    }
+
+    return {
+      tone: "ok",
+      title: "Good window to run",
+      summary: "Resources are stable enough for a productive attempt.",
+      note: readyPocketCount > 0
+        ? `${readyPocketCount} Quick Slot${readyPocketCount === 1 ? "" : "s"} available for prep.`
+        : "No extra consumable prep is active.",
+    };
+  })();
 
   async function handleUsePocket(slotIndex) {
     const pocketItem = pocketSlots.find((slot) => slot.slotIndex === slotIndex)?.item;
@@ -216,6 +272,27 @@ export default function ActivityRunner({
               : "roll-theater-pending"
         }`}
       >
+        <section
+          className={`activity-run-decision activity-run-decision-${runDecision.tone}`}
+          aria-label="Run readiness"
+        >
+          <p className="activity-run-decision-kicker">Attempt readiness</p>
+          <h3 className="activity-run-decision-title">{runDecision.title}</h3>
+          <p className="activity-run-decision-summary">{runDecision.summary}</p>
+          <div className="activity-run-decision-chips">
+            <span className="activity-run-decision-chip">
+              Stamina: {availableStamina}/{requiredStamina}
+            </span>
+            <span className="activity-run-decision-chip">
+              Heat: {currentHeat} ({currentHeatRollModifier >= 0 ? "+0" : currentHeatRollModifier})
+            </span>
+            <span className="activity-run-decision-chip">
+              Quick Slots: {readyPocketCount}
+            </span>
+          </div>
+          <p className="activity-run-decision-note">{runDecision.note}</p>
+        </section>
+
         <p className="roll-theater-action">
           <button
             type="button"

@@ -149,6 +149,51 @@
   margin: 0 0 0.24rem;
 }
 
+.purchaseSignal {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0.18rem 0.48rem;
+  border-radius: 999px;
+  border: 1px solid rgba(146, 109, 70, 0.3);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.purchaseSignalOk {
+  color: #305828;
+  background: rgba(232, 244, 220, 0.9);
+  border-color: rgba(89, 137, 61, 0.34);
+}
+
+.purchaseSignalWarn {
+  color: #8a4d18;
+  background: rgba(250, 234, 207, 0.92);
+  border-color: rgba(171, 106, 34, 0.34);
+}
+
+.purchaseSignalNeutral {
+  color: #5d4328;
+  background: rgba(240, 231, 216, 0.92);
+}
+
+.recommendedBuy {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0.14rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(233, 244, 219, 0.92);
+  border: 1px solid rgba(89, 137, 61, 0.3);
+  color: #305828;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .marketItemRow > button {
   grid-column: 2;
   justify-self: start;

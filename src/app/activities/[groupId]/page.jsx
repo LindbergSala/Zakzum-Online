@@ -5,7 +5,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import GameNav from "@/components/game-nav";
 import RestLockBanner from "@/components/rest-lock-banner";
 import ResourceStrip from "@/components/resource-strip";
-import { getResolvedActiveCharacterForUser } from "@/lib/character";
+import { getCharacterMaxResources, getResolvedActiveCharacterForUser } from "@/lib/character";
 import {
   getActivitiesForGroup,
   getActivityGroup,
@@ -144,6 +144,55 @@ function buildRiskBadgeLabel(riskProfile) {
   return primaryClause?.trim() || riskProfile;
 }
 
+function buildActivityDecisionSignal(activity, activeCharacter) {
+  if (!activeCharacter) {
+    return {
+      label: "Create character first",
+      tone: "warn",
+      note: "You need an active character before this run becomes available.",
+    };
+  }
+
+  const currentHeat = Number(activeCharacter.heat) || 0;
+  const currentHp = Number(activeCharacter.hp) || 0;
+  const currentStamina = Number(activeCharacter.stamina) || 0;
+  const failHpCost = Math.abs(Number(activity.failPenalty?.hp) || 0);
+  const staminaCost = Number(activity.staminaCost) || 0;
+  const wouldDropHpToZero = failHpCost > 0 && currentHp - failHpCost <= 0;
+
+  if (currentStamina < staminaCost) {
+    return {
+      label: "Rest first",
+      tone: "warn",
+      note: `Blocked now. You need ${staminaCost - currentStamina} more Stamina.`,
+    };
+  }
+
+  if (currentHeat >= 60 || wouldDropHpToZero) {
+    return {
+      label: "Push later",
+      tone: "danger",
+      note: wouldDropHpToZero
+        ? "A bad outcome can knock you out. Recover HP before forcing this."
+        : "Heat pressure is already severe. Safer choices or rest will pay off.",
+    };
+  }
+
+  if (currentHeat >= 20 || failHpCost >= Math.max(4, Math.ceil(currentHp * 0.35))) {
+    return {
+      label: "Risky now",
+      tone: "warn",
+      note: "Runnable, but current resources make the downside expensive.",
+    };
+  }
+
+  return {
+    label: "Safe now",
+    tone: "ok",
+    note: "Current HP, Stamina, and Heat make this a reasonable next push.",
+  };
+}
+
 export default async function ActivityGroupPage({ params }) {
   const resolvedParams = await params;
   const group = getActivityGroup(resolvedParams.groupId);
@@ -196,6 +245,7 @@ export default async function ActivityGroupPage({ params }) {
   const shouldUseFiveAcrossLayout = group.id === "quest" || group.id === "adventure";
   const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
   const heatRestMeta = activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null;
+  const maxResources = activeCharacter ? getCharacterMaxResources(activeCharacter) : null;
 
   return (
     <div className={pageShellClassName}>
@@ -212,7 +262,10 @@ export default async function ActivityGroupPage({ params }) {
             {activeCharacter ? (
               <>
                 <div className={styles.metricCard}>
-                  <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
+                  <ResourceStrip
+                    resources={getCharacterResourceSnapshot(activeCharacter)}
+                    maxResources={maxResources}
+                  />
                 </div>
 
                 {heatRestMeta?.isResting ? (
@@ -224,6 +277,13 @@ export default async function ActivityGroupPage({ params }) {
                     }`}
                   >
                     {activities.map((activity, index) => (
+                      (() => {
+                        const decisionSignal = buildActivityDecisionSignal(
+                          activity,
+                          activeCharacter,
+                        );
+
+                        return (
                       <article
                         key={activity.id}
                         className={`${styles.activityCard} ${groupThemeClass}`}
@@ -242,6 +302,17 @@ export default async function ActivityGroupPage({ params }) {
                           {buildActivityTeaser(activity, group.id)}
                         </p>
                         <div className={styles.activityMetaWrap}>
+                          <span
+                            className={`${styles.activityDecisionChip} ${
+                              decisionSignal.tone === "danger"
+                                ? styles.activityDecisionChipDanger
+                                : decisionSignal.tone === "warn"
+                                  ? styles.activityDecisionChipWarn
+                                  : styles.activityDecisionChipOk
+                            }`}
+                          >
+                            {decisionSignal.label}
+                          </span>
                           <span className={styles.activityMetaChip}>
                             {buildRiskBadgeLabel(activity.riskProfile)}
                           </span>
@@ -251,6 +322,7 @@ export default async function ActivityGroupPage({ params }) {
                             </span>
                           ) : null}
                         </div>
+                        <p className={styles.activityDecisionNote}>{decisionSignal.note}</p>
                         <div className={styles.activityOutcome}>
                           <p>
                             <strong>Success:</strong> {formatCompactResourceDelta(activity.successReward)}
@@ -266,6 +338,8 @@ export default async function ActivityGroupPage({ params }) {
                           {buildOpenLabel(activity, group.id)}
                         </Link>
                       </article>
+                        );
+                      })()
                     ))}
                   </div>
                 )}

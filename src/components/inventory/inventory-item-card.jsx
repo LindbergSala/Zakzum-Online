@@ -36,6 +36,7 @@ export default function InventoryItemCard({
   const imagePath = !compact ? getItemImagePath(item.itemId) : null;
   const statLabel = item.effectLabel || "No stats";
   const valueLabel = formatInventoryValueLabel(item);
+  const tradeNote = typeof item.tradeNote === "string" ? item.tradeNote : "";
 
   return (
     <button
@@ -89,6 +90,9 @@ export default function InventoryItemCard({
               <span className={styles.itemHoverName}>{item.itemName}</span>
               <span className={styles.itemHoverStatLine}>{statLabel}</span>
               <span className={styles.itemHoverValueLine}>{valueLabel}</span>
+              {tradeNote ? (
+                <span className={styles.itemHoverTradeNote}>{tradeNote}</span>
+              ) : null}
             </span>
           </span>
         </span>

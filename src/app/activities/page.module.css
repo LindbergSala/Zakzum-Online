@@ -304,6 +304,14 @@
   line-height: 1.45;
 }
 
+.actionsWrap :global(.activity-item-signal) {
+  margin: -0.04rem 0 0;
+  color: #3e2a18;
+  font-size: 0.83rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .actionsWrap :global(.activity-item-badges) {
   margin-top: 0.1rem;
   display: flex;
@@ -327,6 +335,13 @@
 
 .actionsWrap :global(.activity-item-cta) {
   margin: 0.1rem 0 0;
+}
+
+.actionsWrap :global(.activity-item-note) {
+  margin: 0;
+  color: #6a4a2d;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
 .actionsWrap :global(.activity-item-cta a) {

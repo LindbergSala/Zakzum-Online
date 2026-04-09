@@ -491,6 +491,44 @@
   letter-spacing: 0.01em;
 }
 
+.activityDecisionChip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.14rem 0.42rem;
+  border: 1px solid rgba(105, 68, 37, 0.32);
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.activityDecisionChipOk {
+  background: rgba(233, 244, 219, 0.92);
+  color: #2f5b27;
+  border-color: rgba(92, 139, 64, 0.34);
+}
+
+.activityDecisionChipWarn {
+  background: rgba(250, 234, 207, 0.92);
+  color: #8a4d18;
+  border-color: rgba(171, 106, 34, 0.34);
+}
+
+.activityDecisionChipDanger {
+  background: rgba(249, 224, 216, 0.94);
+  color: #8b2e20;
+  border-color: rgba(174, 75, 61, 0.34);
+}
+
+.activityDecisionNote {
+  margin: 0;
+  color: #5d4022;
+  font-size: 0.76rem;
+  line-height: 1.38;
+}
+
 .activityOutcome {
   margin-top: 0.08rem;
   display: grid;

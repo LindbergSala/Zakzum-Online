@@ -61,6 +61,112 @@ function summarizeOwnedByItemId(ownedItems = []) {
   return summary;
 }
 
+function buildRecommendedBuy(shopItems, activeCharacter, carryWeightSummary) {
+  if (!activeCharacter || !carryWeightSummary) {
+    return null;
+  }
+
+  const affordableItems = shopItems.filter((item) => {
+    const price = Number(item.price) || 0;
+    const weight = Number(item.weight) || 0;
+    return price <= activeCharacter.gold && weight <= carryWeightSummary.remainingWeight;
+  });
+
+  if (affordableItems.length === 0) {
+    return null;
+  }
+
+  const preferredItem = affordableItems
+    .filter((item) => !item.owned || item.isStackable)
+    .sort((left, right) => {
+      if (left.isStackable !== right.isStackable) {
+        return left.isStackable ? 1 : -1;
+      }
+
+      return (Number(left.price) || 0) - (Number(right.price) || 0);
+    })[0];
+
+  return preferredItem ?? affordableItems[0] ?? null;
+}
+
+function buildSellRecommendations(inventoryItems = [], carryWeightSummary = null) {
+  const candidates = inventoryItems
+    .filter((item) => !item.isEquipped)
+    .map((item) => ({
+      ...item,
+      totalGoldValue: (Number(item.sellValue?.gold) || 0) * Math.max(1, Number(item.quantity) || 1),
+      totalWeight: (Number(item.weight) || 0) * Math.max(1, Number(item.quantity) || 1),
+    }))
+    .filter((item) => item.totalGoldValue > 0 || item.totalWeight > 0)
+    .sort((left, right) => {
+      if (right.totalWeight !== left.totalWeight) {
+        return right.totalWeight - left.totalWeight;
+      }
+
+      return right.totalGoldValue - left.totalGoldValue;
+    })
+    .slice(0, 3);
+
+  if (candidates.length === 0) {
+    return [];
+  }
+
+  return candidates.map((item, index) => ({
+    itemId: item.itemId,
+    label:
+      carryWeightSummary?.remainingWeight <= 3 || carryWeightSummary?.isOverweight
+        ? index === 0
+          ? "Strong sell candidate: frees the most room immediately."
+          : "Good sell candidate if you need room fast."
+        : "Optional sell candidate if you want more Gold and space.",
+  }));
+}
+
+function buildTradeDecision({ activeCharacter, carryWeightSummary, shopItems }) {
+  if (!activeCharacter || !carryWeightSummary) {
+    return null;
+  }
+
+  const cheapestPrice = shopItems.reduce((lowest, item) => {
+    const price = Number(item.price) || 0;
+    if (price <= 0) {
+      return lowest;
+    }
+
+    return lowest === null ? price : Math.min(lowest, price);
+  }, null);
+
+  if (carryWeightSummary.isOverweight) {
+    return {
+      tone: "warn",
+      title: "Sell first",
+      summary: `You are carrying ${Math.abs(carryWeightSummary.remainingWeight)} Wt too much. Clear weight before new purchases or loot.`,
+    };
+  }
+
+  if (carryWeightSummary.remainingWeight <= 3) {
+    return {
+      tone: "warn",
+      title: "Weight room is almost gone",
+      summary: `Only ${carryWeightSummary.remainingWeight} Wt remains. Prioritize selling or skip heavy upgrades for now.`,
+    };
+  }
+
+  if (cheapestPrice !== null && activeCharacter.gold < cheapestPrice) {
+    return {
+      tone: "warn",
+      title: "Gold is the blocker",
+      summary: `Cheapest available purchase starts at ${cheapestPrice} Gold. Sell extras or run another activity first.`,
+    };
+  }
+
+  return {
+    tone: "ok",
+    title: "Good market window",
+    summary: "You have enough room to buy selectively. Favor upgrades that solve the next bottleneck, not just the lowest price.",
+  };
+}
+
 export default async function MarketVendorPage({ params }) {
   const resolvedParams = await params;
   const market = MARKET_DEFINITION_MAP[resolvedParams.marketId];
@@ -129,12 +235,33 @@ export default async function MarketVendorPage({ params }) {
       sellValue: getItemSellValue(definition),
     };
   });
+  const recommendedBuy = buildRecommendedBuy(
+    shopItems,
+    activeCharacter,
+    carryWeightSummary,
+  );
+  const sellRecommendations = buildSellRecommendations(
+    inventoryItems,
+    carryWeightSummary,
+  );
+  const sellRecommendationMap = Object.fromEntries(
+    sellRecommendations.map((entry) => [entry.itemId, entry.label]),
+  );
+  const inventoryItemsWithTradeNotes = inventoryItems.map((item) => ({
+    ...item,
+    tradeNote: sellRecommendationMap[item.itemId] ?? "",
+  }));
   const inventoryStateKey = activeCharacter
-    ? `${activeCharacter.id}:${inventoryItems
+    ? `${activeCharacter.id}:${inventoryItemsWithTradeNotes
         .map((item) => `${item.id}-${item.isEquipped ? 1 : 0}-${item.quantity}`)
         .join("|")}`
     : "market-inventory-empty";
   const heatRestMeta = activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null;
+  const tradeDecision = buildTradeDecision({
+    activeCharacter,
+    carryWeightSummary,
+    shopItems,
+  });
   const pageShellClassName = [
     styles.pageShell,
     bodyFont.className,
@@ -170,6 +297,20 @@ export default async function MarketVendorPage({ params }) {
               <RestLockBanner areaLabel={market.name} />
             ) : market.supportsPurchases ? (
               <>
+                {tradeDecision ? (
+                  <section
+                    className={`${styles.tradeDecision} ${
+                      tradeDecision.tone === "warn"
+                        ? styles.tradeDecisionWarn
+                        : styles.tradeDecisionOk
+                    }`}
+                  >
+                    <p className={styles.tradeDecisionKicker}>Trade priority</p>
+                    <h3 className={styles.tradeDecisionTitle}>{tradeDecision.title}</h3>
+                    <p className={styles.tradeDecisionSummary}>{tradeDecision.summary}</p>
+                  </section>
+                ) : null}
+
                 <div className={styles.vendorMetrics}>
                   <article className={styles.vendorMetric}>
                     <p className={styles.vendorMetricLabel}>Gold</p>
@@ -189,19 +330,41 @@ export default async function MarketVendorPage({ params }) {
                 </div>
                 <div className={styles.inventorySection}>
                   <h3 className={styles.sectionHeading}>Inventory</h3>
+                  {sellRecommendations.length > 0 ? (
+                    <section className={styles.tradeRecommendationList}>
+                      <p className={styles.tradeRecommendationTitle}>Sell candidates</p>
+                      <ul className={styles.tradeRecommendationItems}>
+                        {sellRecommendations.map((entry) => (
+                          <li key={entry.itemId}>{entry.label}</li>
+                        ))}
+                      </ul>
+                    </section>
+                  ) : null}
                   <InventoryHydrated
                     key={inventoryStateKey}
                     characterId={activeCharacter.id}
-                    items={inventoryItems}
+                    items={inventoryItemsWithTradeNotes}
                     enableSellDropzone
+                    carrySummary={carryWeightSummary}
                   />
                 </div>
                 <h3 className={styles.sectionHeading}>Market offers</h3>
+                {recommendedBuy ? (
+                  <section className={styles.tradeRecommendationList}>
+                    <p className={styles.tradeRecommendationTitle}>Recommended next buy</p>
+                    <p className={styles.tradeRecommendationLead}>
+                      {recommendedBuy.name}: affordable now, fits your current carry room, and is a better next purchase than waiting for a random buy.
+                    </p>
+                  </section>
+                ) : null}
                 {shopItems.length > 0 ? (
                   <div className={styles.actionsWrap}>
                     <ShopActions
                       items={shopItems}
                       marketId={market.id}
+                      currentGold={activeCharacter.gold}
+                      remainingWeight={carryWeightSummary.remainingWeight}
+                      recommendedItemId={recommendedBuy?.id ?? ""}
                     />
                   </div>
                 ) : (

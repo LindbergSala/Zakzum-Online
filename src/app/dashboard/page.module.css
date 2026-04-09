@@ -162,6 +162,71 @@
   gap: 0.85rem;
 }
 
+.decisionBanner {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-radius: 14px;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(95, 58, 33, 0.34);
+  box-shadow: inset 0 1px 0 rgba(255, 249, 233, 0.42);
+}
+
+.decisionBannerDanger {
+  background: linear-gradient(155deg, rgba(252, 232, 224, 0.92) 0%, rgba(244, 208, 194, 0.88) 100%);
+}
+
+.decisionBannerWarn {
+  background: linear-gradient(155deg, rgba(250, 239, 214, 0.94) 0%, rgba(242, 222, 179, 0.88) 100%);
+}
+
+.decisionBannerOk {
+  background: linear-gradient(155deg, rgba(240, 247, 225, 0.94) 0%, rgba(222, 236, 192, 0.88) 100%);
+}
+
+.decisionEyebrow {
+  margin: 0;
+  color: #7b4d28;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.decisionTitle {
+  margin: 0.18rem 0 0;
+  color: var(--ink-strong);
+  font-size: 1.12rem;
+}
+
+.decisionSummary {
+  margin: 0.3rem 0 0;
+  color: var(--ink-strong);
+  font-weight: 700;
+}
+
+.decisionHint {
+  margin: 0.22rem 0 0;
+  color: var(--ink-soft);
+}
+
+.decisionAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 800;
+  color: #fff8eb;
+  background: linear-gradient(145deg, #cf7e34 0%, #a65426 100%);
+  box-shadow: 0 10px 22px rgba(129, 67, 29, 0.24);
+  white-space: nowrap;
+}
+
 .panel {
   border-radius: 14px;
   padding: 1rem;
@@ -244,6 +309,13 @@
   padding: 0.68rem 0.76rem;
   border: 1px solid rgba(103, 64, 35, 0.28);
   background: rgba(255, 248, 232, 0.66);
+}
+
+.resourceNote {
+  margin: 0.38rem 0 0;
+  color: #6a4a2d;
+  font-size: 0.8rem;
+  line-height: 1.35;
 }
 
 .resourceTop {
@@ -434,6 +506,10 @@
   background: linear-gradient(145deg, #c88a3d 0%, #9b5b1f 100%);
 }
 
+.heatFill {
+  background: linear-gradient(145deg, #b45b35 0%, #872f1d 100%);
+}
+
 .emptyState {
   margin-top: 1.2rem;
   max-width: 620px;
@@ -499,6 +575,11 @@
 
   .panelWide {
     grid-column: auto;
+  }
+
+  .decisionBanner {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .goalGrid {

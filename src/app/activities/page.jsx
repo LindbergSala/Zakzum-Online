@@ -6,7 +6,7 @@ import GameNav from "@/components/game-nav";
 import HeartlandsLocationSlideshow from "@/components/heartlands-location-slideshow";
 import RestLockBanner from "@/components/rest-lock-banner";
 import ResourceStrip from "@/components/resource-strip";
-import { getResolvedActiveCharacterForUser } from "@/lib/character";
+import { getCharacterMaxResources, getResolvedActiveCharacterForUser } from "@/lib/character";
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
@@ -61,6 +61,7 @@ export default async function ActivitiesPage() {
   const user = await requirePageUser();
   const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
   const heatRestMeta = activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null;
+  const maxResources = activeCharacter ? getCharacterMaxResources(activeCharacter) : null;
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -89,7 +90,10 @@ export default async function ActivitiesPage() {
             {activeCharacter ? (
               <>
                 <div className={styles.metricCard}>
-                  <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
+                  <ResourceStrip
+                    resources={getCharacterResourceSnapshot(activeCharacter)}
+                    maxResources={maxResources}
+                  />
                 </div>
                 {heatRestMeta?.isResting ? (
                   <RestLockBanner areaLabel="Activities" />

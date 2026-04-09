@@ -5,10 +5,47 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getItemImagePath } from "@/lib/items/helpers";
 import { formatBuyValueLabel, formatTradeValueLabel } from "@/lib/items/trade-format";
- import { requestJson } from "@/lib/client-json";
+import { requestJson } from "@/lib/client-json";
 import styles from "./shop-actions.module.css";
 
-export default function ShopActions({ items, marketId = null }) {
+function buildPurchaseSignal(item, currentGold, remainingWeight) {
+  const buyPrice = Number(item.price) || 0;
+  const itemWeight = Number(item.weight) || 0;
+
+  if (!item.isStackable && item.owned) {
+    return {
+      tone: "neutral",
+      text: "Already owned",
+    };
+  }
+
+  if (currentGold < buyPrice) {
+    return {
+      tone: "warn",
+      text: `Need ${buyPrice - currentGold} more Gold`,
+    };
+  }
+
+  if (Number.isFinite(remainingWeight) && itemWeight > remainingWeight) {
+    return {
+      tone: "warn",
+      text: `Clear ${itemWeight - remainingWeight} Wt first`,
+    };
+  }
+
+  return {
+    tone: "ok",
+    text: item.isStackable ? "Affordable refill" : "Affordable and fits",
+  };
+}
+
+export default function ShopActions({
+  items,
+  marketId = null,
+  currentGold = 0,
+  remainingWeight = null,
+  recommendedItemId = "",
+}) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [activeActionKey, setActiveActionKey] = useState("");
@@ -91,6 +128,8 @@ export default function ShopActions({ items, marketId = null }) {
                 : "Unique equipment";
               const imagePath = getItemImagePath(item.id);
               const overlayTradeLine = `Buy: ${formatBuyValueLabel(item)} | Sell: ${formatTradeValueLabel(item.sellValue)}`;
+              const purchaseSignal = buildPurchaseSignal(item, currentGold, remainingWeight);
+              const isRecommended = recommendedItemId === item.id;
 
               return (
                 <li key={item.id} className={styles.marketItemRow}>
@@ -139,6 +178,20 @@ export default function ShopActions({ items, marketId = null }) {
                     <p>
                       <strong>{item.name}</strong>
                       {Number(item.ownedQuantity) > 0 ? ` (owned x${item.ownedQuantity})` : ""}
+                    </p>
+                    {isRecommended ? (
+                      <p className={styles.recommendedBuy}>Recommended next buy</p>
+                    ) : null}
+                    <p
+                      className={`${styles.purchaseSignal} ${
+                        purchaseSignal.tone === "warn"
+                          ? styles.purchaseSignalWarn
+                          : purchaseSignal.tone === "ok"
+                            ? styles.purchaseSignalOk
+                            : styles.purchaseSignalNeutral
+                      }`}
+                    >
+                      {purchaseSignal.text}
                     </p>
                     {item.description ? <p>{item.description}</p> : null}
                     <p>

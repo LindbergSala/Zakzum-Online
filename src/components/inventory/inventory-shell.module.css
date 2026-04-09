@@ -24,6 +24,42 @@
   color: #4e3720;
 }
 
+.carryText {
+  margin: 0.34rem 0 0;
+  color: #5f4326;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.decisionSignal {
+  margin-top: 0.72rem;
+  border-radius: 12px;
+  padding: 0.72rem 0.8rem;
+  border: 1px solid rgba(95, 60, 33, 0.3);
+}
+
+.decisionSignalOk {
+  background: linear-gradient(155deg, rgba(236, 244, 219, 0.84) 0%, rgba(221, 235, 190, 0.78) 100%);
+}
+
+.decisionSignalWarn {
+  background: linear-gradient(155deg, rgba(249, 236, 208, 0.9) 0%, rgba(242, 219, 173, 0.82) 100%);
+}
+
+.decisionSignalTitle {
+  margin: 0;
+  color: #2f1f0e;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.decisionSignalText {
+  margin: 0.24rem 0 0;
+  color: #4e3720;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
 .layout {
   margin-top: 0.75rem;
   display: grid;

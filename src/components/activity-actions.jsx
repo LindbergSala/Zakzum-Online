@@ -2,6 +2,18 @@ import Link from "next/link";
 
 import { ACTIVITY_GROUPS, getActivityGroupAvailability } from "@/lib/core-loop-data";
 
+function buildDecisionSignal(groupId) {
+  if (groupId === "quest") {
+    return "Best starting point when you want steady progress and lower risk.";
+  }
+
+  if (groupId === "adventure") {
+    return "Higher pressure and stronger swings. Better when HP and stamina are stable.";
+  }
+
+  return "Save this for later progression and stronger builds.";
+}
+
 export default function ActivityActions() {
   return (
     <ul className="activity-list">
@@ -35,6 +47,7 @@ export default function ActivityActions() {
             <p className="activity-item-summary">
               {group.summary ?? group.description}
             </p>
+            <p className="activity-item-signal">{buildDecisionSignal(group.id)}</p>
             <div className="activity-item-badges" aria-label={`${group.name} quick facts`}>
               {badges.map((badge) => (
                 <span key={`${group.id}-${badge}`} className="activity-item-badge">
@@ -42,6 +55,11 @@ export default function ActivityActions() {
                 </span>
               ))}
             </div>
+            <p className="activity-item-note">
+              {availability.isOpen
+                ? "Open now. Choose this when its risk and reward match your current resources."
+                : availability.reason}
+            </p>
             <p className="activity-item-cta">
               {availability.isOpen ? (
                 <Link href={groupHref}>

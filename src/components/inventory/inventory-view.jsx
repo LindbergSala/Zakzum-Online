@@ -22,10 +22,75 @@ import {
   toInventorySyncPayload,
 } from "./inventory-utils";
 
+function buildInventoryDecisionSignal({
+  unplacedItems,
+  consumableStacks,
+  pocketSlots,
+  enableSellDropzone,
+  carrySummary,
+}) {
+  if (carrySummary?.isOverweight) {
+    return {
+      title: "Sell before buying anything else",
+      text: `You are over the limit by ${Math.abs(carrySummary.remainingWeight)} Wt. Clear weight before trying to expand your loadout.`,
+      tone: "warn",
+    };
+  }
+
+  if (carrySummary && carrySummary.remainingWeight <= 3) {
+    return {
+      title: "Carry room is almost gone",
+      text: `Only ${carrySummary.remainingWeight} Wt remains. Sell or reorganize before the next loot or purchase.`,
+      tone: "warn",
+    };
+  }
+
+  if (unplacedItems.length > 0) {
+    return {
+      title: "Backpack space is blocking you",
+      text: "Free space before you loot, split stacks, or try to reorganize quickly.",
+      tone: "warn",
+    };
+  }
+
+  const emptyPocketCount = pocketSlots.filter((slot) => !slot.item).length;
+
+  if (consumableStacks.length > 0 && emptyPocketCount > 0) {
+    return {
+      title: "Quick Slots are underused",
+      text: "Drag potions and tonics into Quick Slots so they are easier to reach before activities.",
+      tone: "ok",
+    };
+  }
+
+  if (consumableStacks.length === 0) {
+    return {
+      title: "No consumables are ready",
+      text: "Consumables are your fastest preparation tool. Visit a vendor if you want safer runs.",
+      tone: "warn",
+    };
+  }
+
+  if (enableSellDropzone) {
+    return {
+      title: "Inventory is ready for trading",
+      text: "Sell extra weight before buying more. A lighter bag gives you more room for new loot.",
+      tone: "ok",
+    };
+  }
+
+  return {
+    title: "Inventory is ready",
+    text: "Your loadout is organized enough for the next run.",
+    tone: "ok",
+  };
+}
+
 export default function Inventory({
   characterId,
   items,
   enableSellDropzone = false,
+  carrySummary = null,
 }) {
   const router = useRouter();
   const backpackGridRef = useRef(null);
@@ -69,6 +134,13 @@ export default function Inventory({
     () => backpackItems.filter((item) => item.kind === "consumable"),
     [backpackItems],
   );
+  const inventoryDecisionSignal = buildInventoryDecisionSignal({
+    unplacedItems,
+    consumableStacks,
+    pocketSlots,
+    enableSellDropzone,
+    carrySummary,
+  });
 
   useEffect(() => {
     if (!quantityModal) {
@@ -589,7 +661,27 @@ export default function Inventory({
       <header className={styles.header}>
         <h2>Inventory</h2>
         <p>Drag items between backpack grid and equipment slots.</p>
+        {carrySummary ? (
+          <p className={styles.carryText}>
+            Carry weight: {carrySummary.currentWeight}/{carrySummary.maxWeight} Wt
+            {carrySummary.remainingWeight >= 0
+              ? ` (${carrySummary.remainingWeight} Wt free)`
+              : ` (${Math.abs(carrySummary.remainingWeight)} Wt over)`}
+          </p>
+        ) : null}
       </header>
+
+      <section
+        className={`${styles.decisionSignal} ${
+          inventoryDecisionSignal.tone === "warn"
+            ? styles.decisionSignalWarn
+            : styles.decisionSignalOk
+        }`}
+        aria-label="Inventory guidance"
+      >
+        <p className={styles.decisionSignalTitle}>{inventoryDecisionSignal.title}</p>
+        <p className={styles.decisionSignalText}>{inventoryDecisionSignal.text}</p>
+      </section>
 
       <div className={styles.layout}>
         <section className={styles.equipmentPanel}>

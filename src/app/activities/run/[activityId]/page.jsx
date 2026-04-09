@@ -8,7 +8,7 @@ import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
 import { getActivityHeatBuildUpPreview } from "@/lib/activity-heat";
 import { getActivityIllustrationSrc } from "@/lib/activity-presentation";
-import { getResolvedActiveCharacterForUser } from "@/lib/character";
+import { getCharacterMaxResources, getResolvedActiveCharacterForUser } from "@/lib/character";
 import { getClassPassiveActivityStaminaCost } from "@/lib/class-identity";
 import { ACTIVITY_DEFINITION_MAP, isActivityOpen } from "@/lib/core-loop-data";
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
@@ -65,6 +65,7 @@ export default async function ActivityRunPage({ params }) {
   const currentHeatRollModifier = getHeatRollModifier(currentHeat);
   const nextHeatThreshold = getNextHeatThreshold(currentHeat);
   const heatBuildUpPreview = getActivityHeatBuildUpPreview(activity);
+  const maxResources = activeCharacter ? getCharacterMaxResources(activeCharacter) : null;
 
   return (
     <div className={`${styles.pageShell} ${bodyFont.className}`}>
@@ -104,7 +105,10 @@ export default async function ActivityRunPage({ params }) {
             {activeCharacter ? (
               <>
                 <div className={styles.metricCard}>
-                  <ResourceStrip resources={getCharacterResourceSnapshot(activeCharacter)} />
+                  <ResourceStrip
+                    resources={getCharacterResourceSnapshot(activeCharacter)}
+                    maxResources={maxResources}
+                  />
                 </div>
                 <div className={styles.metricCard}>
                   <p>
@@ -129,6 +133,7 @@ export default async function ActivityRunPage({ params }) {
                   <ActivityRunner
                     activity={activity}
                     characterId={activeCharacter.id}
+                    currentHp={activeCharacter.hp}
                     currentStamina={activeCharacter.stamina}
                     requiredStamina={effectiveActivityStaminaCost}
                     currentHeat={currentHeat}

@@ -189,6 +189,74 @@ button:disabled {
   line-height: 1.5;
 }
 
+.activity-run-decision {
+  margin: 0 0 0.8rem;
+  border-radius: 14px;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(116, 82, 42, 0.28);
+  text-align: left;
+}
+
+.activity-run-decision-ok {
+  background: linear-gradient(180deg, rgba(242, 250, 229, 0.94) 0%, rgba(226, 239, 205, 0.9) 100%);
+}
+
+.activity-run-decision-warn {
+  background: linear-gradient(180deg, rgba(255, 246, 225, 0.95) 0%, rgba(246, 229, 190, 0.92) 100%);
+}
+
+.activity-run-decision-danger {
+  background: linear-gradient(180deg, rgba(255, 239, 233, 0.95) 0%, rgba(245, 220, 211, 0.92) 100%);
+}
+
+.activity-run-decision-kicker {
+  margin: 0;
+  color: #7a5225;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.activity-run-decision-title {
+  margin: 0.18rem 0 0;
+  color: #2b1a0d;
+  font-size: 1rem;
+}
+
+.activity-run-decision-summary {
+  margin: 0.28rem 0 0;
+  color: #4b3420;
+  line-height: 1.48;
+}
+
+.activity-run-decision-chips {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+}
+
+.activity-run-decision-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0.24rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(109, 76, 38, 0.22);
+  background: rgba(255, 251, 243, 0.78);
+  color: #4f3213;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.activity-run-decision-note {
+  margin: 0.5rem 0 0;
+  color: #5b4122;
+  font-size: 0.84rem;
+  line-height: 1.42;
+}
+
 .activity-pockets {
   position: relative;
   width: 100%;
@@ -885,6 +953,11 @@ button:disabled {
 .activity-item h2 {
   margin-top: 0;
   margin-bottom: 0.45rem;
+}
+
+.activity-item-signal,
+.activity-item-note {
+  margin: 0;
 }
 
 .activity-item-quest {
