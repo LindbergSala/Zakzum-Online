@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getItemImagePath } from "@/lib/items/helpers";
 import { formatBuyValueLabel, formatTradeValueLabel } from "@/lib/items/trade-format";
+ import { requestJson } from "@/lib/client-json";
 import styles from "./shop-actions.module.css";
 
 export default function ShopActions({ items, marketId = null }) {
@@ -30,15 +31,14 @@ export default function ShopActions({ items, marketId = null }) {
     setFeedback(null);
 
     try {
-      const response = await fetch("/api/game/shop", {
+       const { ok, data } = await requestJson("/api/game/shop", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId, action: "buy", marketId: resolvedMarketId }),
       });
 
-      const data = await response.json();
 
-      if (!response.ok) {
+       if (!ok) {
         setFeedback({ tone: "error", text: data.message });
         return;
       }

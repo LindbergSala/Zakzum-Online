@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { requestJson } from "@/lib/client-json";
 import styles from "./onboarding-panel.module.css";
 
 function StepBadge({ done }) {
@@ -48,7 +49,7 @@ export default function OnboardingPanel({ model }) {
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimError, setClaimError] = useState("");
   const [showRewardOverlay, setShowRewardOverlay] = useState(false);
-  const [claimedRewardGold, setClaimedRewardGold] = useState(model?.rewardGold ?? 50);
+  const [claimedRewardGold, setClaimedRewardGold] = useState(model?.rewardGold ?? 30);
 
   if (!model) {
     return null;
@@ -61,12 +62,11 @@ export default function OnboardingPanel({ model }) {
     setClaimError("");
 
     try {
-      const response = await fetch("/api/game/onboarding/claim-reward", {
+      const { ok, data: payload } = await requestJson("/api/game/onboarding/claim-reward", {
         method: "POST",
       });
-      const payload = await response.json();
 
-      if (!response.ok) {
+      if (!ok) {
         setClaimError(payload.message ?? "Reward could not be claimed right now.");
         return;
       }
@@ -77,7 +77,7 @@ export default function OnboardingPanel({ model }) {
         return;
       }
 
-      setClaimedRewardGold(Number(payload.rewardGold) || (model.rewardGold ?? 50));
+      setClaimedRewardGold(Number(payload.rewardGold) || (model.rewardGold ?? 30));
       setShowRewardOverlay(true);
     } catch {
       setClaimError("Reward claim failed. Please try again.");

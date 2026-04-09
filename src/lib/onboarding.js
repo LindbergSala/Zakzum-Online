@@ -206,7 +206,7 @@ function buildStepItems(metrics) {
     },
     {
       id: "first-reward",
-      label: "Claim your first reward",
+      label: "Clear your first activity",
       done: hasFirstReward,
     },
     {
@@ -229,7 +229,7 @@ function buildNextStepForCompletedFirstActivity(metrics) {
   if (metrics.successfulActivityCount <= 0) {
     return {
       currentStep: "First activity logged",
-      nextStep: "Run another low-risk activity to secure your first clear reward.",
+      nextStep: "Run another low-risk activity and secure your first successful clear.",
       primaryAction: {
         href: "/activities/quest",
         label: "Continue on Quest Board",
@@ -239,7 +239,7 @@ function buildNextStepForCompletedFirstActivity(metrics) {
 
   if (!hasLoopInteraction) {
     return {
-      currentStep: "First reward claimed",
+      currentStep: "First successful clear achieved",
       nextStep: "Open market or inventory to make your first item interaction.",
       primaryAction: {
         href: "/market",
