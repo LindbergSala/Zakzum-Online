@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
+import { findActivityLogsForCharacter } from "@/lib/activity-log-read";
 import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import { prisma } from "@/lib/prisma";
 
@@ -19,28 +20,9 @@ export async function GET() {
     return NextResponse.json({ entries: [] }, { status: 200 });
   }
 
-  const entries = await prisma.activityLog.findMany({
-    where: { characterId: activeCharacter.id },
-    orderBy: { createdAt: "desc" },
+  const entries = await findActivityLogsForCharacter(activeCharacter.id, {
+    prismaClient: prisma,
     take: LOG_ENTRY_LIMIT,
-    select: {
-      id: true,
-      type: true,
-      activityId: true,
-      activityName: true,
-      success: true,
-      staminaCost: true,
-      roll: true,
-      rollTotal: true,
-      successTarget: true,
-      statModifier: true,
-      chancePercent: true,
-      delta: true,
-      beforeResources: true,
-      afterResources: true,
-      details: true,
-      createdAt: true,
-    },
   });
 
   return NextResponse.json({ entries }, { status: 200 });

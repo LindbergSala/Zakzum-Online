@@ -691,7 +691,7 @@ function createJourneyHarness() {
       };
       appendLog({
         characterId: state.character.id,
-        type: "SHOP",
+        type: "ONBOARDING",
         activityId: ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
         success: true,
       });

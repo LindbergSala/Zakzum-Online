@@ -1,4 +1,5 @@
 import { formatDashboardLogEntry } from "@/lib/activity-log-format";
+import { findActivityLogsForCharacter } from "@/lib/activity-log-read";
 import { getResolvedCharacterAvatar } from "@/lib/character-avatars";
 import {
   getCharacterMaxResources,
@@ -213,26 +214,9 @@ export async function loadDashboardPageData(userId) {
     ? getLevelProgressMeta(activeCharacter.level, activeCharacter.xp)
     : null;
   const logEntries = activeCharacter
-    ? await prisma.activityLog.findMany({
-        where: { characterId: activeCharacter.id },
-        orderBy: { createdAt: "desc" },
+    ? await findActivityLogsForCharacter(activeCharacter.id, {
+        prismaClient: prisma,
         take: DASHBOARD_LOG_ENTRY_LIMIT,
-        select: {
-          id: true,
-          type: true,
-          activityName: true,
-          success: true,
-          staminaCost: true,
-          roll: true,
-          rollTotal: true,
-          successTarget: true,
-          statModifier: true,
-          chancePercent: true,
-          delta: true,
-          afterResources: true,
-          details: true,
-          createdAt: true,
-        },
       })
     : [];
   const maxResources = activeCharacter

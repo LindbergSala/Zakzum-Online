@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import GameNav from "@/components/game-nav";
+import { findRecentActivityLogs } from "@/lib/activity-log-read";
 import { formatDateTime } from "@/lib/date-time-format";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
@@ -66,21 +67,9 @@ export default async function DebugPage() {
     prisma.character.count(),
     prisma.characterItem.count(),
     prisma.activityLog.count(),
-    prisma.activityLog.findMany({
-      orderBy: { createdAt: "desc" },
+    findRecentActivityLogs({
+      prismaClient: prisma,
       take: 25,
-      select: {
-        id: true,
-        type: true,
-        activityName: true,
-        success: true,
-        createdAt: true,
-        character: {
-          select: {
-            name: true,
-          },
-        },
-      },
     }),
     prisma.character.findMany({
       orderBy: { updatedAt: "desc" },

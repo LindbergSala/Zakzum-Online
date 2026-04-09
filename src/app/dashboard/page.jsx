@@ -189,7 +189,12 @@ export default async function DashboardPage() {
 
               <section className={styles.panel}>
                 <div className={styles.panelHeadingRow}>
-                  <h2>Recent activity log</h2>
+                  <div>
+                    <h2>Recent action log</h2>
+                    <p className={styles.panelNote}>
+                      Activity runs show outcome labels. Economy, inventory, and onboarding entries show category tags.
+                    </p>
+                  </div>
                   <Link className={styles.inlineLink} href="/account#log">
                     Open full log
                   </Link>

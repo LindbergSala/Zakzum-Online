@@ -31,7 +31,7 @@ const NAV_ITEMS = [
   {
     id: "log",
     label: "Log",
-    description: "Browse activity history day by day with outcomes and deltas.",
+    description: "Browse action history day by day across activity, economy, inventory, and onboarding.",
   },
   {
     id: "statistics",
@@ -45,7 +45,7 @@ const MODAL_TITLE_MAP = {
   identity: "Identity",
   account: "Account",
   "delete-character": "Delete Character",
-  log: "Log",
+  log: "Action Log",
   statistics: "Statistics",
 };
 
@@ -165,7 +165,7 @@ export default function AccountPopupHub({
   } else if (activeModal === "log") {
     modalContent = !hasLogData ? (
       <p className={styles.emptyStateText}>
-        No activity logs yet. Run activities to build your history.
+        No action logs yet. Play the loop to build activity, economy, inventory, and onboarding history.
       </p>
     ) : (
       <div className={styles.logWrap}>
@@ -196,6 +196,9 @@ export default function AccountPopupHub({
             Showing latest {logEntryLimit} entries ({totalLogCount} total).
           </p>
         ) : null}
+        <p className={styles.dayMeta}>
+          Activity entries show SUCCESS or FAIL. Other entries are grouped as ECONOMY, INVENTORY, or ONBOARDING.
+        </p>
         <ul className={styles.logList}>
           {(currentLogDay?.entries ?? []).map((entry) => (
             <li className={styles.logItem} key={entry.id}>

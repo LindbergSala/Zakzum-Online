@@ -1,4 +1,10 @@
 import { formatBuyValueLabel } from "@/lib/items/trade-format";
+import {
+  ACTIVITY_LOG_CATEGORIES,
+  ACTIVITY_LOG_TYPES,
+  getActivityLogCategory,
+  isOnboardingLogEntry,
+} from "@/lib/activity-log-types";
 import { toNumericValue } from "@/lib/number-utils";
 
 const DELTA_LABELS = {
@@ -66,7 +72,7 @@ function formatLogItemDetails(entry) {
 }
 
 function formatActivityContextDetails(entry) {
-  if (entry?.type !== "ACTIVITY") {
+  if (entry?.type !== ACTIVITY_LOG_TYPES.ACTIVITY) {
     return null;
   }
 
@@ -89,16 +95,45 @@ function formatActivityContextDetails(entry) {
   return regionName || null;
 }
 
+function formatOnboardingDetails(entry) {
+  if (!isOnboardingLogEntry(entry)) {
+    return null;
+  }
+
+  const details = entry?.details;
+  if (!details || typeof details !== "object") {
+    return null;
+  }
+
+  const rewardGold = toNumericValue(details.rewardGold);
+  if (rewardGold > 0) {
+    return `Completion reward: ${rewardGold} Gold`;
+  }
+
+  const locationName = details.locationName ?? "";
+  const regionName = details.regionName ?? "";
+
+  if (locationName && regionName) {
+    return `${locationName}, ${regionName}`;
+  }
+
+  if (locationName) {
+    return locationName;
+  }
+
+  return entry?.activityName ?? null;
+}
+
 export function formatDashboardLogStatus(entry) {
-  if (entry?.success === true) {
+  if (entry?.type === ACTIVITY_LOG_TYPES.ACTIVITY && entry?.success === true) {
     return "SUCCESS";
   }
 
-  if (entry?.success === false) {
+  if (entry?.type === ACTIVITY_LOG_TYPES.ACTIVITY && entry?.success === false) {
     return "FAIL";
   }
 
-  return typeof entry?.type === "string" ? entry.type : "RESULT";
+  return getActivityLogCategory(entry);
 }
 
 export function formatDashboardLogTime(createdAt) {
@@ -109,7 +144,7 @@ export function formatDashboardLogTime(createdAt) {
 }
 
 export function formatDashboardRollLine(entry) {
-  if (entry?.type !== "ACTIVITY") {
+  if (entry?.type !== ACTIVITY_LOG_TYPES.ACTIVITY) {
     return null;
   }
 
@@ -143,6 +178,9 @@ export function formatDashboardDeltaLine(delta) {
 
 export function formatDashboardLogEntry(entry) {
   const activityContextLine = formatActivityContextDetails(entry);
+  const onboardingDetailLine = formatOnboardingDetails(entry);
+  const logCategory = getActivityLogCategory(entry);
+  const isActivityOutcome = entry?.type === ACTIVITY_LOG_TYPES.ACTIVITY;
 
   return {
     id: entry.id,
@@ -151,9 +189,13 @@ export function formatDashboardLogEntry(entry) {
     time: formatDashboardLogTime(entry.createdAt),
     rollLine: formatDashboardRollLine(entry),
     detailLine:
-      entry.type === "ACTIVITY" ? activityContextLine : formatLogItemDetails(entry),
+      logCategory === ACTIVITY_LOG_CATEGORIES.ACTIVITY
+        ? activityContextLine
+        : logCategory === ACTIVITY_LOG_CATEGORIES.ONBOARDING
+          ? onboardingDetailLine
+          : formatLogItemDetails(entry),
     deltaLine: formatDashboardDeltaLine(entry.delta),
-    isSuccess: entry.success === true,
-    isFail: entry.success === false,
+    isSuccess: isActivityOutcome && entry.success === true,
+    isFail: isActivityOutcome && entry.success === false,
   };
 }

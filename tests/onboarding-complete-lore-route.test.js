@@ -94,6 +94,9 @@ test("complete lore route records lore progress once", async () => {
     (entry) => entry.activityId === ONBOARDING_ZAKZUM_LORE_ACTIVITY_ID,
   );
   assert.equal(loreLogs.length, 1);
+  assert.equal(loreLogs[0].type, "ONBOARDING");
+  assert.equal(loreLogs[0].details?.category, "ONBOARDING");
+  assert.equal(loreLogs[0].details?.eventKind, "lore");
   assert.equal(loreLogs[0].details?.locationId, "kingston");
 });
 

@@ -259,6 +259,14 @@
   font-size: 1.12rem;
 }
 
+.panelNote {
+  margin: 0.28rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  max-width: 52ch;
+}
+
 .panel :global(p) {
   color: var(--ink-soft);
   line-height: 1.5;

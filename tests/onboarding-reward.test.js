@@ -28,7 +28,7 @@ function createRewardHarness(options = {}) {
       id: `log-${nextLogId++}`,
       characterId,
       activityId: ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
-      type: "SHOP",
+      type: "ONBOARDING",
       details: { action: "onboarding_reward" },
     });
   }
@@ -138,9 +138,10 @@ test("reward helper keeps reward log semantic and item-free", async () => {
   );
 
   assert.ok(rewardLog);
-  assert.equal(rewardLog.type, "SHOP");
+  assert.equal(rewardLog.type, "ONBOARDING");
   assert.equal(rewardLog.details?.action, "onboarding_reward");
-  assert.equal(rewardLog.details?.category, "ONBOARDING_REWARD");
+  assert.equal(rewardLog.details?.category, "ONBOARDING");
+  assert.equal(rewardLog.details?.eventKind, "reward");
   assert.equal(rewardLog.details?.item, undefined);
   assert.equal(
     rewardLog.delta?.gold,

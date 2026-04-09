@@ -3,6 +3,7 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 
 import GameNav from "@/components/game-nav";
 import { formatDashboardLogEntry } from "@/lib/activity-log-format";
+import { findActivityLogsForCharacter } from "@/lib/activity-log-read";
 import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import { requirePageUser } from "@/lib/page-auth";
 import { prisma } from "@/lib/prisma";
@@ -25,23 +26,9 @@ export default async function LogPage() {
   const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
 
   const entries = activeCharacter
-    ? await prisma.activityLog.findMany({
-        where: { characterId: activeCharacter.id },
-        orderBy: { createdAt: "desc" },
+    ? await findActivityLogsForCharacter(activeCharacter.id, {
+        prismaClient: prisma,
         take: LOG_ENTRY_LIMIT,
-        select: {
-          id: true,
-          type: true,
-          activityName: true,
-          success: true,
-          staminaCost: true,
-          roll: true,
-          rollTotal: true,
-          successTarget: true,
-          delta: true,
-          details: true,
-          createdAt: true,
-        },
       })
     : [];
   const compactEntries = entries.map(formatDashboardLogEntry);
@@ -53,14 +40,16 @@ export default async function LogPage() {
         <section className={styles.heroCard}>
           <header className={styles.heroIntro}>
             <p className={styles.kicker}>Chronicle Archive</p>
-            <h1 className={`${styles.title} ${headingFont.className}`}>Log</h1>
-            <p className={styles.lead}>Showing latest {LOG_ENTRY_LIMIT} actions.</p>
+            <h1 className={`${styles.title} ${headingFont.className}`}>Action Log</h1>
+            <p className={styles.lead}>
+              Showing the latest {LOG_ENTRY_LIMIT} entries across activity runs, economy actions, inventory changes, and onboarding milestones.
+            </p>
           </header>
 
           {!activeCharacter ? (
             <section className={styles.panel}>
               <p className={styles.panelMessage}>
-                You must create a character to view the activity log.
+                You must create a character to view the action log.
               </p>
               <Link className={styles.primaryAction} href="/character/create">
                 Create character
@@ -72,6 +61,9 @@ export default async function LogPage() {
             </section>
           ) : (
             <section className={styles.panel}>
+              <p className={styles.panelMessage}>
+                Activity entries use SUCCESS or FAIL. Non-combat entries are grouped as ECONOMY, INVENTORY, or ONBOARDING.
+              </p>
               <ul className={styles.logList}>
                 {compactEntries.map((entry) => (
                   <li className={styles.logItem} key={entry.id}>

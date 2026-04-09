@@ -145,13 +145,13 @@ test("onboarding view model hides onboarding panel after claimed reward", () => 
 test("onboarding system logs are excluded from shop interaction counts", () => {
   const summary = summarizeOnboardingLogGroups([
     {
-      type: "SHOP",
+      type: "ONBOARDING",
       success: true,
       activityId: ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
       _count: { _all: 1 },
     },
     {
-      type: "SHOP",
+      type: "ONBOARDING",
       success: true,
       activityId: ONBOARDING_ZAKZUM_LORE_ACTIVITY_ID,
       _count: { _all: 1 },

@@ -4,6 +4,8 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import AccountPopupHub from "@/components/account-popup-hub";
 import GameNav from "@/components/game-nav";
 import { formatDashboardLogEntry } from "@/lib/activity-log-format";
+import { findActivityLogsForCharacter } from "@/lib/activity-log-read";
+import { ACTIVITY_LOG_TYPES, isOnboardingLogEntry } from "@/lib/activity-log-types";
 import { getUserWithResolvedActiveCharacter } from "@/lib/character";
 import { formatStockholmDayLabel, getStockholmDayKey } from "@/lib/date-time-format";
 import { toNumericValue } from "@/lib/number-utils";
@@ -72,6 +74,9 @@ function buildLogDays(entries) {
 function buildStatisticsCards(entries, character) {
   const totalActions = entries.length;
   const activityEntries = entries.filter((entry) => entry.type === "ACTIVITY");
+  const economyEntries = entries.filter((entry) => entry.type === ACTIVITY_LOG_TYPES.SHOP);
+  const inventoryEntries = entries.filter((entry) => entry.type === ACTIVITY_LOG_TYPES.EQUIP);
+  const onboardingEntries = entries.filter((entry) => isOnboardingLogEntry(entry));
   const successCount = activityEntries.filter((entry) => entry.success === true).length;
   const failCount = activityEntries.filter((entry) => entry.success === false).length;
   const totalResolvedActivities = successCount + failCount;
@@ -134,12 +139,27 @@ function buildStatisticsCards(entries, character) {
     {
       label: "Total actions",
       value: `${totalActions}`,
-      hint: "All logged actions across your character journey",
+      hint: "All logged entries across activity, economy, inventory, and onboarding",
     },
     {
       label: "Success rate",
       value: `${successRate}%`,
-      hint: `${successCount} success, ${failCount} fail`,
+      hint: `${successCount} success, ${failCount} fail in activity runs only`,
+    },
+    {
+      label: "Economy actions",
+      value: `${economyEntries.length}`,
+      hint: "Purchases and sales recorded in the market loop",
+    },
+    {
+      label: "Inventory changes",
+      value: `${inventoryEntries.length}`,
+      hint: "Equip, unequip, split, combine, and consumable use actions",
+    },
+    {
+      label: "Onboarding milestones",
+      value: `${onboardingEntries.length}`,
+      hint: "Lore discoveries and onboarding completion rewards",
     },
     {
       label: "XP gained",
@@ -209,23 +229,9 @@ export default async function AccountPage() {
         prisma.activityLog.count({
           where: { characterId: character.id },
         }),
-        prisma.activityLog.findMany({
-          where: { characterId: character.id },
-          orderBy: { createdAt: "desc" },
+        findActivityLogsForCharacter(character.id, {
+          prismaClient: prisma,
           take: ACCOUNT_LOG_ENTRY_LIMIT,
-          select: {
-            id: true,
-            type: true,
-            activityName: true,
-            success: true,
-            staminaCost: true,
-            roll: true,
-            rollTotal: true,
-            successTarget: true,
-            delta: true,
-            details: true,
-            createdAt: true,
-          },
         }),
       ])
     : [0, []];
@@ -244,7 +250,7 @@ export default async function AccountPage() {
             <h1 className={`${styles.title} ${headingFont.className}`}>Account</h1>
             <p className={styles.lead}>
               Use the account navbar below to open Security, Identity, Account,
-              Delete Character, Log, and Statistics as popups.
+              Delete Character, Log, and Statistics as popups. The log now separates activity outcomes from economy, inventory, and onboarding events.
             </p>
           </header>
 

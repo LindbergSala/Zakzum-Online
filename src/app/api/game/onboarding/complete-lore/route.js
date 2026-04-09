@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
 import { parseJsonRequestBody } from "@/lib/api-request";
+import { ACTIVITY_LOG_TYPES } from "@/lib/activity-log-types";
 import { getActiveCharacterForUser } from "@/lib/character";
 import { validateWriteRequestOrigin } from "@/lib/csrf";
 import { runSerializableTransaction } from "@/lib/db-transaction";
@@ -119,7 +120,7 @@ export function createCompleteOnboardingLorePostHandler(dependencies = {}) {
         await tx.activityLog.create({
           data: {
             characterId: activeCharacter.id,
-            type: "SHOP",
+            type: ACTIVITY_LOG_TYPES.ONBOARDING,
             activityId: ONBOARDING_ZAKZUM_LORE_ACTIVITY_ID,
             activityName: "Zakzum Lore Discovery",
             success: true,
@@ -134,7 +135,8 @@ export function createCompleteOnboardingLorePostHandler(dependencies = {}) {
             afterResources: resourcesSnapshot,
             details: {
               action: ONBOARDING_ZAKZUM_LORE_LOG_DETAIL_ACTION,
-              category: "ONBOARDING_LORE",
+              category: "ONBOARDING",
+              eventKind: "lore",
               locationId: lorePayload.locationId,
               locationName: lorePayload.locationName,
               regionId: lorePayload.regionId,

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { groupActivityLogsForCharacter } from "@/lib/activity-log-read";
 import { ACTIVITY_DEFINITIONS } from "@/lib/core-loop-data";
 
 export const ONBOARDING_STATUS = {
@@ -130,6 +131,10 @@ export function summarizeOnboardingLogGroups(logGroups = []) {
       continue;
     }
 
+    if (logGroup.type === "ONBOARDING") {
+      continue;
+    }
+
     if (logGroup.type === "EQUIP") {
       summary.equipActionCount += groupCount;
     }
@@ -151,10 +156,8 @@ export async function getOnboardingMetricsForCharacter(
   }
 
   const prismaClient = options.prismaClient ?? prisma;
-  const groupedLogs = await prismaClient.activityLog.groupBy({
-    by: ["type", "success", "activityId"],
-    where: { characterId },
-    _count: { _all: true },
+  const groupedLogs = await groupActivityLogsForCharacter(characterId, {
+    prismaClient,
   });
 
   return normalizeOnboardingMetrics({

@@ -53,10 +53,37 @@ test("formatDashboardLogEntry builds compact non-activity entry", () => {
   });
 
   assert.equal(entry.activityName, "Purchase: Iron Sword");
-  assert.equal(entry.status, "SUCCESS");
+  assert.equal(entry.status, "ECONOMY");
   assert.equal(entry.rollLine, null);
   assert.equal(entry.detailLine, "Iron Sword (weapon, cost 20 Gold)");
   assert.equal(entry.deltaLine, "-20 Gold");
+  assert.equal(entry.isSuccess, false);
+  assert.equal(entry.isFail, false);
+});
+
+test("formatDashboardLogEntry separates onboarding reward from economy logs", () => {
+  const entry = formatDashboardLogEntry({
+    id: "onboarding-1",
+    type: "ONBOARDING",
+    activityName: "Onboarding Completion Bonus",
+    success: true,
+    createdAt: "2026-03-20T16:36:00.000Z",
+    details: {
+      category: "ONBOARDING",
+      eventKind: "reward",
+      rewardGold: 30,
+    },
+    delta: {
+      gold: 30,
+    },
+  });
+
+  assert.equal(entry.status, "ONBOARDING");
+  assert.equal(entry.rollLine, null);
+  assert.equal(entry.detailLine, "Completion reward: 30 Gold");
+  assert.equal(entry.deltaLine, "+30 Gold");
+  assert.equal(entry.isSuccess, false);
+  assert.equal(entry.isFail, false);
 });
 
 test("formatDashboardLogEntry includes activity location context when available", () => {

@@ -1,4 +1,5 @@
 import { runSerializableTransaction } from "@/lib/db-transaction";
+import { ACTIVITY_LOG_TYPES } from "@/lib/activity-log-types";
 import {
   ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
   ONBOARDING_COMPLETION_REWARD_GOLD,
@@ -82,7 +83,7 @@ export async function maybeGrantOnboardingCompletionReward(
     await tx.activityLog.create({
       data: {
         characterId,
-        type: "SHOP",
+        type: ACTIVITY_LOG_TYPES.ONBOARDING,
         activityId: ONBOARDING_COMPLETION_REWARD_ACTIVITY_ID,
         activityName: "Onboarding Completion Bonus",
         success: true,
@@ -97,7 +98,8 @@ export async function maybeGrantOnboardingCompletionReward(
         afterResources,
         details: {
           action: ONBOARDING_REWARD_LOG_DETAIL_ACTION,
-          category: "ONBOARDING_REWARD",
+          category: "ONBOARDING",
+          eventKind: "reward",
           isSystemReward: true,
           rewardGold: ONBOARDING_COMPLETION_REWARD_GOLD,
         },

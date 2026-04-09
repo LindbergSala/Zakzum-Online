@@ -141,6 +141,7 @@ enum ActivityLogType {
   ACTIVITY
   SHOP
   EQUIP
+  ONBOARDING
 }
 
 model ActivityLog {
