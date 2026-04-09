@@ -56,3 +56,14 @@ test("stackable helper identifies consumables", () => {
   assert.equal(isItemStackable("health-potion"), true);
   assert.equal(isItemStackable("iron-sword"), false);
 });
+
+test("charisma adjusts displayed trade values when character context is provided", () => {
+  const charmingCharacter = { charisma: 20 };
+
+  assert.equal(getItemGoldCost("iron-sword", charmingCharacter), 18);
+  assert.equal(getItemRenownCost("arena-laurel", charmingCharacter), 9);
+  assert.deepEqual(getItemSellValue("arena-laurel", charmingCharacter), {
+    gold: 0,
+    renown: 5,
+  });
+});

@@ -8,8 +8,8 @@ import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
 import { getActivityHeatBuildUpPreview } from "@/lib/activity-heat";
 import { getActivityIllustrationSrc } from "@/lib/activity-presentation";
+import { getCharacterActivityStaminaCost } from "@/lib/character-stat-rules";
 import { getCharacterMaxResources, getResolvedActiveCharacterForUser } from "@/lib/character";
-import { getClassPassiveActivityStaminaCost } from "@/lib/class-identity";
 import { ACTIVITY_DEFINITION_MAP, isActivityOpen } from "@/lib/core-loop-data";
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { requirePageUser } from "@/lib/page-auth";
@@ -50,7 +50,7 @@ export default async function ActivityRunPage({ params }) {
         : `/activities/${activity.groupId ?? activity.id}`;
   const activityIllustrationSrc = getActivityIllustrationSrc(activity);
   const effectiveActivityStaminaCost = activeCharacter
-    ? getClassPassiveActivityStaminaCost(activeCharacter.characterClass, activity.staminaCost)
+    ? getCharacterActivityStaminaCost(activeCharacter, activity.groupId, activity.staminaCost)
     : activity.staminaCost;
   const storyStatus =
     activeCharacter && activity.groupId === "story"
@@ -78,7 +78,11 @@ export default async function ActivityRunPage({ params }) {
   const currentHeat = Number(activeCharacter?.heat) || 0;
   const currentHeatRollModifier = getHeatRollModifier(currentHeat);
   const nextHeatThreshold = getNextHeatThreshold(currentHeat);
-  const heatBuildUpPreview = getActivityHeatBuildUpPreview(activity);
+  const heatBuildUpPreview = getActivityHeatBuildUpPreview(
+    activity,
+    activity.groupId,
+    activeCharacter,
+  );
   const maxResources = activeCharacter ? getCharacterMaxResources(activeCharacter) : null;
 
   return (

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getRestHeatRecoveryBonus } from "@/lib/character-stat-rules";
 
 export const HEAT_REST_DURATION_MINUTES = 15;
 export const HEAT_REST_DURATION_MS = HEAT_REST_DURATION_MINUTES * 60 * 1000;
@@ -110,7 +111,9 @@ export async function resolveCharacterHeatRest(character, options = {}) {
 
   const currentHeat = resolveHeat(character.heat);
   const completedPasses = Math.floor((now.getTime() - restEnd.getTime()) / HEAT_REST_DURATION_MS) + 1;
-  const totalRecovery = completedPasses * HEAT_REST_RECOVERY;
+  const totalRecovery = completedPasses * (
+    HEAT_REST_RECOVERY + getRestHeatRecoveryBonus(character?.wisdom)
+  );
   const nextHeat = Math.max(0, currentHeat - totalRecovery);
   const recoveredHeat = currentHeat - nextHeat;
   const nextRecoveryAt = new Date(restEnd.getTime() + completedPasses * HEAT_REST_DURATION_MS);

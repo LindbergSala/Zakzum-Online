@@ -1,5 +1,9 @@
 import { EQUIPPABLE_ITEM_SLOTS } from "@/lib/items/constants";
 import {
+  getConsumableBonusDelta,
+  getConsumableRollBonusBonus,
+} from "@/lib/character-stat-rules";
+import {
   getItemById,
   getItemMaxStack,
   isItemStackable,
@@ -64,20 +68,26 @@ export function resolveOwnedItem(ownedItems, { itemRecordId, itemId }) {
   return resolveOwnedItemByRecordOrItemId(ownedItems, { itemRecordId, itemId });
 }
 
-export function buildConsumableDelta(itemDefinition, quantity) {
+export function buildConsumableDelta(itemDefinition, quantity, character = null) {
   const consumable = itemDefinition?.effects?.consumable ?? {};
   const usedQuantity = normalizePositiveQuantity(quantity, 1);
+  const bonusDelta = getConsumableBonusDelta(character, itemDefinition, usedQuantity);
+  const heatReduction = (Number(consumable.heatReduction) || 0) * usedQuantity;
 
   return {
-    hp: (Number(consumable.hpRestore) || 0) * usedQuantity,
-    stamina: (Number(consumable.staminaRestore) || 0) * usedQuantity,
-    heat: -1 * (Number(consumable.heatReduction) || 0) * usedQuantity,
+    hp: (Number(consumable.hpRestore) || 0) * usedQuantity + bonusDelta.hp,
+    stamina:
+      (Number(consumable.staminaRestore) || 0) * usedQuantity + bonusDelta.stamina,
+    heat: heatReduction > 0 ? -heatReduction : 0,
   };
 }
 
-export function getConsumableRollBonus(itemDefinition, quantity) {
+export function getConsumableRollBonus(itemDefinition, quantity, character = null) {
   const consumable = itemDefinition?.effects?.consumable ?? {};
   const usedQuantity = normalizePositiveQuantity(quantity, 1);
 
-  return (Number(consumable.activityRollModifier) || 0) * usedQuantity;
+  return (
+    (Number(consumable.activityRollModifier) || 0) * usedQuantity +
+    getConsumableRollBonusBonus(character, itemDefinition, usedQuantity)
+  );
 }

@@ -298,8 +298,12 @@ async function processUseAction({
     };
   }
 
-  const delta = buildConsumableDelta(itemDefinition, useQuantity);
-  const rollBonusGain = getConsumableRollBonus(itemDefinition, useQuantity);
+  const delta = buildConsumableDelta(itemDefinition, useQuantity, latestCharacter);
+  const rollBonusGain = getConsumableRollBonus(
+    itemDefinition,
+    useQuantity,
+    latestCharacter,
+  );
   const calculation = calculateCharacterResourceResult(latestCharacter, {
     delta,
   });

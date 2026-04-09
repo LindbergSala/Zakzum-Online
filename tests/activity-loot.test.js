@@ -101,3 +101,24 @@ test("successful roll can resolve a valid dropped item", () => {
     getItemLootSources(resolution.item).includes(ITEM_LOOT_SOURCE.ADVENTURE),
   );
 });
+
+test("dexterity can turn a near-miss loot roll into a drop", () => {
+  const baseline = resolveActivityLootDrop({
+    activityGroupId: "quest",
+    activityTier: 1,
+    success: true,
+    dexterity: 10,
+    random: sequenceRandom([0.37, 0]),
+  });
+
+  const dexBoosted = resolveActivityLootDrop({
+    activityGroupId: "quest",
+    activityTier: 1,
+    success: true,
+    dexterity: 20,
+    random: sequenceRandom([0.37, 0]),
+  });
+
+  assert.equal(baseline.dropped, false);
+  assert.equal(dexBoosted.dropped, true);
+});

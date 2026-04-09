@@ -7,7 +7,9 @@ export function serializeShopIndexPayload({ activeCharacter, ownedItems }) {
   const ownedById = summarizeOwnedByItemId(ownedItems ?? []);
 
   return {
-    items: ITEM_CATALOG.map((item) => buildMarketItemResponse(item, ownedById)),
+    items: ITEM_CATALOG.map((item) =>
+      buildMarketItemResponse(item, ownedById, activeCharacter),
+    ),
     resources: activeCharacter ? getCharacterResourceSnapshot(activeCharacter) : null,
   };
 }

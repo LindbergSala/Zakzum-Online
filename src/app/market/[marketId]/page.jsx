@@ -213,8 +213,8 @@ export default async function MarketVendorPage({ params }) {
     marketId: getItemMarketIds(item)[0] ?? null,
     marketIds: getItemMarketIds(item),
     description: item.description,
-    price: getItemGoldCost(item),
-    renownPrice: getItemRenownCost(item),
+    price: getItemGoldCost(item, activeCharacter),
+    renownPrice: getItemRenownCost(item, activeCharacter),
     weight: item.weight,
     slot: item.slot,
     effects: item.effects,
@@ -222,7 +222,7 @@ export default async function MarketVendorPage({ params }) {
     owned: (Number(ownedById[item.id]?.quantity) || 0) > 0,
     ownedQuantity: Number(ownedById[item.id]?.quantity) || 0,
     equipped: Boolean(ownedById[item.id]?.equipped),
-    sellValue: getItemSellValue(item),
+    sellValue: getItemSellValue(item, activeCharacter),
     isStackable: isItemStackable(item),
   }));
   const inventoryItems = ownedItems.map((item) => {
@@ -232,7 +232,7 @@ export default async function MarketVendorPage({ params }) {
       slot: definition?.slot ?? "unknown",
       weight: definition?.weight ?? 0,
       effectLabel: formatItemEffectLabel(definition?.effects),
-      sellValue: getItemSellValue(definition),
+      sellValue: getItemSellValue(definition, activeCharacter),
     };
   });
   const recommendedBuy = buildRecommendedBuy(

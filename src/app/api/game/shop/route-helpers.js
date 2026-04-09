@@ -27,6 +27,7 @@ export const SHOP_CHARACTER_SELECT = {
   renown: true,
   heat: true,
   strength: true,
+  charisma: true,
   updatedAt: true,
 };
 
@@ -71,7 +72,7 @@ export function summarizeOwnedByItemId(ownedItems) {
   return summary;
 }
 
-export function buildMarketItemResponse(item, ownedById) {
+export function buildMarketItemResponse(item, ownedById, activeCharacter = null) {
   const ownedEntry = ownedById[item.id] ?? { quantity: 0, equipped: false };
   const isStackable = isItemStackable(item);
   const ownedQuantity = Number(ownedEntry.quantity) || 0;
@@ -83,9 +84,9 @@ export function buildMarketItemResponse(item, ownedById) {
     marketId: marketIds[0] ?? null,
     marketIds,
     description: item.description,
-    price: getItemGoldCost(item),
-    renownPrice: getItemRenownCost(item),
-    sellValue: getItemSellValue(item),
+    price: getItemGoldCost(item, activeCharacter),
+    renownPrice: getItemRenownCost(item, activeCharacter),
+    sellValue: getItemSellValue(item, activeCharacter),
     weight: item.weight,
     slot: item.slot,
     effects: item.effects,
@@ -100,10 +101,10 @@ export function buildMarketItemResponse(item, ownedById) {
   };
 }
 
-export function buildBuyDelta(itemDefinition) {
+export function buildBuyDelta(itemDefinition, character = null) {
   const delta = {};
-  const goldCost = getItemGoldCost(itemDefinition);
-  const renownCost = getItemRenownCost(itemDefinition);
+  const goldCost = getItemGoldCost(itemDefinition, character);
+  const renownCost = getItemRenownCost(itemDefinition, character);
 
   if (goldCost > 0) {
     delta.gold = -goldCost;
@@ -116,8 +117,8 @@ export function buildBuyDelta(itemDefinition) {
   return delta;
 }
 
-export function buildSellDelta(itemDefinition, quantity) {
-  const sellValue = getItemSellValue(itemDefinition);
+export function buildSellDelta(itemDefinition, quantity, character = null) {
+  const sellValue = getItemSellValue(itemDefinition, character);
   const resolvedQuantity = normalizePositiveQuantity(quantity, 1);
   const delta = {};
 

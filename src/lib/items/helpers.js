@@ -1,5 +1,9 @@
 import { ITEM_CATALOG, ITEM_CATALOG_MAP } from "./catalog";
 import { ITEM_CATEGORY } from "./constants";
+import {
+  applyBuyPriceModifier,
+  applySellPriceModifier,
+} from "@/lib/character-stat-rules";
 
 const ITEM_IMAGE_CACHE_VERSION = "20260403";
 
@@ -142,23 +146,28 @@ export function getItemMaxStack(itemOrId) {
   return configuredMaxStack > 0 ? configuredMaxStack : 1;
 }
 
-export function getItemBuyValue(itemOrId) {
+export function getItemBuyValue(itemOrId, character = null) {
   const item = resolveItem(itemOrId);
-  return {
+  const baseValue = {
     gold: toNonNegativeInteger(item?.price),
     renown: toNonNegativeInteger(item?.renownPrice),
   };
+
+  return {
+    gold: applyBuyPriceModifier(baseValue.gold, character?.charisma),
+    renown: applyBuyPriceModifier(baseValue.renown, character?.charisma),
+  };
 }
 
-export function getItemGoldCost(itemOrId) {
-  return getItemBuyValue(itemOrId).gold;
+export function getItemGoldCost(itemOrId, character = null) {
+  return getItemBuyValue(itemOrId, character).gold;
 }
 
-export function getItemRenownCost(itemOrId) {
-  return getItemBuyValue(itemOrId).renown;
+export function getItemRenownCost(itemOrId, character = null) {
+  return getItemBuyValue(itemOrId, character).renown;
 }
 
-export function getItemSellValue(itemOrId) {
+export function getItemSellValue(itemOrId, character = null) {
   const item = resolveItem(itemOrId);
 
   if (!item) {
@@ -167,8 +176,14 @@ export function getItemSellValue(itemOrId) {
 
   if (item.sellValue && typeof item.sellValue === "object") {
     return {
-      gold: toNonNegativeInteger(item.sellValue.gold),
-      renown: toNonNegativeInteger(item.sellValue.renown),
+      gold: applySellPriceModifier(
+        toNonNegativeInteger(item.sellValue.gold),
+        character?.charisma,
+      ),
+      renown: applySellPriceModifier(
+        toNonNegativeInteger(item.sellValue.renown),
+        character?.charisma,
+      ),
     };
   }
 
@@ -177,7 +192,10 @@ export function getItemSellValue(itemOrId) {
   const renown =
     buyValue.renown > 0 ? Math.max(1, Math.floor(buyValue.renown * 0.5)) : 0;
 
-  return { gold, renown };
+  return {
+    gold: applySellPriceModifier(gold, character?.charisma),
+    renown: applySellPriceModifier(renown, character?.charisma),
+  };
 }
 
 export function isItemLootable(itemOrId) {

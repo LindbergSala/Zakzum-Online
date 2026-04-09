@@ -88,3 +88,26 @@ test("character regeneration normalizes overcapped stamina immediately", async (
   assert.equal(result.stamina.after, 20);
   assert.equal(result.character.stamina, 20);
 });
+
+test("wisdom grants an extra recovery tick while resting", async () => {
+  const now = new Date("2026-03-31T10:00:00.000Z");
+  const character = {
+    id: "character-3",
+    characterClass: "FIGHTER",
+    constitution: 10,
+    wisdom: 16,
+    hp: 20,
+    stamina: 18,
+    maxStamina: 20,
+    heatRestEndsAt: new Date("2026-03-31T10:15:00.000Z"),
+    staminaRegenAt: new Date(now.getTime() - STAMINA_REGEN_INTERVAL_MS),
+  };
+
+  const result = await resolveCharacterStaminaRegeneration(character, {
+    now,
+    persist: false,
+  });
+
+  assert.equal(result.stamina.after, 20);
+  assert.equal(result.hp.after, 22);
+});

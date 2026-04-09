@@ -54,6 +54,18 @@
   color: #3f2a15;
 }
 
+.statMeta {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #5c4127;
+}
+
+.statPreview {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #8a4d22;
+}
+
 .action {
   cursor: pointer;
   border: 0;

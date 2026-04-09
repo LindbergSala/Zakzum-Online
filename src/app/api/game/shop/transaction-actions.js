@@ -87,7 +87,7 @@ export async function processSellTransaction({
   }
 
   const calculation = calculateCharacterResourceResult(latestCharacter, {
-    delta: buildSellDelta(itemDefinition, sellQuantity),
+    delta: buildSellDelta(itemDefinition, sellQuantity, latestCharacter),
   });
 
   if (!calculation.ok) {
@@ -160,7 +160,7 @@ export async function processSellTransaction({
           itemRecordId: sellItemRecord.id,
           marketId: getItemMarketIds(itemDefinition)[0] ?? null,
           slot: itemDefinition.slot,
-          sellValue: getItemSellValue(itemDefinition),
+          sellValue: getItemSellValue(itemDefinition, latestCharacter),
           quantityChange: -sellQuantity,
           quantityBefore: sellItemRecord.quantity,
           quantityAfter: quantityAfterSell,
@@ -251,8 +251,8 @@ export async function processBuyTransaction({
     };
   }
 
-  const goldCost = getItemGoldCost(itemDefinition);
-  const renownCost = getItemRenownCost(itemDefinition);
+  const goldCost = getItemGoldCost(itemDefinition, latestCharacter);
+  const renownCost = getItemRenownCost(itemDefinition, latestCharacter);
 
   if (latestCharacter.gold < goldCost) {
     return {
@@ -273,7 +273,7 @@ export async function processBuyTransaction({
   }
 
   const calculation = calculateCharacterResourceResult(latestCharacter, {
-    delta: buildBuyDelta(itemDefinition),
+    delta: buildBuyDelta(itemDefinition, latestCharacter),
   });
 
   if (!calculation.ok) {
@@ -378,7 +378,7 @@ export async function processBuyTransaction({
           slot: itemDefinition.slot,
           price: goldCost,
           renownPrice: renownCost,
-          sellValue: getItemSellValue(itemDefinition),
+          sellValue: getItemSellValue(itemDefinition, latestCharacter),
           weight: itemDefinition.weight,
           description: itemDefinition.description,
           effects: itemDefinition.effects ?? {},

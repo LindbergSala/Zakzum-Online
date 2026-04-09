@@ -1,4 +1,5 @@
 import { getActivityGroup } from "./core-loop-data";
+import { getDexterityLootChanceBonus } from "./character-stat-rules";
 import {
   getItemCategory,
   getItemLootTierRange,
@@ -140,11 +141,16 @@ export function resolveActivityLootDrop({
   activityGroupId,
   activityTier,
   success,
+  dexterity = null,
   random,
 }) {
   const lootProfile = getActivityLootProfile(activityGroupId);
   const tier = normalizeTier(activityTier);
-  const dropChance = lootProfile.dropChance;
+  const dropChance = clamp(
+    lootProfile.dropChance + getDexterityLootChanceBonus(dexterity),
+    0,
+    1,
+  );
 
   if (lootProfile.successOnly && !success) {
     return {

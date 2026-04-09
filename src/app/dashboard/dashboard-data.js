@@ -10,12 +10,16 @@ import {
   getHpRegenerationMeta,
   getStaminaRegenerationMeta,
 } from "@/lib/stamina-regeneration";
+import {
+  getContractStandingProgress,
+  getRegionalStandingProgress,
+} from "@/lib/character-stat-rules";
 import { getLevelProgressMeta } from "@/lib/level-progression";
+import { clampPercent } from "@/lib/number-utils";
 import {
   buildOnboardingViewModel,
   getOnboardingMetricsForCharacter,
 } from "@/lib/onboarding";
-import { clampPercent } from "@/lib/number-utils";
 import { prisma } from "@/lib/prisma";
 
 const DASHBOARD_LOG_ENTRY_LIMIT = 6;
@@ -40,6 +44,8 @@ function buildDashboardGoals(character, levelProgress) {
   const renownProgressPercent = clampPercent(
     (character.renown / renownTarget) * 100,
   );
+  const contractStanding = getContractStandingProgress(character);
+  const regionalStanding = getRegionalStandingProgress(character);
 
   return [
     {
@@ -62,6 +68,24 @@ function buildDashboardGoals(character, levelProgress) {
       value: `${renownRemaining} Renown to ${renownTarget}`,
       hint: `Current Renown: ${character.renown}`,
       progressPercent: renownProgressPercent,
+    },
+    {
+      id: "contracts",
+      label: "Contract standing",
+      value: contractStanding.nextRank
+        ? `${contractStanding.remaining} standing to ${contractStanding.nextRank}`
+        : `${contractStanding.currentRank} secured`,
+      hint: `Current tier: ${contractStanding.currentRank} · Standing ${contractStanding.effectiveStanding}`,
+      progressPercent: contractStanding.progressPercent,
+    },
+    {
+      id: "region",
+      label: `${regionalStanding.regionName} pull`,
+      value: regionalStanding.nextRank
+        ? `${regionalStanding.remaining} standing to ${regionalStanding.nextRank}`
+        : `${regionalStanding.currentRank} secured`,
+      hint: `Current tier: ${regionalStanding.currentRank} · Influence ${regionalStanding.effectiveStanding}`,
+      progressPercent: regionalStanding.progressPercent,
     },
   ];
 }

@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
+import { getRestRecoveryTickBonus } from "@/lib/character-stat-rules";
 import { getClassPassiveStaminaRefreshBonus } from "@/lib/class-identity";
+import { isCharacterResting } from "@/lib/heat-rest";
 
 export const DEFAULT_MAX_STAMINA = 20;
 export const STAMINA_REGEN_INTERVAL_SECONDS = 5 * 60;
@@ -227,6 +229,19 @@ export async function resolveCharacterStaminaRegeneration(character, options = {
         const extraStamina = Math.min(maxStamina - nextStamina, extraStaminaOnRefresh);
         nextStamina += extraStamina;
         changed = changed || extraStamina > 0;
+      }
+
+      const wisdomRecoveryBonus = getRestRecoveryTickBonus(character?.wisdom);
+      if (
+        wisdomRecoveryBonus > 0 &&
+        isCharacterResting(character, now)
+      ) {
+        const extraStamina = Math.min(maxStamina - nextStamina, wisdomRecoveryBonus);
+        const extraHp = Math.min(maxHp - nextHp, wisdomRecoveryBonus);
+
+        nextStamina += extraStamina;
+        nextHp += extraHp;
+        changed = changed || extraStamina > 0 || extraHp > 0;
       }
 
       if (nextStamina >= maxStamina && nextHp >= maxHp) {

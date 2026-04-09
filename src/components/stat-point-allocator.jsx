@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { CHARACTER_STAT_FIELDS } from "@/lib/character-data";
+import { getStatPointAllocationPreview } from "@/lib/character-stat-rules";
 import styles from "./stat-point-allocator.module.css";
 
 export default function StatPointAllocator({ character }) {
@@ -58,24 +59,31 @@ export default function StatPointAllocator({ character }) {
         <p>{unspentPoints} unspent</p>
       </div>
       <p className={styles.description}>
-        Spend 1 point to increase any stat by +1.
+        Spend 1 point to increase any stat by +1. These previews only show while
+        you still have level-up points to assign.
       </p>
       <ul className={styles.grid}>
-        {CHARACTER_STAT_FIELDS.map((field) => (
-          <li className={styles.statRow} key={field.key}>
-            <p className={styles.statValue}>
-              <strong>{field.label}</strong>: {character[field.key]}
-            </p>
-            <button
-              className={styles.action}
-              disabled={unspentPoints <= 0 || Boolean(loadingStatKey)}
-              onClick={() => assignPoint(field.key)}
-              type="button"
-            >
-              {loadingStatKey === field.key ? "Applying..." : `+1 ${field.label}`}
-            </button>
-          </li>
-        ))}
+        {CHARACTER_STAT_FIELDS.map((field) => {
+          const preview = getStatPointAllocationPreview(field.key, character);
+
+          return (
+            <li className={styles.statRow} key={field.key}>
+              <p className={styles.statValue}>
+                <strong>{field.label}</strong>: {character[field.key]}
+              </p>
+              <p className={styles.statMeta}>{preview.current}</p>
+              <p className={styles.statPreview}>{preview.next}</p>
+              <button
+                className={styles.action}
+                disabled={unspentPoints <= 0 || Boolean(loadingStatKey)}
+                onClick={() => assignPoint(field.key)}
+                type="button"
+              >
+                {loadingStatKey === field.key ? "Applying..." : `+1 ${field.label}`}
+              </button>
+            </li>
+          );
+        })}
       </ul>
       {feedback ? (
         <p

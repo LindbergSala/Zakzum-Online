@@ -87,6 +87,19 @@ test("multiple completed rest intervals stack their heat recovery", async () => 
   );
 });
 
+test("wisdom improves heat recovery per completed rest pass", async () => {
+  const character = buildRestingCharacter({ heat: 12, wisdom: 14 });
+  const now = new Date("2099-04-07T10:16:00.000Z");
+
+  const resolved = await resolveCharacterHeatRest(character, {
+    now,
+    persist: false,
+  });
+
+  assert.equal(resolved.character.heat, 7);
+  assert.equal(resolved.recoveredHeat, 5);
+});
+
 test("active heat rest blocks activity transactions", async () => {
   const result = await processActivityTransaction({
     tx: {

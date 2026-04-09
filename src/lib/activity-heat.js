@@ -1,3 +1,5 @@
+import { applyActivityHeatStatAdjustments } from "@/lib/character-stat-rules";
+
 export function getActivityHeatBuildUp(activity, activityGroupId, success) {
   const tier = Math.max(1, Number(activity?.tier) || 1);
 
@@ -20,11 +22,29 @@ export function getActivityHeatBuildUp(activity, activityGroupId, success) {
   return success ? 0 : 1;
 }
 
-export function getActivityHeatBuildUpPreview(activity, activityGroupId = null) {
+export function getAdjustedActivityHeatBuildUp(
+  activity,
+  activityGroupId,
+  success,
+  character,
+) {
+  const baseHeat = getActivityHeatBuildUp(activity, activityGroupId, success);
+
+  return applyActivityHeatStatAdjustments(baseHeat, {
+    success,
+    character,
+  });
+}
+
+export function getActivityHeatBuildUpPreview(
+  activity,
+  activityGroupId = null,
+  character = null,
+) {
   const resolvedGroupId = activityGroupId ?? activity?.groupId ?? activity?.id ?? null;
 
   return {
-    success: getActivityHeatBuildUp(activity, resolvedGroupId, true),
-    failure: getActivityHeatBuildUp(activity, resolvedGroupId, false),
+    success: getAdjustedActivityHeatBuildUp(activity, resolvedGroupId, true, character),
+    failure: getAdjustedActivityHeatBuildUp(activity, resolvedGroupId, false, character),
   };
 }

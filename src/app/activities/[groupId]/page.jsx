@@ -183,7 +183,9 @@ function buildActivityDecisionSignal(activity, activeCharacter) {
   const currentHp = Number(activeCharacter.hp) || 0;
   const currentStamina = Number(activeCharacter.stamina) || 0;
   const failHpCost = Math.abs(Number(activity.failPenalty?.hp) || 0);
-  const staminaCost = Number(activity.staminaCost) || 0;
+  const staminaCost = activeCharacter
+    ? getCharacterActivityStaminaCost(activeCharacter, activity.groupId, activity.staminaCost)
+    : Number(activity.staminaCost) || 0;
   const wouldDropHpToZero = failHpCost > 0 && currentHp - failHpCost <= 0;
 
   if (currentStamina < staminaCost) {
@@ -425,9 +427,9 @@ export default async function ActivityGroupPage({ params }) {
                           <span className={styles.activityMetaChip}>
                             {buildRiskBadgeLabel(activity.riskProfile)}
                           </span>
-                          {activity.staminaCost > 0 ? (
+                          {staminaCost > 0 ? (
                             <span className={styles.activityMetaChip}>
-                              {activity.staminaCost} Stamina
+                              {staminaCost} Stamina
                             </span>
                           ) : null}
                         </div>

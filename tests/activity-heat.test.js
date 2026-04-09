@@ -41,3 +41,23 @@ test("preview helper mirrors the transaction heat rule", () => {
     { success: 1, failure: 3 },
   );
 });
+
+test("wisdom and constitution reduce activity heat build up", () => {
+  assert.equal(
+    getActivityHeatBuildUpPreview(
+      { groupId: "adventure", tier: 3 },
+      null,
+      { wisdom: 12, constitution: 12 },
+    ).failure,
+    1,
+  );
+
+  assert.equal(
+    getActivityHeatBuildUpPreview(
+      { groupId: "quest", tier: 4 },
+      null,
+      { wisdom: 18 },
+    ).failure,
+    0,
+  );
+});

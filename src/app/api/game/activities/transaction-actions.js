@@ -1,8 +1,11 @@
 import { resolveActivityLootDrop } from "@/lib/activity-loot";
 import {
+  applyActivityDeltaStatBonuses,
+  getCharacterActivityStaminaCost,
+} from "@/lib/character-stat-rules";
+import {
   applyClassPassiveDelta,
   getClassPassive,
-  getClassPassiveActivityStaminaCost,
   getClassPassiveStaminaRefreshBonus,
   getClassPassiveRollModifier,
 } from "@/lib/class-identity";
@@ -23,7 +26,7 @@ import {
   getCharacterEffectiveStats,
   getEquippedItemRollModifier,
 } from "@/lib/stat-effects";
-import { getActivityHeatBuildUp } from "@/lib/activity-heat";
+import { getAdjustedActivityHeatBuildUp } from "@/lib/activity-heat";
 import { isCharacterResting } from "@/lib/heat-rest";
 import {
   buildStoryAttemptProgress,
@@ -112,8 +115,9 @@ export async function processActivityTransaction({
 
   const classPassive = getClassPassive(latestCharacter.characterClass);
   const racePassive = getRacePassive(latestCharacter.characterRace);
-  const activityStaminaCost = getClassPassiveActivityStaminaCost(
-    latestCharacter.characterClass,
+  const activityStaminaCost = getCharacterActivityStaminaCost(
+    latestCharacter,
+    activityGroupId,
     activity.staminaCost,
   );
   const classRollModifier = getClassPassiveRollModifier(
@@ -156,22 +160,30 @@ export async function processActivityTransaction({
     success: rollResult.success,
     activityId: activityGroupId,
   });
-  const activityHeatBuildUp = getActivityHeatBuildUp(
+  const activityHeatBuildUp = getAdjustedActivityHeatBuildUp(
     activity,
     activityGroupId,
     rollResult.success,
+    latestCharacter,
   );
   const storyProgress = storyStatus
     ? buildStoryAttemptProgress(activity, storyStatus, rollResult.success)
     : null;
+  const statAdjustedDelta = applyActivityDeltaStatBonuses({
+    character: latestCharacter,
+    activity,
+    success: rollResult.success,
+    delta: itemResolvedDelta.delta,
+  });
   const resolvedDelta = {
-    ...itemResolvedDelta.delta,
-    heat: (Number(itemResolvedDelta.delta?.heat) || 0) + activityHeatBuildUp,
+    ...statAdjustedDelta.delta,
+    heat: (Number(statAdjustedDelta.delta?.heat) || 0) + activityHeatBuildUp,
   };
   const lootDrop = resolveActivityLootDrop({
     activityGroupId,
     activityTier: activity.tier ?? 1,
     success: rollResult.success,
+    dexterity: latestCharacter.dexterity,
   });
 
   const calculation = calculateCharacterResourceResult(latestCharacter, {
@@ -321,6 +333,12 @@ export async function processActivityTransaction({
           rollModifier: itemRollModifier,
           activityGroupId,
           deltaBonus: itemResolvedDelta.deltaBonus,
+        },
+        statIdentity: {
+          strengthActivityStaminaCost: activityStaminaCost,
+          xpBonus: statAdjustedDelta.bonus.xp,
+          renownBonus: statAdjustedDelta.bonus.renown,
+          hpProtection: statAdjustedDelta.bonus.hpProtection,
         },
         consumableIdentity: {
           consumedNextActivityRollBonus: consumableRollModifier,
