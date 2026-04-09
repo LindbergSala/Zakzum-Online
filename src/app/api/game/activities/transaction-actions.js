@@ -1,6 +1,7 @@
 import { resolveActivityLootDrop } from "@/lib/activity-loot";
 import {
   applyActivityDeltaStatBonuses,
+  getBaseActivityStaminaCost,
   getCharacterActivityStaminaCost,
 } from "@/lib/character-stat-rules";
 import {
@@ -115,10 +116,16 @@ export async function processActivityTransaction({
 
   const classPassive = getClassPassive(latestCharacter.characterClass);
   const racePassive = getRacePassive(latestCharacter.characterRace);
+  const baseActivityStaminaCost = getBaseActivityStaminaCost(
+    activityGroupId,
+    activity.staminaCost,
+    { storyStatus },
+  );
   const activityStaminaCost = getCharacterActivityStaminaCost(
     latestCharacter,
     activityGroupId,
     activity.staminaCost,
+    { storyStatus },
   );
   const classRollModifier = getClassPassiveRollModifier(
     latestCharacter.characterClass,
@@ -302,11 +309,11 @@ export async function processActivityTransaction({
           class: latestCharacter.characterClass,
           passive: classPassive,
           activityGroupId,
-          baseStaminaCost: activity.staminaCost,
+          baseStaminaCost: baseActivityStaminaCost,
           effectiveStaminaCost: activityStaminaCost,
           passiveStaminaCostReduction: Math.max(
             0,
-            activity.staminaCost - activityStaminaCost,
+            baseActivityStaminaCost - activityStaminaCost,
           ),
           classRollModifier,
           passiveStaminaRefreshBonus: getClassPassiveStaminaRefreshBonus(
@@ -371,6 +378,7 @@ export async function processActivityTransaction({
     logEntry,
     classPassive,
     racePassive,
+    baseActivityStaminaCost,
     activityStaminaCost,
     classRollModifier,
     raceRollModifier,

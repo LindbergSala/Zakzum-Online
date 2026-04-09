@@ -37,6 +37,44 @@ test("strength reduces stamina cost for heavy actions", () => {
   );
 });
 
+test("story chapter starts cost 20 stamina before class adjustments", () => {
+  assert.equal(
+    getCharacterActivityStaminaCost(
+      { characterClass: "FIGHTER", strength: 10 },
+      "story",
+      4,
+      {
+        storyStatus: { currentStreak: 0 },
+      },
+    ),
+    20,
+  );
+
+  assert.equal(
+    getCharacterActivityStaminaCost(
+      { characterClass: "MONK", strength: 10 },
+      "story",
+      4,
+      {
+        storyStatus: { currentStreak: 0 },
+      },
+    ),
+    19,
+  );
+
+  assert.equal(
+    getCharacterActivityStaminaCost(
+      { characterClass: "FIGHTER", strength: 10 },
+      "story",
+      4,
+      {
+        storyStatus: { currentStreak: 1 },
+      },
+    ),
+    4,
+  );
+});
+
 test("activity stat bonuses grant intelligence xp and charisma renown on success", () => {
   const result = applyActivityDeltaStatBonuses({
     character: {

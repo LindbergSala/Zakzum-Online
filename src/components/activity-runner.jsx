@@ -29,6 +29,7 @@ export default function ActivityRunner({
   nextHeatThreshold = null,
   expectedHeatBuildUp = null,
   storyStatus = null,
+  baseStaminaCost = null,
 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -258,6 +259,8 @@ export default function ActivityRunner({
             Story rule: clear {storyState?.requiredSuccesses ?? 3} successful rolls in a row to finish this chapter.
             Current chapter progress is {storyState?.currentStreak ?? 0}/{storyState?.requiredSuccesses ?? 3},
             and any failed roll resets the chapter back to 0/{storyState?.requiredSuccesses ?? 3}.
+            Starting a fresh chapter from 0/{storyState?.requiredSuccesses ?? 3} always costs 20 Stamina.
+            Your current attempt cost is {baseStaminaCost ?? requiredStamina} before any class adjustment.
           </p>
         ) : null}
         <div className="activity-briefing-stakes">

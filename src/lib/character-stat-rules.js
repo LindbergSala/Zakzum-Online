@@ -2,6 +2,7 @@ import { getClassPassiveActivityStaminaCost } from "@/lib/class-identity";
 import { getCharacterCarryCapacity } from "@/lib/weight-rules";
 
 const HEAVY_ACTIVITY_GROUP_IDS = new Set(["adventure", "arena"]);
+const STORY_START_STAMINA_COST = 20;
 
 const CONTRACT_STANDING_RANKS = [
   { label: "Freeblade", target: 0 },
@@ -270,10 +271,19 @@ export function getCharacterActivityStaminaCost(
   character,
   activityGroupId,
   staminaCostInput,
+  options = {},
 ) {
+  const storyCurrentStreak = Math.max(
+    0,
+    Math.floor(Number(options.storyStatus?.currentStreak) || 0),
+  );
+  const resolvedBaseCost =
+    activityGroupId === "story" && storyCurrentStreak === 0
+      ? STORY_START_STAMINA_COST
+      : staminaCostInput;
   const classAdjustedCost = getClassPassiveActivityStaminaCost(
     character?.characterClass,
-    staminaCostInput,
+    resolvedBaseCost,
   );
 
   if (!HEAVY_ACTIVITY_GROUP_IDS.has(activityGroupId)) {
@@ -286,6 +296,20 @@ export function getCharacterActivityStaminaCost(
   adjustedCost -= strengthReduction;
 
   return Math.max(1, adjustedCost);
+}
+
+export function getBaseActivityStaminaCost(activityGroupId, staminaCostInput, options = {}) {
+  const storyCurrentStreak = Math.max(
+    0,
+    Math.floor(Number(options.storyStatus?.currentStreak) || 0),
+  );
+
+  if (activityGroupId === "story" && storyCurrentStreak === 0) {
+    return STORY_START_STAMINA_COST;
+  }
+
+  const numericCost = Number(staminaCostInput);
+  return Number.isFinite(numericCost) ? Math.max(0, Math.floor(numericCost)) : 0;
 }
 
 export function applyActivityHeatStatAdjustments(baseHeat, options = {}) {

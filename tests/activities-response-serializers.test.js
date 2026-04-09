@@ -150,6 +150,7 @@ test("serializeActivitySuccessPayload preserves critical nested result fields", 
         resetOnFailure: false,
         nextUnlockedActivityName: null,
       },
+      baseActivityStaminaCost: 20,
       loot: null,
       lootBlockedByCarry: false,
       logEntry: { id: "log-1" },
@@ -160,6 +161,7 @@ test("serializeActivitySuccessPayload preserves critical nested result fields", 
   assert.equal(payload.result.roll.heatBuildUp, 0);
   assert.equal(payload.result.progression.levelAfter, 1);
   assert.equal(payload.result.storyProgress.currentStreak, 2);
+  assert.equal(payload.result.classIdentity.baseStaminaCost, 20);
   assert.equal(payload.result.totals.after.stamina, 8);
   assert.equal(payload.result.logId, "log-1");
 });

@@ -8,7 +8,10 @@ import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
 import { getActivityHeatBuildUpPreview } from "@/lib/activity-heat";
 import { getActivityIllustrationSrc } from "@/lib/activity-presentation";
-import { getCharacterActivityStaminaCost } from "@/lib/character-stat-rules";
+import {
+  getBaseActivityStaminaCost,
+  getCharacterActivityStaminaCost,
+} from "@/lib/character-stat-rules";
 import { getCharacterMaxResources, getResolvedActiveCharacterForUser } from "@/lib/character";
 import { ACTIVITY_DEFINITION_MAP, isActivityOpen } from "@/lib/core-loop-data";
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
@@ -49,13 +52,20 @@ export default async function ActivityRunPage({ params }) {
         ? "/adventure"
         : `/activities/${activity.groupId ?? activity.id}`;
   const activityIllustrationSrc = getActivityIllustrationSrc(activity);
-  const effectiveActivityStaminaCost = activeCharacter
-    ? getCharacterActivityStaminaCost(activeCharacter, activity.groupId, activity.staminaCost)
-    : activity.staminaCost;
   const storyStatus =
     activeCharacter && activity.groupId === "story"
       ? await getStoryActivityStateForCharacter(activeCharacter.id, activity.id)
       : null;
+  const baseActivityStaminaCost = getBaseActivityStaminaCost(
+    activity.groupId,
+    activity.staminaCost,
+    { storyStatus },
+  );
+  const effectiveActivityStaminaCost = activeCharacter
+    ? getCharacterActivityStaminaCost(activeCharacter, activity.groupId, activity.staminaCost, {
+        storyStatus,
+      })
+    : baseActivityStaminaCost;
 
   if (
     activity.groupId === "story" &&
@@ -159,6 +169,7 @@ export default async function ActivityRunPage({ params }) {
                     nextHeatThreshold={nextHeatThreshold}
                     expectedHeatBuildUp={heatBuildUpPreview}
                     storyStatus={storyStatus}
+                    baseStaminaCost={baseActivityStaminaCost}
                   />
                 )}
               </>

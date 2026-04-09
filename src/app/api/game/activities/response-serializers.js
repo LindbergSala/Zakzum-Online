@@ -132,11 +132,11 @@ export function serializeActivitySuccessPayload({
         class: result.characterClass,
         passive: result.classPassive,
         activityGroupId: result.activityGroupId,
-        baseStaminaCost: activity.staminaCost,
+        baseStaminaCost: result.baseActivityStaminaCost,
         effectiveStaminaCost: result.activityStaminaCost,
         passiveStaminaCostReduction: Math.max(
           0,
-          activity.staminaCost - result.activityStaminaCost,
+          result.baseActivityStaminaCost - result.activityStaminaCost,
         ),
         passiveRollModifier: result.classRollModifier,
         passiveStaminaRefreshBonus: getClassPassiveStaminaRefreshBonus(

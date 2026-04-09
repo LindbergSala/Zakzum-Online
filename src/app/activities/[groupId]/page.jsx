@@ -11,6 +11,10 @@ import {
   getActivityGroup,
   getActivityGroupAvailability,
 } from "@/lib/core-loop-data";
+import {
+  getBaseActivityStaminaCost,
+  getCharacterActivityStaminaCost,
+} from "@/lib/character-stat-rules";
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
@@ -170,7 +174,7 @@ function buildRiskBadgeLabel(riskProfile) {
   return primaryClause?.trim() || riskProfile;
 }
 
-function buildActivityDecisionSignal(activity, activeCharacter) {
+function buildActivityDecisionSignal(activity, activeCharacter, storyStatus = null) {
   if (!activeCharacter) {
     return {
       label: "Create character first",
@@ -184,8 +188,12 @@ function buildActivityDecisionSignal(activity, activeCharacter) {
   const currentStamina = Number(activeCharacter.stamina) || 0;
   const failHpCost = Math.abs(Number(activity.failPenalty?.hp) || 0);
   const staminaCost = activeCharacter
-    ? getCharacterActivityStaminaCost(activeCharacter, activity.groupId, activity.staminaCost)
-    : Number(activity.staminaCost) || 0;
+    ? getCharacterActivityStaminaCost(activeCharacter, activity.groupId, activity.staminaCost, {
+        storyStatus,
+      })
+    : getBaseActivityStaminaCost(activity.groupId, activity.staminaCost, {
+        storyStatus,
+      });
   const wouldDropHpToZero = failHpCost > 0 && currentHp - failHpCost <= 0;
 
   if (currentStamina < staminaCost) {
@@ -259,10 +267,10 @@ function buildStoryDecisionNote(storyStatus) {
   }
 
   if ((storyStatus.currentStreak ?? 0) > 0) {
-    return `Current chapter progress is ${storyStatus.currentStreak}/${storyStatus.requiredSuccesses}. One failure resets this story back to 0/${storyStatus.requiredSuccesses}.`;
+    return `Current chapter progress is ${storyStatus.currentStreak}/${storyStatus.requiredSuccesses}. One failure resets this story back to 0/${storyStatus.requiredSuccesses}, and starting over then costs 20 Stamina.`;
   }
 
-  return `You need ${storyStatus.requiredSuccesses} successful rolls in a row to clear this chapter. Every success reveals the next lore part.`;
+  return `You need ${storyStatus.requiredSuccesses} successful rolls in a row to clear this chapter. Every success reveals the next lore part, and a fresh chapter start costs 20 Stamina.`;
 }
 
 function buildStoryActionLabel(storyStatus) {
@@ -368,15 +376,26 @@ export default async function ActivityGroupPage({ params }) {
                   >
                     {activities.map((activity, index) => (
                       (() => {
+                        const storyStatus = storyStatusByActivityId[activity.id] ?? null;
                         const decisionSignal = buildActivityDecisionSignal(
                           activity,
                           activeCharacter,
+                          storyStatus,
                         );
-                        const storyStatus = storyStatusByActivityId[activity.id] ?? null;
                         const storyChipState = buildStoryChipState(storyStatus);
                         const isStoryGroup = group.id === "story";
                         const isStoryLocked = isStoryGroup && !storyStatus?.isUnlocked;
                         const isStoryCompleted = isStoryGroup && storyStatus?.isCompleted;
+                        const staminaCost = activeCharacter
+                          ? getCharacterActivityStaminaCost(
+                              activeCharacter,
+                              activity.groupId,
+                              activity.staminaCost,
+                              { storyStatus },
+                            )
+                          : getBaseActivityStaminaCost(activity.groupId, activity.staminaCost, {
+                              storyStatus,
+                            });
                         const actionLabel = isStoryGroup
                           ? buildStoryActionLabel(storyStatus)
                           : buildOpenLabel(activity, group.id);
@@ -409,6 +428,9 @@ export default async function ActivityGroupPage({ params }) {
                               </span>
                               <span className={styles.activityMetaChip}>
                                 {storyStatus?.requiredSuccesses ?? 3} Rolls Needed
+                              </span>
+                              <span className={styles.activityMetaChip}>
+                                20 Stamina Start
                               </span>
                             </>
                           ) : (
