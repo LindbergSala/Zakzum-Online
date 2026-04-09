@@ -11,10 +11,19 @@ import {
   HEAT_REST_RECOVERY,
   isCharacterResting,
 } from "@/lib/heat-rest";
-import { prisma } from "@/lib/prisma";
-import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import { logServerError } from "@/lib/server-logger";
 import { restActionSchema } from "@/lib/validators/core-loop";
+import {
+  buildConflictMessage,
+  buildLoadErrorMessage,
+  buildProcessingErrorMessage,
+  jsonMessageResponse,
+} from "../response-helpers";
+import {
+  buildRestStartedMessage,
+  serializeRestActionPayload,
+  serializeRestStatePayload,
+} from "./response-serializers";
 
 const REST_CHARACTER_SELECT = {
   id: true,
@@ -49,19 +58,16 @@ export function createRestGetHandler(dependencies = {}) {
       const activeCharacter = await resolveActiveCharacter(user.id);
 
       return NextResponse.json(
-        {
-          resources: activeCharacter ? getCharacterResourceSnapshot(activeCharacter) : null,
+        serializeRestStatePayload({
+          activeCharacter,
           rest: activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null,
-        },
+        }),
         { status: 200 },
       );
     } catch (caughtError) {
       logError("/api/game/rest [GET]", caughtError, { userId: user.id });
 
-      return NextResponse.json(
-        { message: "Something went wrong while loading rest state." },
-        { status: 500 },
-      );
+      return jsonMessageResponse(buildLoadErrorMessage("rest state"), 500);
     }
   };
 }
@@ -109,9 +115,9 @@ export function createRestPostHandler(dependencies = {}) {
       activeCharacter = await resolveActiveCharacter(user.id);
 
       if (!activeCharacter) {
-        return NextResponse.json(
-          { message: "You must create a character before you can rest." },
-          { status: 400 },
+        return jsonMessageResponse(
+          "You must create a character before you can rest.",
+          400,
         );
       }
 
@@ -135,7 +141,10 @@ export function createRestPostHandler(dependencies = {}) {
               ok: false,
               status: 409,
               message: "Rest is already active.",
-              resources: getCharacterResourceSnapshot(latestCharacter),
+              resources: serializeRestStatePayload({
+                activeCharacter: latestCharacter,
+                rest: getCharacterHeatRestMeta(latestCharacter),
+              }).resources,
               rest: getCharacterHeatRestMeta(latestCharacter),
             };
           }
@@ -145,7 +154,10 @@ export function createRestPostHandler(dependencies = {}) {
               ok: false,
               status: 400,
               message: "Heat is already at 0.",
-              resources: getCharacterResourceSnapshot(latestCharacter),
+              resources: serializeRestStatePayload({
+                activeCharacter: latestCharacter,
+                rest: null,
+              }).resources,
               rest: null,
             };
           }
@@ -175,8 +187,11 @@ export function createRestPostHandler(dependencies = {}) {
           return {
             ok: true,
             status: 200,
-            message: `Rest started. -${HEAT_REST_RECOVERY} Heat every 15 min until canceled.`,
-            resources: getCharacterResourceSnapshot(updatedCharacter),
+            message: buildRestStartedMessage(HEAT_REST_RECOVERY),
+            resources: serializeRestStatePayload({
+              activeCharacter: updatedCharacter,
+              rest: getCharacterHeatRestMeta(updatedCharacter),
+            }).resources,
             rest: getCharacterHeatRestMeta(updatedCharacter),
           };
         }
@@ -186,7 +201,10 @@ export function createRestPostHandler(dependencies = {}) {
             ok: false,
             status: 400,
             message: "No active rest.",
-            resources: getCharacterResourceSnapshot(latestCharacter),
+            resources: serializeRestStatePayload({
+              activeCharacter: latestCharacter,
+              rest: null,
+            }).resources,
             rest: null,
           };
         }
@@ -216,25 +234,21 @@ export function createRestPostHandler(dependencies = {}) {
           ok: true,
           status: 200,
           message: "Rest canceled.",
-          resources: getCharacterResourceSnapshot(updatedCharacter),
+          resources: serializeRestStatePayload({
+            activeCharacter: updatedCharacter,
+            rest: null,
+          }).resources,
           rest: null,
         };
       });
 
       return NextResponse.json(
-        {
-          message: result.message,
-          resources: result.resources ?? null,
-          rest: result.rest ?? null,
-        },
+        serializeRestActionPayload(result),
         { status: result.status },
       );
     } catch (caughtError) {
       if (isSerializableConflictError(caughtError)) {
-        return NextResponse.json(
-          { message: "Rest action conflicted with another update. Try again." },
-          { status: 409 },
-        );
+        return jsonMessageResponse(buildConflictMessage("Rest action"), 409);
       }
 
       logError("/api/game/rest", caughtError, {
@@ -243,10 +257,7 @@ export function createRestPostHandler(dependencies = {}) {
         action: parsedData?.action,
       });
 
-      return NextResponse.json(
-        { message: "Something went wrong while processing rest." },
-        { status: 500 },
-      );
+      return jsonMessageResponse(buildProcessingErrorMessage("rest"), 500);
     }
   };
 }

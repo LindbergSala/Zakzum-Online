@@ -11,11 +11,21 @@ import { logServerError } from "@/lib/server-logger";
 import { getCharacterEffectiveStats } from "@/lib/stat-effects";
 import { inventoryActionSchema } from "@/lib/validators/core-loop";
 import {
+  buildConflictMessage,
+  buildLoadErrorMessage,
+  buildProcessingErrorMessage,
+  jsonMessageResponse,
+} from "../response-helpers";
+import {
   CHARACTER_SELECT,
   INVENTORY_ITEM_SELECT,
   enrichInventoryItems,
   resolveOwnedItem,
 } from "./route-helpers";
+import {
+  serializeInventoryActionPayload,
+  serializeInventoryIndexPayload,
+} from "./response-serializers";
 import { processInventoryActionTransaction } from "./transaction-actions";
 
 export function createInventoryGetHandler(dependencies = {}) {
@@ -52,21 +62,13 @@ export function createInventoryGetHandler(dependencies = {}) {
       const statSummary = getCharacterEffectiveStats(activeCharacter, equippedItems);
 
       return NextResponse.json(
-        {
-          items: enrichedItems,
-          resources: getCharacterResourceSnapshot(activeCharacter),
-          stats: statSummary,
-          nextActivityRollBonus: Number(activeCharacter.nextActivityRollBonus) || 0,
-        },
+        serializeInventoryIndexPayload({ activeCharacter, items }),
         { status: 200 },
       );
     } catch (caughtError) {
       logError("/api/game/inventory [GET]", caughtError, { userId: user.id });
 
-      return NextResponse.json(
-        { message: "Something went wrong while loading inventory." },
-        { status: 500 },
-      );
+      return jsonMessageResponse(buildLoadErrorMessage("inventory"), 500);
     }
   };
 }
@@ -118,9 +120,9 @@ export function createInventoryPostHandler(dependencies = {}) {
       activeCharacter = await resolveActiveCharacter(user.id);
 
       if (!activeCharacter) {
-        return NextResponse.json(
-          { message: "You must create a character before you can manage inventory." },
-          { status: 400 },
+        return jsonMessageResponse(
+          "You must create a character before you can manage inventory.",
+          400,
         );
       }
 
@@ -164,33 +166,16 @@ export function createInventoryPostHandler(dependencies = {}) {
       });
 
       if (!result.ok) {
-        return NextResponse.json(
-          { message: result.message },
-          { status: result.status },
-        );
+        return jsonMessageResponse(result.message, result.status);
       }
 
-      const enrichedItems = enrichInventoryItems(result.allItems);
-      const equippedItems = enrichedItems.filter((item) => item.isEquipped);
-      const statSummary = getCharacterEffectiveStats(result.updatedCharacter, equippedItems);
-
       return NextResponse.json(
-        {
-          message: result.message,
-          items: enrichedItems,
-          resources: getCharacterResourceSnapshot(result.updatedCharacter),
-          stats: statSummary,
-          nextActivityRollBonus:
-            Number(result.updatedCharacter.nextActivityRollBonus) || 0,
-        },
+        serializeInventoryActionPayload({ result }),
         { status: 200 },
       );
     } catch (caughtError) {
       if (isSerializableConflictError(caughtError)) {
-        return NextResponse.json(
-          { message: "Inventory action conflicted with another update. Try again." },
-          { status: 409 },
-        );
+        return jsonMessageResponse(buildConflictMessage("Inventory action"), 409);
       }
 
       logError("/api/game/inventory", caughtError, {
@@ -203,10 +188,7 @@ export function createInventoryPostHandler(dependencies = {}) {
         quantity: parsedData?.quantity,
       });
 
-      return NextResponse.json(
-        { message: "Something went wrong while processing inventory action." },
-        { status: 500 },
-      );
+      return jsonMessageResponse(buildProcessingErrorMessage("inventory action"), 500);
     }
   };
 }

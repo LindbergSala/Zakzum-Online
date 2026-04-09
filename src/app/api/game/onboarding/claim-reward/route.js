@@ -6,10 +6,17 @@ import { validateWriteRequestOrigin } from "@/lib/csrf";
 import {
   buildOnboardingViewModel,
   getOnboardingMetricsForCharacter,
-  ONBOARDING_COMPLETION_REWARD_GOLD,
 } from "@/lib/onboarding";
 import { maybeGrantOnboardingCompletionReward } from "@/lib/onboarding-reward";
 import { logServerError } from "@/lib/server-logger";
+import {
+  buildProcessingErrorMessage,
+  jsonMessageResponse,
+} from "../../response-helpers";
+import {
+  serializeOnboardingRewardAlreadyClaimedPayload,
+  serializeOnboardingRewardClaimedPayload,
+} from "../response-serializers";
 
 export function createClaimOnboardingRewardPostHandler(dependencies = {}) {
   const ensureOriginIsValid =
@@ -39,9 +46,9 @@ export function createClaimOnboardingRewardPostHandler(dependencies = {}) {
     const activeCharacter = await resolveActiveCharacter(user.id);
 
     if (!activeCharacter) {
-      return NextResponse.json(
-        { message: "You need an active character before claiming onboarding rewards." },
-        { status: 400 },
+      return jsonMessageResponse(
+        "You need an active character before claiming onboarding rewards.",
+        400,
       );
     }
 
@@ -53,19 +60,15 @@ export function createClaimOnboardingRewardPostHandler(dependencies = {}) {
       });
 
       if (!onboardingModel.isComplete) {
-        return NextResponse.json(
-          { message: "Finish the onboarding loop before claiming this reward." },
-          { status: 400 },
+        return jsonMessageResponse(
+          "Finish the onboarding loop before claiming this reward.",
+          400,
         );
       }
 
       if (!onboardingModel.showRewardClaim) {
         return NextResponse.json(
-          {
-            claimed: false,
-            rewardGold: 0,
-            message: "Onboarding reward already claimed.",
-          },
+          serializeOnboardingRewardAlreadyClaimedPayload(),
           { status: 200 },
         );
       }
@@ -74,32 +77,21 @@ export function createClaimOnboardingRewardPostHandler(dependencies = {}) {
 
       if (!rewardResult.granted) {
         return NextResponse.json(
-          {
-            claimed: false,
-            rewardGold: 0,
-            message: "Onboarding reward already claimed.",
-          },
+          serializeOnboardingRewardAlreadyClaimedPayload(),
           { status: 200 },
         );
       }
 
-      return NextResponse.json(
-        {
-          claimed: true,
-          rewardGold: ONBOARDING_COMPLETION_REWARD_GOLD,
-          message: `You claimed ${ONBOARDING_COMPLETION_REWARD_GOLD} Gold.`,
-        },
-        { status: 200 },
-      );
+      return NextResponse.json(serializeOnboardingRewardClaimedPayload(), { status: 200 });
     } catch (caughtError) {
       logError("/api/game/onboarding/claim-reward", caughtError, {
         userId: user.id,
         characterId: activeCharacter.id,
       });
 
-      return NextResponse.json(
-        { message: "Something went wrong while claiming your onboarding reward." },
-        { status: 500 },
+      return jsonMessageResponse(
+        buildProcessingErrorMessage("your onboarding reward"),
+        500,
       );
     }
   };

@@ -6,6 +6,8 @@ import { Cinzel, Source_Sans_3 } from "next/font/google";
 import ActivityRunner from "@/components/activity-runner";
 import GameNav from "@/components/game-nav";
 import ResourceStrip from "@/components/resource-strip";
+import { getActivityHeatBuildUpPreview } from "@/lib/activity-heat";
+import { getActivityIllustrationSrc } from "@/lib/activity-presentation";
 import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import { getClassPassiveActivityStaminaCost } from "@/lib/class-identity";
 import { ACTIVITY_DEFINITION_MAP, isActivityOpen } from "@/lib/core-loop-data";
@@ -24,68 +26,6 @@ const bodyFont = Source_Sans_3({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 });
-
-const ACTIVITY_IMAGE_CACHE_VERSION = "20260403";
-
-const QUEST_ACTIVITY_IMAGE_BY_TIER = {
-  1: "/images/activities/quest/heartlands/Quest_I.png",
-  2: "/images/activities/quest/heartlands/Quest_II.png",
-  3: "/images/activities/quest/heartlands/Quest_III.png",
-  4: "/images/activities/quest/heartlands/Quest_IV.png",
-  5: "/images/activities/quest/heartlands/Quest_V.png",
-};
-
-const ADVENTURE_ACTIVITY_IMAGE_BY_TIER = {
-  1: "/images/activities/adventure/heartlands/Adventure_I.png",
-  2: "/images/activities/adventure/heartlands/Adventure_II.png",
-  3: "/images/activities/adventure/heartlands/Adventure_III.png",
-  4: "/images/activities/adventure/heartlands/Adventure_IV.png",
-  5: "/images/activities/adventure/heartlands/Adventure_V.png",
-};
-
-const ACTIVITY_IMAGE_BY_GROUP_AND_TIER = {
-  quest: QUEST_ACTIVITY_IMAGE_BY_TIER,
-  adventure: ADVENTURE_ACTIVITY_IMAGE_BY_TIER,
-};
-
-function getActivityIllustrationSrc(activity) {
-  if (!activity || typeof activity.tier !== "number") {
-    return null;
-  }
-
-  const imagePath = ACTIVITY_IMAGE_BY_GROUP_AND_TIER[activity.groupId]?.[activity.tier] ?? null;
-  return imagePath ? `${imagePath}?v=${ACTIVITY_IMAGE_CACHE_VERSION}` : null;
-}
-
-function getActivityHeatBuildUpPreview(activity) {
-  const tier = Math.max(1, Number(activity?.tier) || 1);
-
-  if (activity.groupId === "adventure") {
-    return {
-      success: 1,
-      failure: 2 + Math.floor((tier - 1) / 2),
-    };
-  }
-
-  if (activity.groupId === "arena") {
-    return {
-      success: 1,
-      failure: 2,
-    };
-  }
-
-  if (activity.groupId === "quest") {
-    return {
-      success: 0,
-      failure: tier >= 4 ? 2 : 1,
-    };
-  }
-
-  return {
-    success: 0,
-    failure: 1,
-  };
-}
 
 export default async function ActivityRunPage({ params }) {
   const resolvedParams = await params;

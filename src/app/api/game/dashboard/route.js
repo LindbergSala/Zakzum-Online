@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireApiUser } from "@/lib/api-auth";
-import { getUserWithResolvedActiveCharacter } from "@/lib/character";
+import { getResolvedActiveCharacterForUser } from "@/lib/character";
 import {
   getStaminaRegenerationMeta,
   getHpRegenerationMeta,
@@ -15,8 +15,7 @@ export async function GET() {
     return error;
   }
 
-  const userWithCharacter = await getUserWithResolvedActiveCharacter(user.id);
-  const activeCharacter = userWithCharacter?.activeCharacter ?? null;
+  const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
 
   return NextResponse.json(
     {

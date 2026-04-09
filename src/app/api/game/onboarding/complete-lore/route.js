@@ -11,6 +11,11 @@ import {
 } from "@/lib/onboarding";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import { logServerError } from "@/lib/server-logger";
+import {
+  buildProcessingErrorMessage,
+  jsonMessageResponse,
+} from "../../response-helpers";
+import { serializeOnboardingLoreRecordedPayload } from "../response-serializers";
 
 const CHARACTER_LORE_LOG_SELECT = {
   id: true,
@@ -66,9 +71,9 @@ export function createCompleteOnboardingLorePostHandler(dependencies = {}) {
     const activeCharacter = await resolveActiveCharacter(user.id);
 
     if (!activeCharacter) {
-      return NextResponse.json(
-        { message: "You need an active character before completing onboarding lore." },
-        { status: 400 },
+      return jsonMessageResponse(
+        "You need an active character before completing onboarding lore.",
+        400,
       );
     }
 
@@ -144,12 +149,7 @@ export function createCompleteOnboardingLorePostHandler(dependencies = {}) {
       });
 
       return NextResponse.json(
-        {
-          recorded: markResult.recorded,
-          message: markResult.recorded
-            ? "Zakzum lore step recorded."
-            : "Zakzum lore step already recorded.",
-        },
+        serializeOnboardingLoreRecordedPayload(markResult.recorded),
         { status: 200 },
       );
     } catch (caughtError) {
@@ -158,9 +158,9 @@ export function createCompleteOnboardingLorePostHandler(dependencies = {}) {
         characterId: activeCharacter.id,
       });
 
-      return NextResponse.json(
-        { message: "Something went wrong while recording lore onboarding progress." },
-        { status: 500 },
+      return jsonMessageResponse(
+        buildProcessingErrorMessage("lore onboarding progress"),
+        500,
       );
     }
   };
