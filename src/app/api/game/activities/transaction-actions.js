@@ -26,6 +26,11 @@ import {
 import { getActivityHeatBuildUp } from "@/lib/activity-heat";
 import { isCharacterResting } from "@/lib/heat-rest";
 import {
+  buildStoryAttemptProgress,
+  getStoryActivityStateForCharacter,
+  isStoryActivity,
+} from "@/lib/story-progress";
+import {
   ACTIVITY_CHARACTER_SELECT,
   ACTIVITY_ITEM_SELECT,
   applyLootDropToInventory,
@@ -69,6 +74,28 @@ export async function processActivityTransaction({
       message: "Not enough HP. Required at least 1, you have 0.",
       requiredHp: 1,
       currentHp: Number(latestCharacter.hp) || 0,
+      resources: getCharacterResourceSnapshot(latestCharacter),
+    };
+  }
+
+  const storyStatus = isStoryActivity(activity)
+    ? await getStoryActivityStateForCharacter(latestCharacter.id, activity.id, tx)
+    : null;
+
+  if (storyStatus && !storyStatus.isUnlocked) {
+    return {
+      ok: false,
+      status: 403,
+      message: storyStatus.lockReason || "This story is locked.",
+      resources: getCharacterResourceSnapshot(latestCharacter),
+    };
+  }
+
+  if (storyStatus?.isCompleted) {
+    return {
+      ok: false,
+      status: 409,
+      message: "This story chapter is already complete.",
       resources: getCharacterResourceSnapshot(latestCharacter),
     };
   }
@@ -134,6 +161,9 @@ export async function processActivityTransaction({
     activityGroupId,
     rollResult.success,
   );
+  const storyProgress = storyStatus
+    ? buildStoryAttemptProgress(activity, storyStatus, rollResult.success)
+    : null;
   const resolvedDelta = {
     ...itemResolvedDelta.delta,
     heat: (Number(itemResolvedDelta.delta?.heat) || 0) + activityHeatBuildUp,
@@ -296,6 +326,19 @@ export async function processActivityTransaction({
           consumedNextActivityRollBonus: consumableRollModifier,
           remainingNextActivityRollBonus: 0,
         },
+        ...(storyProgress
+          ? {
+              story: {
+                requiredSuccesses: storyProgress.requiredSuccesses,
+                consecutiveSuccessesBefore: storyProgress.previousStreak,
+                consecutiveSuccessesAfter: storyProgress.currentStreak,
+                completed: storyProgress.completed,
+                resetOnFailure: storyProgress.resetOnFailure,
+                nextUnlockedActivityId: storyProgress.nextUnlockedActivityId,
+                overlayStep: storyProgress.overlay?.step ?? null,
+              },
+            }
+          : {}),
         activityContext,
         stats: statSummary,
         loot: buildLootLogDetails(lootDrop, loot, lootBlockedByCarry),
@@ -332,6 +375,7 @@ export async function processActivityTransaction({
     characterRace: latestCharacter.characterRace,
     activityGroupId,
     activityHeatBuildUp,
+    storyProgress,
     lootDrop,
     loot,
     lootBlockedByCarry,

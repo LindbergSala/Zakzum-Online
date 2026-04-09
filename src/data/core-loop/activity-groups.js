@@ -8,6 +8,7 @@ import {
   ADVENTURE_ACTIVITY_STEPS,
   ARENA_ACTIVITY_STEPS,
   QUEST_ACTIVITY_STEPS,
+  STORY_ACTIVITY_STEPS,
 } from "./activity-definitions";
 
 export const ACTIVITY_GROUPS = [
@@ -74,6 +75,24 @@ export const ACTIVITY_GROUPS = [
     activities: ADVENTURE_ACTIVITY_STEPS,
   },
   {
+    id: "story",
+    name: "Story Board",
+    tagline: "Five locked chapters that reveal Zakzum's lore",
+    summary:
+      "A five-part chapter track that unlocks only after the full Quest and Adventure board has been cleared once.",
+    overviewBadges: ["5 Chapters", "3 Rolls In A Row", "No Loot Drops"],
+    lootProfile: {
+      source: ITEM_LOOT_SOURCE.QUEST,
+      dropChance: 0,
+      successOnly: true,
+      categoryWeights: {},
+      rarityWeights: {},
+    },
+    description:
+      "Story chapters are progression gates rather than loot farms. Each chapter requires three consecutive successful rolls, reveals a lore segment on every success, and unlocks the next chapter only when fully cleared.",
+    activities: STORY_ACTIVITY_STEPS,
+  },
+  {
     id: "arena",
     name: "Arena Board",
     tagline: "Duel track with renown focus",
@@ -100,6 +119,7 @@ export const ACTIVITY_GROUPS = [
     },
     description:
       "Direct combat with renown-heavy rewards. Designed for aggressive builds and prestige progression.",
+    isListed: false,
     activities: ARENA_ACTIVITY_STEPS,
   },
 ];

@@ -14,6 +14,7 @@ import {
 import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
+import { getStoryBoardStateForCharacter } from "@/lib/story-progress";
 import { formatCompactResourceDelta } from "@/lib/resource-delta-format";
 import styles from "./page.module.css";
 
@@ -36,6 +37,10 @@ function buildGroupLead(group) {
     return "Answer warfront summons at the edge of collapse, where every run can either save the realm or break it further.";
   }
 
+  if (group.id === "story") {
+    return "Unlock five lore chapters after clearing every Quest and Adventure once, then survive three successful rolls in a row to finish each chapter.";
+  }
+
   return group.description;
 }
 
@@ -50,18 +55,24 @@ function buildActivityTeaser(activity, groupId) {
     return `Operation at ${location}. Push forward before the front fully collapses.`;
   }
 
+  if (groupId === "story") {
+    return activity.story?.boardTeaser ?? "Reveal the next Zakzum lore chapter by chaining three successful rolls without failing.";
+  }
+
   return activity.name;
 }
 
 const GROUP_THEME_CLASS = {
   quest: "themeQuest",
   adventure: "themeAdventure",
+  story: "themeStory",
   arena: "themeArena",
 };
 
 const GROUP_PAGE_SHELL_CLASS = {
   quest: "questPageShell",
   adventure: "adventurePageShell",
+  story: "storyPageShell",
   arena: "arenaPageShell",
 };
 
@@ -93,6 +104,10 @@ function buildOpenLabel(activity, groupId) {
     return tierLabel ? `Open Adventure ${tierLabel}` : "Open Adventure";
   }
 
+  if (groupId === "story") {
+    return tierLabel ? `Open Story ${tierLabel}` : "Open Story";
+  }
+
   return `Open ${activity.name}`;
 }
 
@@ -105,6 +120,10 @@ function buildRunLabel(activity, groupId) {
 
   if (groupId === "adventure") {
     return tierLabel ? `Adventure ${tierLabel}` : "Adventure";
+  }
+
+  if (groupId === "story") {
+    return tierLabel ? `Story ${tierLabel}` : "Story";
   }
 
   return tierLabel ? `Run ${tierLabel}` : "Run";
@@ -128,6 +147,13 @@ function buildActivityTitle(activity, groupId) {
   if (groupId === "adventure") {
     strippedName = strippedName.replace(
       new RegExp(`^Adventure\\s+${tierLabel || "[IVX0-9]+"}:\\s*`, "i"),
+      "",
+    );
+  }
+
+  if (groupId === "story") {
+    strippedName = strippedName.replace(
+      new RegExp(`^Story\\s+${tierLabel || "[IVX0-9]+"}:\\s*`, "i"),
       "",
     );
   }
@@ -193,6 +219,62 @@ function buildActivityDecisionSignal(activity, activeCharacter) {
   };
 }
 
+function buildStoryChipState(storyStatus) {
+  if (storyStatus?.isCompleted) {
+    return {
+      label: "Completed",
+      className: styles.activityDecisionChipOk,
+    };
+  }
+
+  if (!storyStatus?.isUnlocked) {
+    return {
+      label: "Locked",
+      className: styles.activityDecisionChipDanger,
+    };
+  }
+
+  if ((storyStatus.currentStreak ?? 0) > 0) {
+    return {
+      label: `${storyStatus.currentStreak}/${storyStatus.requiredSuccesses}`,
+      className: styles.activityDecisionChipWarn,
+    };
+  }
+
+  return {
+    label: "Ready",
+    className: styles.activityDecisionChipOk,
+  };
+}
+
+function buildStoryDecisionNote(storyStatus) {
+  if (!storyStatus?.isUnlocked) {
+    return storyStatus?.lockReason ?? "This story is locked.";
+  }
+
+  if (storyStatus.isCompleted) {
+    return "Completed once. This chapter stays cleared and no replay is required to keep later stories unlocked.";
+  }
+
+  if ((storyStatus.currentStreak ?? 0) > 0) {
+    return `Current chapter progress is ${storyStatus.currentStreak}/${storyStatus.requiredSuccesses}. One failure resets this story back to 0/${storyStatus.requiredSuccesses}.`;
+  }
+
+  return `You need ${storyStatus.requiredSuccesses} successful rolls in a row to clear this chapter. Every success reveals the next lore part.`;
+}
+
+function buildStoryActionLabel(storyStatus) {
+  if (!storyStatus?.isUnlocked) {
+    return "Locked";
+  }
+
+  if (storyStatus.isCompleted) {
+    return "Story Complete";
+  }
+
+  return (storyStatus.currentStreak ?? 0) > 0 ? "Resume Chapter" : "Start Chapter";
+}
+
 export default async function ActivityGroupPage({ params }) {
   const resolvedParams = await params;
   const group = getActivityGroup(resolvedParams.groupId);
@@ -242,10 +324,16 @@ export default async function ActivityGroupPage({ params }) {
   }
 
   const activities = getActivitiesForGroup(group.id);
-  const shouldUseFiveAcrossLayout = group.id === "quest" || group.id === "adventure";
+  const shouldUseFiveAcrossLayout =
+    group.id === "quest" || group.id === "adventure" || group.id === "story";
   const activeCharacter = await getResolvedActiveCharacterForUser(user.id);
   const heatRestMeta = activeCharacter ? getCharacterHeatRestMeta(activeCharacter) : null;
   const maxResources = activeCharacter ? getCharacterMaxResources(activeCharacter) : null;
+  const storyBoardState =
+    group.id === "story" && activeCharacter
+      ? await getStoryBoardStateForCharacter(activeCharacter.id)
+      : null;
+  const storyStatusByActivityId = storyBoardState?.statusByActivityId ?? {};
 
   return (
     <div className={pageShellClassName}>
@@ -282,11 +370,21 @@ export default async function ActivityGroupPage({ params }) {
                           activity,
                           activeCharacter,
                         );
+                        const storyStatus = storyStatusByActivityId[activity.id] ?? null;
+                        const storyChipState = buildStoryChipState(storyStatus);
+                        const isStoryGroup = group.id === "story";
+                        const isStoryLocked = isStoryGroup && !storyStatus?.isUnlocked;
+                        const isStoryCompleted = isStoryGroup && storyStatus?.isCompleted;
+                        const actionLabel = isStoryGroup
+                          ? buildStoryActionLabel(storyStatus)
+                          : buildOpenLabel(activity, group.id);
 
                         return (
                       <article
                         key={activity.id}
-                        className={`${styles.activityCard} ${groupThemeClass}`}
+                        className={`${styles.activityCard} ${groupThemeClass} ${
+                          isStoryLocked ? styles.activityCardLocked : ""
+                        } ${isStoryCompleted ? styles.activityCardComplete : ""}`}
                         style={{ "--card-index": index }}
                       >
                         <header className={styles.activityHeader}>
@@ -302,17 +400,28 @@ export default async function ActivityGroupPage({ params }) {
                           {buildActivityTeaser(activity, group.id)}
                         </p>
                         <div className={styles.activityMetaWrap}>
-                          <span
-                            className={`${styles.activityDecisionChip} ${
-                              decisionSignal.tone === "danger"
-                                ? styles.activityDecisionChipDanger
-                                : decisionSignal.tone === "warn"
-                                  ? styles.activityDecisionChipWarn
-                                  : styles.activityDecisionChipOk
-                            }`}
-                          >
-                            {decisionSignal.label}
-                          </span>
+                          {isStoryGroup ? (
+                            <>
+                              <span className={`${styles.activityDecisionChip} ${storyChipState.className}`}>
+                                {storyChipState.label}
+                              </span>
+                              <span className={styles.activityMetaChip}>
+                                {storyStatus?.requiredSuccesses ?? 3} Rolls Needed
+                              </span>
+                            </>
+                          ) : (
+                            <span
+                              className={`${styles.activityDecisionChip} ${
+                                decisionSignal.tone === "danger"
+                                  ? styles.activityDecisionChipDanger
+                                  : decisionSignal.tone === "warn"
+                                    ? styles.activityDecisionChipWarn
+                                    : styles.activityDecisionChipOk
+                              }`}
+                            >
+                              {decisionSignal.label}
+                            </span>
+                          )}
                           <span className={styles.activityMetaChip}>
                             {buildRiskBadgeLabel(activity.riskProfile)}
                           </span>
@@ -322,21 +431,40 @@ export default async function ActivityGroupPage({ params }) {
                             </span>
                           ) : null}
                         </div>
-                        <p className={styles.activityDecisionNote}>{decisionSignal.note}</p>
+                        <p className={styles.activityDecisionNote}>
+                          {isStoryGroup ? buildStoryDecisionNote(storyStatus) : decisionSignal.note}
+                        </p>
                         <div className={styles.activityOutcome}>
                           <p>
-                            <strong>Success:</strong> {formatCompactResourceDelta(activity.successReward)}
+                            <strong>Success:</strong>{" "}
+                            {isStoryGroup
+                              ? `${formatCompactResourceDelta(activity.successReward)} | Reveal next lore part`
+                              : formatCompactResourceDelta(activity.successReward)}
                           </p>
                           <p>
-                            <strong>Failure:</strong> {formatCompactResourceDelta(activity.failPenalty)}
+                            <strong>Failure:</strong>{" "}
+                            {isStoryGroup
+                              ? `${formatCompactResourceDelta(activity.failPenalty)} | Reset chapter progress`
+                              : formatCompactResourceDelta(activity.failPenalty)}
                           </p>
                         </div>
-                        <Link
-                          href={`/activities/run/${activity.id}`}
-                          className={styles.activityAction}
-                        >
-                          {buildOpenLabel(activity, group.id)}
-                        </Link>
+                        {isStoryLocked || isStoryCompleted ? (
+                          <span
+                            className={`${styles.activityAction} ${styles.activityActionDisabled} ${
+                              isStoryCompleted ? styles.activityActionComplete : ""
+                            }`}
+                            aria-disabled="true"
+                          >
+                            {actionLabel}
+                          </span>
+                        ) : (
+                          <Link
+                            href={`/activities/run/${activity.id}`}
+                            className={styles.activityAction}
+                          >
+                            {actionLabel}
+                          </Link>
+                        )}
                       </article>
                         );
                       })()

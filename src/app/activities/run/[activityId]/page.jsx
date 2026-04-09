@@ -15,6 +15,7 @@ import { getCharacterHeatRestMeta } from "@/lib/heat-rest";
 import { requirePageUser } from "@/lib/page-auth";
 import { getCharacterResourceSnapshot } from "@/lib/resource-rules";
 import { getHeatRollModifier, getNextHeatThreshold } from "@/lib/roll-engine";
+import { getStoryActivityStateForCharacter } from "@/lib/story-progress";
 import styles from "../../page.module.css";
 
 const headingFont = Cinzel({
@@ -51,6 +52,19 @@ export default async function ActivityRunPage({ params }) {
   const effectiveActivityStaminaCost = activeCharacter
     ? getClassPassiveActivityStaminaCost(activeCharacter.characterClass, activity.staminaCost)
     : activity.staminaCost;
+  const storyStatus =
+    activeCharacter && activity.groupId === "story"
+      ? await getStoryActivityStateForCharacter(activeCharacter.id, activity.id)
+      : null;
+
+  if (
+    activity.groupId === "story" &&
+    storyStatus &&
+    (!storyStatus.isUnlocked || storyStatus.isCompleted)
+  ) {
+    notFound();
+  }
+
   const activityIllustrationFrameClassName = [
     styles.activityIllustrationFrame,
     activity.groupId === "quest" ? styles.activityIllustrationFrameQuest : "",
@@ -140,6 +154,7 @@ export default async function ActivityRunPage({ params }) {
                     currentHeatRollModifier={currentHeatRollModifier}
                     nextHeatThreshold={nextHeatThreshold}
                     expectedHeatBuildUp={heatBuildUpPreview}
+                    storyStatus={storyStatus}
                   />
                 )}
               </>

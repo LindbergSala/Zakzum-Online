@@ -8,6 +8,7 @@ export {
   ADVENTURE_ACTIVITY_STEPS,
   ARENA_ACTIVITY_STEPS,
   QUEST_ACTIVITY_STEPS,
+  STORY_ACTIVITY_STEPS,
 } from "./activity-definitions";
 
 export const ACTIVITY_DEFINITIONS = ACTIVITY_GROUPS.flatMap((group) =>

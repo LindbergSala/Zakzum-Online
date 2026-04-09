@@ -11,20 +11,26 @@ function buildDecisionSignal(groupId) {
     return "Higher pressure and stronger swings. Better when HP and stamina are stable.";
   }
 
+  if (groupId === "story") {
+    return "Visible early, but the first chapter stays locked until every Quest and Adventure has been cleared once.";
+  }
+
   return "Save this for later progression and stronger builds.";
 }
 
 export default function ActivityActions() {
   return (
     <ul className="activity-list">
-      {ACTIVITY_GROUPS.map((group) => {
+      {ACTIVITY_GROUPS.filter((group) => group.isListed !== false).map((group) => {
         const availability = getActivityGroupAvailability(group.id);
         const ctaLabel =
           group.id === "quest"
             ? "Open Quest Board"
             : group.id === "adventure"
               ? "Open Adventure Board"
-              : availability.badgeLabel;
+              : group.id === "story"
+                ? "Open Story Board"
+                : availability.badgeLabel;
         const groupHref =
           group.id === "quest"
             ? "/quest"
@@ -57,7 +63,9 @@ export default function ActivityActions() {
             </div>
             <p className="activity-item-note">
               {availability.isOpen
-                ? "Open now. Choose this when its risk and reward match your current resources."
+                ? group.id === "story"
+                  ? "The board is available now, but each chapter unlocks through progression and never drops loot."
+                  : "Open now. Choose this when its risk and reward match your current resources."
                 : availability.reason}
             </p>
             <p className="activity-item-cta">

@@ -62,6 +62,7 @@ export function buildActivityCompletionMessage({
   gainedStatPoints,
   lootName,
   lootBlockedByCarry,
+  storyProgress,
 }) {
   const baseMessage = leveledUp
     ? success
@@ -70,12 +71,19 @@ export function buildActivityCompletionMessage({
     : success
       ? `${activityName} succeeded.`
       : `${activityName} failed.`;
+  const storyMessageSuffix = storyProgress
+    ? storyProgress.completed
+      ? ` Story complete.${storyProgress.nextUnlockedActivityName ? ` ${storyProgress.nextUnlockedActivityName} unlocked.` : ""}`
+      : success
+        ? ` Story progress ${storyProgress.currentStreak}/${storyProgress.requiredSuccesses}.`
+        : ` Story progress reset to 0/${storyProgress.requiredSuccesses}.`
+    : "";
   const lootMessageSuffix = lootName ? ` Loot found: ${lootName}.` : "";
   const lootBlockedByCarryMessageSuffix = lootBlockedByCarry
     ? " Loot found, but you are carrying too much to keep it."
     : "";
 
-  return `${baseMessage}${lootMessageSuffix}${lootBlockedByCarryMessageSuffix}`;
+  return `${baseMessage}${storyMessageSuffix}${lootMessageSuffix}${lootBlockedByCarryMessageSuffix}`;
 }
 
 export function serializeActivitySuccessPayload({
@@ -92,6 +100,7 @@ export function serializeActivitySuccessPayload({
       gainedStatPoints: result.gainedStatPoints,
       lootName: result.loot?.name ?? null,
       lootBlockedByCarry: result.lootBlockedByCarry,
+      storyProgress: result.storyProgress ?? null,
     }),
     action: {
       id: activity.id,
@@ -189,6 +198,7 @@ export function serializeActivitySuccessPayload({
       },
       stats: result.statSummary,
       delta: result.calculation.delta,
+      storyProgress: result.storyProgress ?? null,
       totals: {
         before: result.calculation.before,
         after: getCharacterResourceSnapshot(result.updatedCharacter),

@@ -9,6 +9,10 @@ export function getActivityHeatBuildUp(activity, activityGroupId, success) {
     return success ? 1 : 2;
   }
 
+  if (activityGroupId === "story") {
+    return success ? 1 : 2 + Math.floor((tier - 1) / 2);
+  }
+
   if (activityGroupId === "quest") {
     return success ? 0 : tier >= 4 ? 2 : 1;
   }

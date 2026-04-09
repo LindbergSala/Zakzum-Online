@@ -19,6 +19,12 @@ test("adventure heat build up escalates by tier band on failure", () => {
   assert.equal(getActivityHeatBuildUp({ tier: 5 }, "adventure", false), 4);
 });
 
+test("story heat build up mirrors escalating activity pressure", () => {
+  assert.equal(getActivityHeatBuildUp({ tier: 1 }, "story", true), 1);
+  assert.equal(getActivityHeatBuildUp({ tier: 1 }, "story", false), 2);
+  assert.equal(getActivityHeatBuildUp({ tier: 5 }, "story", false), 4);
+});
+
 test("preview helper mirrors the transaction heat rule", () => {
   assert.deepEqual(
     getActivityHeatBuildUpPreview({ groupId: "arena", tier: 1 }),
@@ -28,5 +34,10 @@ test("preview helper mirrors the transaction heat rule", () => {
   assert.deepEqual(
     getActivityHeatBuildUpPreview({ groupId: "quest", tier: 5 }),
     { success: 0, failure: 2 },
+  );
+
+  assert.deepEqual(
+    getActivityHeatBuildUpPreview({ groupId: "story", tier: 4 }),
+    { success: 1, failure: 3 },
   );
 });

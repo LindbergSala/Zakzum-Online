@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -27,6 +28,7 @@ export default function ActivityRunner({
   currentHeatRollModifier = 0,
   nextHeatThreshold = null,
   expectedHeatBuildUp = null,
+  storyStatus = null,
 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +37,8 @@ export default function ActivityRunner({
   const [lastResult, setLastResult] = useState(null);
   const [availableStamina, setAvailableStamina] = useState(currentStamina);
   const [trayMessage, setTrayMessage] = useState(null);
+  const [storyState, setStoryState] = useState(storyStatus);
+  const [storyOverlay, setStoryOverlay] = useState(null);
   const { rollReveal, beginRollSequence, revealResolvedRoll, resetRollReveal } =
     useActivityRollReveal();
   const {
@@ -53,6 +57,10 @@ export default function ActivityRunner({
       setTrayMessage(null);
     }
   }, [currentStamina, requiredStamina]);
+
+  useEffect(() => {
+    setStoryState(storyStatus);
+  }, [storyStatus]);
 
   const rollDisplayValue = getRollDisplayValue(rollReveal);
   const isBusy = isLoading || isPocketActionLoading;
@@ -183,6 +191,7 @@ export default function ActivityRunner({
     setFeedback(null);
     setLastResult(null);
     setTrayMessage(null);
+    setStoryOverlay(null);
 
     try {
       const { ok, data } = await postJson("/api/game/activities", {
@@ -202,6 +211,10 @@ export default function ActivityRunner({
       }
 
       setLastResult(data.result ?? null);
+      if (data.result?.storyProgress) {
+        setStoryState(data.result.storyProgress);
+        setStoryOverlay(data.result.storyProgress.overlay ?? null);
+      }
       setAvailableStamina(data.result?.totals?.after?.stamina ?? availableStamina);
       if (data.result) {
         revealResolvedRoll(data.result, sequenceId, startedAt);
@@ -238,6 +251,13 @@ export default function ActivityRunner({
         {expectedHeatBuildUp ? (
           <p className="activity-briefing-copy">
             Expected Heat from this action: +{expectedHeatBuildUp.success} on success, +{expectedHeatBuildUp.failure} on failure.
+          </p>
+        ) : null}
+        {activity.groupId === "story" ? (
+          <p className="activity-briefing-copy">
+            Story rule: clear {storyState?.requiredSuccesses ?? 3} successful rolls in a row to finish this chapter.
+            Current chapter progress is {storyState?.currentStreak ?? 0}/{storyState?.requiredSuccesses ?? 3},
+            and any failed roll resets the chapter back to 0/{storyState?.requiredSuccesses ?? 3}.
           </p>
         ) : null}
         <div className="activity-briefing-stakes">
@@ -435,6 +455,19 @@ export default function ActivityRunner({
             </p>
             <p
               className={`activity-outcome-line ${
+                lastResult.storyProgress ? "" : "activity-outcome-line-placeholder"
+              }`}
+              aria-hidden={lastResult.storyProgress ? undefined : true}
+            >
+              <strong>Story:</strong>{" "}
+              {lastResult.storyProgress
+                ? lastResult.storyProgress.completed
+                  ? `Chapter complete at ${lastResult.storyProgress.requiredSuccesses}/${lastResult.storyProgress.requiredSuccesses}.`
+                  : `${lastResult.storyProgress.currentStreak}/${lastResult.storyProgress.requiredSuccesses} successful rolls chained.`
+                : "\u00A0"}
+            </p>
+            <p
+              className={`activity-outcome-line ${
                 lastResult.loot ? "" : "activity-outcome-line-placeholder"
               }`}
               aria-hidden={lastResult.loot ? undefined : true}
@@ -536,6 +569,20 @@ export default function ActivityRunner({
               <p>
                 <strong>Loot:</strong> {formatLoot(lastResult.loot)}
               </p>
+              {lastResult.storyProgress ? (
+                <p>
+                  <strong>Story progress:</strong> {lastResult.storyProgress.currentStreak}/
+                  {lastResult.storyProgress.requiredSuccesses}
+                  {lastResult.storyProgress.completed
+                    ? " | Chapter complete"
+                    : lastResult.storyProgress.resetOnFailure
+                      ? " | Reset on failure"
+                      : " | Chapter in progress"}
+                  {lastResult.storyProgress.nextUnlockedActivityName
+                    ? ` | Next unlocked: ${lastResult.storyProgress.nextUnlockedActivityName}`
+                    : ""}
+                </p>
+              ) : null}
               <p>
                 <strong>Progression:</strong> Level {lastResult.progression.levelAfter} | XP{" "}
                 {lastResult.progression.xp.xp} / next level at{" "}
@@ -550,6 +597,46 @@ export default function ActivityRunner({
               </p>
             </div>
           </details>
+        </section>
+      ) : null}
+
+      {storyOverlay ? (
+        <section className="story-overlay-backdrop" aria-live="polite">
+          <div className="story-overlay-card" role="dialog" aria-modal="true" aria-label="Story lore reveal">
+            <p className="story-overlay-kicker">
+              Story Part {storyOverlay.step}
+              {storyState?.requiredSuccesses ? ` of ${storyState.requiredSuccesses}` : ""}
+            </p>
+            <h3 className="story-overlay-title">{storyOverlay.title}</h3>
+            {storyOverlay.imageSrc ? (
+              <Image
+                src={storyOverlay.imageSrc}
+                alt={storyOverlay.imageAlt}
+                width={1600}
+                height={900}
+                className="story-overlay-image"
+              />
+            ) : (
+              <div className="story-overlay-image story-overlay-image-placeholder" aria-hidden="true">
+                Image placeholder
+              </div>
+            )}
+            <p className="story-overlay-copy">{storyOverlay.text}</p>
+            <p className="story-overlay-progress">
+              {lastResult?.storyProgress?.completed
+                ? "Chapter complete. The next story is now available if one exists."
+                : `Chapter progress: ${storyState?.currentStreak ?? 0}/${storyState?.requiredSuccesses ?? 3}`}
+            </p>
+            <p className="story-overlay-actions">
+              <button
+                type="button"
+                className="story-overlay-button"
+                onClick={() => setStoryOverlay(null)}
+              >
+                Continue
+              </button>
+            </p>
+          </div>
         </section>
       ) : null}
     </section>

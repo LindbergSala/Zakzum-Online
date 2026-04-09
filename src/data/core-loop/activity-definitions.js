@@ -1,5 +1,36 @@
 import { HEARTLANDS_LOCATIONS } from "./location-refs";
 
+const STORY_ROLLS_REQUIRED = 3;
+
+function buildStoryParts(chapterTitle) {
+  return [
+    {
+      step: 1,
+      title: `${chapterTitle} - Part I`,
+      text:
+        "Placeholder lore for the opening beat of this story. Replace with your own text and image when the chapter content is ready.",
+      imageSrc: null,
+      imageAlt: `${chapterTitle} part one placeholder`,
+    },
+    {
+      step: 2,
+      title: `${chapterTitle} - Part II`,
+      text:
+        "Placeholder lore for the middle beat of this story. Replace with your own text and image when the chapter content is ready.",
+      imageSrc: null,
+      imageAlt: `${chapterTitle} part two placeholder`,
+    },
+    {
+      step: 3,
+      title: `${chapterTitle} - Part III`,
+      text:
+        "Placeholder lore for the final beat of this story. Replace with your own text and image when the chapter content is ready.",
+      imageSrc: null,
+      imageAlt: `${chapterTitle} part three placeholder`,
+    },
+  ];
+}
+
 export const QUEST_ACTIVITY_STEPS = [
   {
     ...HEARTLANDS_LOCATIONS.kingston,
@@ -203,5 +234,118 @@ export const ARENA_ACTIVITY_STEPS = [
     },
     successReward: { gold: 4, xp: 14, renown: 4 },
     failPenalty: { hp: -6, heat: 2 },
+  },
+];
+
+export const STORY_ACTIVITY_STEPS = [
+  {
+    id: "story-1",
+    tier: 1,
+    name: "Story I: Ashes of the Warning Road",
+    riskProfile: "Locked until every Quest and Adventure is cleared once",
+    pageIntro:
+      "Follow the first buried thread of Zakzum's larger tale. You must land three successful rolls in a row to reveal the full chapter.",
+    staminaCost: 4,
+    roll: {
+      difficulty: 18,
+      levelScaling: 2,
+      primaryStat: "wisdom",
+      secondaryStat: "charisma",
+    },
+    successReward: { xp: 12, renown: 2 },
+    failPenalty: { hp: -4, heat: 2 },
+    story: {
+      rollsRequired: STORY_ROLLS_REQUIRED,
+      boardTeaser: "The first sealed chapter only opens after the full Heartlands path has been survived once.",
+      parts: buildStoryParts("Ashes of the Warning Road"),
+    },
+  },
+  {
+    id: "story-2",
+    tier: 2,
+    name: "Story II: The Oath Beneath Stone",
+    riskProfile: "Three chained successes required, higher pressure",
+    pageIntro:
+      "Push deeper into the revealed history. This chapter is harder than the first and still resets if one roll fails.",
+    staminaCost: 5,
+    roll: {
+      difficulty: 19,
+      levelScaling: 2,
+      primaryStat: "wisdom",
+      secondaryStat: "charisma",
+    },
+    successReward: { xp: 14, renown: 2 },
+    failPenalty: { hp: -5, heat: 2 },
+    story: {
+      rollsRequired: STORY_ROLLS_REQUIRED,
+      boardTeaser: "A second chapter waits behind the first, with no shortcut around the previous tale.",
+      parts: buildStoryParts("The Oath Beneath Stone"),
+    },
+  },
+  {
+    id: "story-3",
+    tier: 3,
+    name: "Story III: Crownfire Testimony",
+    riskProfile: "Escalating story challenge, three perfect steps",
+    pageIntro:
+      "The third chapter demands more control. One failed roll collapses the sequence and sends the chapter back to the beginning.",
+    staminaCost: 5,
+    roll: {
+      difficulty: 20,
+      levelScaling: 2,
+      primaryStat: "wisdom",
+      secondaryStat: "charisma",
+    },
+    successReward: { xp: 16, renown: 3 },
+    failPenalty: { hp: -6, heat: 3 },
+    story: {
+      rollsRequired: STORY_ROLLS_REQUIRED,
+      boardTeaser: "By the third chapter, the board stops testing curiosity and starts testing discipline.",
+      parts: buildStoryParts("Crownfire Testimony"),
+    },
+  },
+  {
+    id: "story-4",
+    tier: 4,
+    name: "Story IV: The Broken Gate Chronicle",
+    riskProfile: "Late-story difficulty spike, no loot payout",
+    pageIntro:
+      "A near-final chapter where the price of a mistake rises again, but the only reward is unlocking what comes next.",
+    staminaCost: 6,
+    roll: {
+      difficulty: 21,
+      levelScaling: 2,
+      primaryStat: "wisdom",
+      secondaryStat: "charisma",
+    },
+    successReward: { xp: 18, renown: 3 },
+    failPenalty: { hp: -7, heat: 3 },
+    story: {
+      rollsRequired: STORY_ROLLS_REQUIRED,
+      boardTeaser: "The fourth chapter carries more pressure and still asks for three clean rolls in sequence.",
+      parts: buildStoryParts("The Broken Gate Chronicle"),
+    },
+  },
+  {
+    id: "story-5",
+    tier: 5,
+    name: "Story V: Last Witness of Zakzum",
+    riskProfile: "Final story chapter, maximum chapter pressure",
+    pageIntro:
+      "The final chapter completes the story board. Three consecutive successes are still required, and no loot is awarded for the clear.",
+    staminaCost: 6,
+    roll: {
+      difficulty: 22,
+      levelScaling: 2,
+      primaryStat: "wisdom",
+      secondaryStat: "charisma",
+    },
+    successReward: { xp: 20, renown: 4 },
+    failPenalty: { hp: -8, heat: 4 },
+    story: {
+      rollsRequired: STORY_ROLLS_REQUIRED,
+      boardTeaser: "The last chapter closes the board and only opens after every earlier story is cleared.",
+      parts: buildStoryParts("Last Witness of Zakzum"),
+    },
   },
 ];
