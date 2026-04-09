@@ -29,6 +29,7 @@ export function createShopGetHandler(dependencies = {}) {
   const requireUser = dependencies.requireApiUser ?? requireApiUser;
   const resolveActiveCharacter =
     dependencies.getResolvedActiveCharacterForUser ?? getResolvedActiveCharacterForUser;
+  const prismaClient = dependencies.prismaClient ?? prisma;
   const logError = dependencies.logServerError ?? logServerError;
 
   return async function getShop() {
@@ -41,7 +42,7 @@ export function createShopGetHandler(dependencies = {}) {
     try {
       const activeCharacter = await resolveActiveCharacter(user.id);
       const ownedItems = activeCharacter
-        ? await prisma.characterItem.findMany({
+        ? await prismaClient.characterItem.findMany({
             where: { characterId: activeCharacter.id },
             select: {
               itemId: true,

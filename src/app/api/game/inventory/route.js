@@ -32,6 +32,7 @@ export function createInventoryGetHandler(dependencies = {}) {
   const requireUser = dependencies.requireApiUser ?? requireApiUser;
   const resolveActiveCharacter =
     dependencies.getResolvedActiveCharacterForUser ?? getResolvedActiveCharacterForUser;
+  const prismaClient = dependencies.prismaClient ?? prisma;
   const logError = dependencies.logServerError ?? logServerError;
 
   return async function getInventory() {
@@ -51,7 +52,7 @@ export function createInventoryGetHandler(dependencies = {}) {
         );
       }
 
-      const items = await prisma.characterItem.findMany({
+      const items = await prismaClient.characterItem.findMany({
         where: { characterId: activeCharacter.id },
         select: INVENTORY_ITEM_SELECT,
         orderBy: [{ createdAt: "desc" }],

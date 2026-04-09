@@ -22,78 +22,97 @@ const RATE_LIMIT_MESSAGE = "Too many login attempts. Please try again later.";
 const DUMMY_PASSWORD_HASH =
   "$2b$12$GK1dFUqDAm57Is0AVxiy5uWaqLdqpiQqF.RDBBo1TTw9jmHp4CEDy";
 
-export async function POST(request) {
-  const originError = validateWriteRequestOrigin(request);
-  if (originError) {
-    return originError;
-  }
+export function createLoginPostHandler(dependencies = {}) {
+  const ensureOriginIsValid =
+    dependencies.validateWriteRequestOrigin ?? validateWriteRequestOrigin;
+  const parseRequestBody =
+    dependencies.parseAndValidateJsonRequestBody ?? parseAndValidateJsonRequestBody;
+  const checkRateLimit = dependencies.checkLoginRateLimit ?? checkLoginRateLimit;
+  const clearRateLimit = dependencies.clearLoginRateLimit ?? clearLoginRateLimit;
+  const recordFailedAttempt =
+    dependencies.recordFailedLoginAttempt ?? recordFailedLoginAttempt;
+  const prismaClient = dependencies.prismaClient ?? prisma;
+  const comparePassword = dependencies.comparePasswords ?? compare;
+  const createUserSession = dependencies.createSession ?? createSession;
+  const buildSessionCookieOptions =
+    dependencies.getSessionCookieOptions ?? getSessionCookieOptions;
+  const logError = dependencies.logServerError ?? logServerError;
 
-  try {
-    const { data: parsedData, response: parseResponse } =
-      await parseAndValidateJsonRequestBody(request, {
-        schema: loginSchema,
-        invalidMessage: "Invalid input.",
+  return async function loginPost(request) {
+    const originError = ensureOriginIsValid(request);
+    if (originError) {
+      return originError;
+    }
+
+    try {
+      const { data: parsedData, response: parseResponse } =
+        await parseRequestBody(request, {
+          schema: loginSchema,
+          invalidMessage: "Invalid input.",
+        });
+
+      if (parseResponse) {
+        return parseResponse;
+      }
+
+      const { email, password } = parsedData;
+      const rateLimit = await checkRateLimit(request, email);
+
+      if (rateLimit.blocked) {
+        return NextResponse.json(
+          { message: RATE_LIMIT_MESSAGE },
+          {
+            status: 429,
+            headers: {
+              "Retry-After": String(rateLimit.retryAfterSeconds),
+            },
+          },
+        );
+      }
+
+      const user = await prismaClient.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          passwordHash: true,
+        },
       });
 
-    if (parseResponse) {
-      return parseResponse;
-    }
+      const passwordHashToCheck = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
+      const isPasswordValid = await comparePassword(password, passwordHashToCheck);
 
-    const { email, password } = parsedData;
-    const rateLimit = await checkLoginRateLimit(request, email);
+      if (!user || !isPasswordValid) {
+        await recordFailedAttempt(rateLimit.identifierSet);
+        return NextResponse.json(
+          { message: INVALID_CREDENTIALS_MESSAGE },
+          { status: 401 },
+        );
+      }
 
-    if (rateLimit.blocked) {
+      await clearRateLimit(rateLimit.identifierSet);
+
+      const { token, expiresAt } = await createUserSession(user.id);
+
+      const response = NextResponse.json(
+        { message: "Login successful." },
+        { status: 200 },
+      );
+
+      response.cookies.set(
+        SESSION_COOKIE_NAME,
+        token,
+        buildSessionCookieOptions(expiresAt),
+      );
+
+      return response;
+    } catch (error) {
+      logError("/api/auth/login", error);
       return NextResponse.json(
-        { message: RATE_LIMIT_MESSAGE },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(rateLimit.retryAfterSeconds),
-          },
-        },
+        { message: "Something went wrong during login." },
+        { status: 500 },
       );
     }
-
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        passwordHash: true,
-      },
-    });
-
-    const passwordHashToCheck = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
-    const isPasswordValid = await compare(password, passwordHashToCheck);
-
-    if (!user || !isPasswordValid) {
-      await recordFailedLoginAttempt(rateLimit.identifierSet);
-      return NextResponse.json(
-        { message: INVALID_CREDENTIALS_MESSAGE },
-        { status: 401 },
-      );
-    }
-
-    await clearLoginRateLimit(rateLimit.identifierSet);
-
-    const { token, expiresAt } = await createSession(user.id);
-
-    const response = NextResponse.json(
-      { message: "Login successful." },
-      { status: 200 },
-    );
-
-    response.cookies.set(
-      SESSION_COOKIE_NAME,
-      token,
-      getSessionCookieOptions(expiresAt),
-    );
-
-    return response;
-  } catch (error) {
-    logServerError("/api/auth/login", error);
-    return NextResponse.json(
-      { message: "Something went wrong during login." },
-      { status: 500 },
-    );
-  }
+  };
 }
+
+export const POST = createLoginPostHandler();

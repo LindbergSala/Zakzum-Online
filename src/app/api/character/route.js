@@ -32,6 +32,119 @@ function buildInitialStats() {
   );
 }
 
+export function createCharacterPostHandler(dependencies = {}) {
+  const ensureOriginIsValid =
+    dependencies.validateWriteRequestOrigin ?? validateWriteRequestOrigin;
+  const requireUser = dependencies.requireApiUser ?? requireApiUser;
+  const parseRequestBody =
+    dependencies.parseAndValidateJsonRequestBody ?? parseAndValidateJsonRequestBody;
+  const prismaClient = dependencies.prismaClient ?? prisma;
+  const applyBackgroundBonuses =
+    dependencies.applyBackgroundStartBonuses ?? applyBackgroundStartBonuses;
+  const resolveAvatarValidity =
+    dependencies.isValidAvatarForRace ?? isValidAvatarForRace;
+  const buildBaseResources =
+    dependencies.buildBaseResourcesForCharacter ?? buildBaseResourcesForCharacter;
+  const logError = dependencies.logServerError ?? logServerError;
+
+  return async function characterPost(request) {
+    const originError = ensureOriginIsValid(request);
+    if (originError) {
+      return originError;
+    }
+
+    const { user, error } = await requireUser();
+
+    if (error) {
+      return error;
+    }
+
+    try {
+      const { data: parsedData, response: parseResponse } =
+        await parseRequestBody(request, {
+          schema: createCharacterSchema,
+          invalidMessage: "Invalid input.",
+        });
+
+      if (parseResponse) {
+        return parseResponse;
+      }
+
+      const existingCharacter = await prismaClient.character.findUnique({
+        where: { userId: user.id },
+        select: { id: true },
+      });
+
+      if (existingCharacter) {
+        return NextResponse.json(
+          { message: "You already have a character for this account." },
+          { status: 409 },
+        );
+      }
+
+      const initialStats = applyBackgroundBonuses(
+        buildInitialStats(),
+        parsedData.characterBackground,
+      );
+      const requestedAvatarImage = parsedData.avatarImage?.trim() ?? "";
+      const resolvedAvatarImage =
+        requestedAvatarImage &&
+        resolveAvatarValidity(parsedData.characterRace, requestedAvatarImage)
+          ? requestedAvatarImage
+          : null;
+
+      const baseResources = buildBaseResources(
+        parsedData.characterClass,
+        initialStats.constitution,
+      );
+
+      const createdCharacter = await prismaClient.$transaction(async (tx) => {
+        const newCharacter = await tx.character.create({
+          data: {
+            userId: user.id,
+            ...parsedData,
+            avatarImage: resolvedAvatarImage,
+            ...initialStats,
+            ...baseResources,
+          },
+          select: CHARACTER_OVERVIEW_SELECT,
+        });
+
+        await tx.user.update({
+          where: { id: user.id },
+          data: { activeCharacterId: newCharacter.id },
+        });
+
+        return newCharacter;
+      });
+
+      return NextResponse.json(
+        {
+          message: "Character created.",
+          character: createdCharacter,
+        },
+        { status: 201 },
+      );
+    } catch (caughtError) {
+      if (
+        caughtError instanceof Prisma.PrismaClientKnownRequestError &&
+        caughtError.code === "P2002"
+      ) {
+        return NextResponse.json(
+          { message: "You already have a character for this account." },
+          { status: 409 },
+        );
+      }
+
+      logError("/api/character", caughtError, { userId: user.id });
+      return NextResponse.json(
+        { message: "Something went wrong while creating character." },
+        { status: 500 },
+      );
+    }
+  };
+}
+
 export async function GET() {
   const { user, error } = await requireApiUser();
 
@@ -45,102 +158,7 @@ export async function GET() {
   return NextResponse.json({ character }, { status: 200 });
 }
 
-export async function POST(request) {
-  const originError = validateWriteRequestOrigin(request);
-  if (originError) {
-    return originError;
-  }
-
-  const { user, error } = await requireApiUser();
-
-  if (error) {
-    return error;
-  }
-
-  try {
-    const { data: parsedData, response: parseResponse } =
-      await parseAndValidateJsonRequestBody(request, {
-        schema: createCharacterSchema,
-        invalidMessage: "Invalid input.",
-      });
-
-    if (parseResponse) {
-      return parseResponse;
-    }
-
-    const existingCharacter = await prisma.character.findUnique({
-      where: { userId: user.id },
-      select: { id: true },
-    });
-
-    if (existingCharacter) {
-      return NextResponse.json(
-        { message: "You already have a character for this account." },
-        { status: 409 },
-      );
-    }
-
-    const initialStats = applyBackgroundStartBonuses(
-      buildInitialStats(),
-      parsedData.characterBackground,
-    );
-    const requestedAvatarImage = parsedData.avatarImage?.trim() ?? "";
-    const resolvedAvatarImage =
-      requestedAvatarImage &&
-      isValidAvatarForRace(parsedData.characterRace, requestedAvatarImage)
-        ? requestedAvatarImage
-        : null;
-
-    const baseResources = buildBaseResourcesForCharacter(
-      parsedData.characterClass,
-      initialStats.constitution,
-    );
-
-    const createdCharacter = await prisma.$transaction(async (tx) => {
-      const newCharacter = await tx.character.create({
-        data: {
-          userId: user.id,
-          ...parsedData,
-          avatarImage: resolvedAvatarImage,
-          ...initialStats,
-          ...baseResources,
-        },
-        select: CHARACTER_OVERVIEW_SELECT,
-      });
-
-      await tx.user.update({
-        where: { id: user.id },
-        data: { activeCharacterId: newCharacter.id },
-      });
-
-      return newCharacter;
-    });
-
-    return NextResponse.json(
-      {
-        message: "Character created.",
-        character: createdCharacter,
-      },
-      { status: 201 },
-    );
-  } catch (caughtError) {
-    if (
-      caughtError instanceof Prisma.PrismaClientKnownRequestError &&
-      caughtError.code === "P2002"
-    ) {
-      return NextResponse.json(
-        { message: "You already have a character for this account." },
-        { status: 409 },
-      );
-    }
-
-    logServerError("/api/character", caughtError, { userId: user.id });
-    return NextResponse.json(
-      { message: "Something went wrong while creating character." },
-      { status: 500 },
-    );
-  }
-}
+export const POST = createCharacterPostHandler();
 
 export async function PATCH(request) {
   const originError = validateWriteRequestOrigin(request);
